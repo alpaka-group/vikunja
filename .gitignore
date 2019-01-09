@@ -1,0 +1,19 @@
+/doc/doxygen/*
+!/doc/doxygen/Doxyfile
+!/doc/doxygen/alpaka_doxygen.png
+/doc/latex/*
+**/build
+cmake-build-debug/*
+cmake-build-release/*
+# tmp files
+*~
+
+# netbeans project files
+/nbproject/
+
+# Code::Blocks project files
+/*.cbp
+/*.layout
+
+# original backup files
+*.orig
