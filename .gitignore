@@ -3,8 +3,12 @@
 !/doc/doxygen/alpaka_doxygen.png
 /doc/latex/*
 **/build
-cmake-build-debug/*
-cmake-build-release/*
+/cmake-build-debug/*
+/cmake-build-release/*
+
+# .idea files
+/.idea/*
+
 # tmp files
 *~
 
