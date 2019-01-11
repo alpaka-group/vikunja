@@ -9,5 +9,5 @@ int two() {
 
 TEST_CASE("DummyTest", "[dummy]")
 {
-    REQUIRE(two() == 3);
+    REQUIRE(two() == 2);
 }
