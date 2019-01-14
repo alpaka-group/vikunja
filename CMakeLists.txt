@@ -5,6 +5,7 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
 
 list(APPEND CMAKE_MODULE_PATH "${ALPAKA_ROOT}")
+set(ALPAKA_ACC_CPU_B_SEQ_T_SEQ_ENABLED ON)
 find_package(alpaka REQUIRED)
 
 add_subdirectory(src)

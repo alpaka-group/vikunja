@@ -9,6 +9,7 @@ alpaka_add_executable(
 target_include_directories(
         ${_TARGET_NAME}
         PRIVATE ${Boost_INCLUDE_DIRS})
+target_include_directories(${_TARGET_NAME} PRIVATE ${alpaka_INCLUDE_DIRS})
 target_link_libraries(
         ${_TARGET_NAME}
         PRIVATE "CatchMain")
