@@ -20,12 +20,5 @@ target_include_directories(CatchMain SYSTEM PUBLIC
 target_include_directories(CatchMain SYSTEM PUBLIC ${alpaka_INCLUDE_DIR}/../test/common/include/)
 target_link_libraries(CatchMain PUBLIC "alpaka")
 
-# NVCC does not incorporate the COMPILE_OPTIONS of a target but only the CMAKE_CXX_FLAGS
-if(ALPAKA_ACC_GPU_CUDA_ENABLE AND NOT ALPAKA_CUDA_COMPILER MATCHES "clang")
-    get_target_property(_COMMON_COMPILE_OPTIONS common COMPILE_OPTIONS)
-    string(REPLACE ";" " " _COMMON_COMPILE_OPTIONS_STRING "${_COMMON_COMPILE_OPTIONS}")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${_COMMON_COMPILE_OPTIONS_STRING}")
-endif()
-
 list(APPEND _ALPAKA_TEST_OPTIONS "--use-colour yes")
 add_subdirectory("unit/")
