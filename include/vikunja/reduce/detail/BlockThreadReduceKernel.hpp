@@ -11,57 +11,6 @@ namespace vikunja {
 namespace reduce {
 namespace detail {
 
-
-    struct LinearMemAccessPolicy {
-        template<typename TAcc, typename TIdx>
-        ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE
-        static auto getStartIndex(TAcc const &acc, TIdx const &problemSize, TIdx const &blockSize) -> TIdx const {
-            auto gridDimension{alpaka::workdiv::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[0]};
-            auto indexInBlock{alpaka::idx::getIdx<alpaka::Grid, alpaka::Threads>(acc)[0]};
-            auto gridSize = gridDimension * blockSize;
-            // TODO: catch overflow
-            return (problemSize * indexInBlock) / gridSize;
-        }
-
-        template<typename TAcc, typename TIdx>
-        ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE
-        static auto getEndIndex(TAcc const &acc, TIdx const &problemSize, TIdx const &blockSize) -> TIdx const {
-            auto gridDimension{alpaka::workdiv::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[0]};
-            auto indexInBlock{alpaka::idx::getIdx<alpaka::Grid, alpaka::Threads>(acc)[0]};
-            auto gridSize = gridDimension * blockSize;
-            // TODO: catch overflow
-            return (problemSize * indexInBlock + problemSize) / gridSize;
-        }
-
-        template<typename TAcc, typename TIdx>
-        ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE
-        static auto getStepSize(TAcc const &acc, TIdx const &problemSize, TIdx const &blockSize) {
-            return 1;
-        }
-    };
-
-    struct GridStridingMemAccessPolicy {
-        template<typename TAcc, typename TIdx>
-        ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE
-        static auto getStartIndex(TAcc const &acc, TIdx const &problemSize, TIdx const &blockSize) -> TIdx const {
-            return alpaka::idx::getIdx<alpaka::Grid, alpaka::Threads>(acc)[0];
-        }
-
-        template<typename TAcc, typename TIdx>
-        ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE
-        static auto getEndIndex(TAcc const &acc, TIdx const &problemSize, TIdx const &blockSize) -> TIdx const {
-            return problemSize;
-        }
-
-        template<typename TAcc, typename TIdx>
-        ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE
-        static auto getStepSize(TAcc const &acc, TIdx const &problemSize, TIdx const &blockSize) {
-            auto gridDimension{alpaka::workdiv::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[0]};
-            return gridDimension * blockSize;
-        }
-    };
-
-
     template<typename TRed, uint64_t size>
     struct sharedStaticArray
     {
