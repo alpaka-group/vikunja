@@ -40,17 +40,17 @@ namespace detail {
 
 
             // blockIdx.x
-            auto blockIndex{alpaka::idx::getIdx<alpaka::Grid, alpaka::Blocks>(acc)[0]};
+            auto blockIndex = (alpaka::idx::getIdx<alpaka::Grid, alpaka::Blocks>(acc)[0]);
             // threadIdx.x
-            auto threadIndex{alpaka::idx::getIdx<alpaka::Block, alpaka::Threads>(acc)[0]};
+            auto threadIndex = (alpaka::idx::getIdx<alpaka::Block, alpaka::Threads>(acc)[0]);
             // gridDim.x
-            auto gridDimension{alpaka::workdiv::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[0]};
+            auto gridDimension = (alpaka::workdiv::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[0]);
 
             // blockIdx.x * TBlocksize + threadIdx.x
-            auto indexInBlock{alpaka::idx::getIdx<alpaka::Grid, alpaka::Threads>(acc)[0]};
+            auto indexInBlock(alpaka::idx::getIdx<alpaka::Grid, alpaka::Threads>(acc)[0]);
 
             using MemPolicy = TMemAccessPolicy;
-            vikunja::mem::iterator::PolicyBasedBlockIterator<MemPolicy, TAcc, TInputIterator> iter{source, acc, n, TBlockSize};
+            vikunja::mem::iterator::PolicyBasedBlockIterator<MemPolicy, TAcc, TInputIterator> iter(source, acc, n, TBlockSize);
             // grid striding
             /*auto startIndex = indexInBlock;
             auto endIndex = n;
