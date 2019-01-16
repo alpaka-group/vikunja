@@ -154,6 +154,11 @@ namespace vikunja {
                     static constexpr auto getStepSize(TAcc const &acc, TIdx const &problemSize, TIdx const &blockSize) -> TIdx const {
                         return 1;
                     }
+
+                    ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE
+                    static constexpr auto getName() {
+                        return "LinearMemAccessPolicy";
+                    }
                 };
 
                 struct GridStridingMemAccessPolicy {
@@ -174,6 +179,11 @@ namespace vikunja {
                     static auto getStepSize(TAcc const &acc, TIdx const &problemSize, TIdx const &blockSize) {
                         auto gridDimension{alpaka::workdiv::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[0]};
                         return gridDimension * blockSize;
+                    }
+
+                    ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE
+                    static constexpr auto getName() {
+                        return "GridStridingMemAccessPolicy";
                     }
                 };
             } // policies

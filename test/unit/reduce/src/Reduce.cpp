@@ -19,7 +19,6 @@ struct TestTemplate {
     void operator()() {
         using Idx = alpaka::idx::Idx<TAcc>;
         using Dim = alpaka::dim::Dim<TAcc>;
-
         constexpr Idx n = (1 << 27);
         constexpr Idx blocksPerGrid = 8;
         constexpr Idx threadsPerBlock = 1;
@@ -72,6 +71,8 @@ struct TestTemplate {
         REQUIRE(expectedResult == reduceResult);
         std::cout << "Runtime of " << alpaka::acc::getAccName<TAcc>() << ": "
                 << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << " microseconds\n";
+        using MemAccess = vikunja::mem::iterator::MemAccessPolicy<TAcc>;
+        std::cout << "MemAccessPolicy: " << MemAccess::getName() << "\n";
     }
 };
 
