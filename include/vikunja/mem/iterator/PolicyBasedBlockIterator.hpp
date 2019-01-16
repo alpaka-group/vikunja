@@ -132,8 +132,8 @@ namespace vikunja {
                     template<typename TAcc, typename TIdx>
                     ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE
                     static auto getStartIndex(TAcc const &acc, TIdx const &problemSize, TIdx const &blockSize) -> TIdx const {
-                        auto gridDimension{alpaka::workdiv::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[0]};
-                        auto indexInBlock{alpaka::idx::getIdx<alpaka::Grid, alpaka::Threads>(acc)[0]};
+                        auto gridDimension = alpaka::workdiv::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[0];
+                        auto indexInBlock = alpaka::idx::getIdx<alpaka::Grid, alpaka::Threads>(acc)[0];
                         auto gridSize = gridDimension * blockSize;
                         // TODO: catch overflow
                         return (problemSize * indexInBlock) / gridSize;
@@ -142,8 +142,8 @@ namespace vikunja {
                     template<typename TAcc, typename TIdx>
                     ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE
                     static auto getEndIndex(TAcc const &acc, TIdx const &problemSize, TIdx const &blockSize) -> TIdx const {
-                        auto gridDimension{alpaka::workdiv::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[0]};
-                        auto indexInBlock{alpaka::idx::getIdx<alpaka::Grid, alpaka::Threads>(acc)[0]};
+                        auto gridDimension = alpaka::workdiv::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[0];
+                        auto indexInBlock = alpaka::idx::getIdx<alpaka::Grid, alpaka::Threads>(acc)[0];
                         auto gridSize = gridDimension * blockSize;
                         // TODO: catch overflow
                         return (problemSize * indexInBlock + problemSize) / gridSize;
@@ -177,7 +177,7 @@ namespace vikunja {
                     template<typename TAcc, typename TIdx>
                     ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE
                     static auto getStepSize(TAcc const &acc, TIdx const &problemSize, TIdx const &blockSize) -> TIdx const {
-                        auto gridDimension{alpaka::workdiv::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[0]};
+                        auto gridDimension = alpaka::workdiv::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[0];
                         return gridDimension * blockSize;
                     }
 
