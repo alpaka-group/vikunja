@@ -156,8 +156,8 @@ namespace vikunja {
                     }
 
                     ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE
-                    static constexpr auto getName() {
-                        return "LinearMemAccessPolicy";
+                    static constexpr auto getName() -> char * {
+                        return const_cast<char *>("LinearMemAccessPolicy");
                     }
                 };
 
@@ -176,14 +176,14 @@ namespace vikunja {
 
                     template<typename TAcc, typename TIdx>
                     ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE
-                    static auto getStepSize(TAcc const &acc, TIdx const &problemSize, TIdx const &blockSize) {
+                    static auto getStepSize(TAcc const &acc, TIdx const &problemSize, TIdx const &blockSize) -> TIdx const {
                         auto gridDimension{alpaka::workdiv::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[0]};
                         return gridDimension * blockSize;
                     }
 
                     ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE
-                    static constexpr auto getName() {
-                        return "GridStridingMemAccessPolicy";
+                    static constexpr auto getName() -> char * {
+                        return const_cast<char *>("GridStridingMemAccessPolicy");
                     }
                 };
             } // policies
