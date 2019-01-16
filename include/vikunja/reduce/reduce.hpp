@@ -36,7 +36,7 @@ namespace reduce {
 
         // allocate helper buffers
         // this should not destroy the original data
-        auto secondPhaseBuffer{alpaka::mem::buf::alloc<TRed, TIdx >(devAcc, n)};
+        auto secondPhaseBuffer(alpaka::mem::buf::alloc<TRed, TIdx >(devAcc, n));
         using MemAccessPolicy = vikunja::mem::iterator::MemAccessPolicy<TAcc>;
 
         detail::BlockThreadReduceKernel<blockSize, MemAccessPolicy, TRed, TFunc> multiBlockKernel, singleBlockKernel;
