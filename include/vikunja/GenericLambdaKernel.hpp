@@ -2,8 +2,7 @@
 // Created by mewes30 on 17.10.18.
 //
 
-#ifndef ELECTRONBUNCHRECONSTRUCTION_GENERICLAMBDAKERNEL_HPP
-#define ELECTRONBUNCHRECONSTRUCTION_GENERICLAMBDAKERNEL_HPP
+#pragma once
 
 #include "alpaka/alpaka.hpp"
 
@@ -116,5 +115,3 @@ namespace vikunja {
         }
     };
 }
-
-#endif //ELECTRONBUNCHRECONSTRUCTION_GENERICLAMBDAKERNEL_HPP

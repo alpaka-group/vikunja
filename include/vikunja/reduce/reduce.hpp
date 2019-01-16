@@ -2,8 +2,7 @@
 // Created by mewes30 on 19.12.18.
 //
 
-#ifndef VIKUNJA_REDUCE_HPP
-#define VIKUNJA_REDUCE_HPP
+#pragma once
 
 #include <alpaka/alpaka.hpp>
 #include <type_traits>
@@ -54,6 +53,3 @@ namespace reduce {
     }
 }
 }
-
-
-#endif //VIKUNJA_REDUCE_HPP

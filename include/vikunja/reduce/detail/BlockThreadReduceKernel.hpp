@@ -2,11 +2,9 @@
 // Created by mewes30 on 19.12.18.
 //
 
-#ifndef VIKUNJA_REDUCEKERNEL_HPP
-#define VIKUNJA_REDUCEKERNEL_HPP
+#pragma once
 
 #include <alpaka/alpaka.hpp>
-
 
 namespace vikunja {
 namespace reduce {
@@ -151,6 +149,3 @@ namespace detail {
 }
 }
 }
-
-
-#endif //VIKUNJA_REDUCEKERNEL_HPP
