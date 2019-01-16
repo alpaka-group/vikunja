@@ -17,6 +17,7 @@ target_include_directories(CatchMain SYSTEM PUBLIC
 target_include_directories(CatchMain SYSTEM PUBLIC ${alpaka_INCLUDE_DIR})
 target_include_directories(CatchMain SYSTEM PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(CatchMain SYSTEM PUBLIC ${alpaka_INCLUDE_DIR}/../test/common/include/)
 target_link_libraries(CatchMain PUBLIC "alpaka")
 
 # NVCC does not incorporate the COMPILE_OPTIONS of a target but only the CMAKE_CXX_FLAGS

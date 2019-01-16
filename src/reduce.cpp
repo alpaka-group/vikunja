@@ -20,8 +20,6 @@
  *
  */
 
-#include "vikunja/reduce/detail/alpakaConfig.hpp"
-#include "vikunja/reduce/detail/kernel.hpp"
 #include "vikunja/GenericLambdaKernel.hpp"
 #include "vikunja/reduce/reduce.hpp"
 #include <alpaka/alpaka.hpp>
@@ -31,6 +29,35 @@
 
 // hardcode the serial CPU accelerator
 #ifdef ALPAKA_ACC_CPU_B_SEQ_T_SEQ_ENABLED
+using Dim = alpaka::dim::DimInt<1u>;
+using Idx = uint64_t;
+using Extent = uint64_t;
+using WorkDiv = alpaka::workdiv::WorkDivMembers<Dim, Extent>;
+struct CpuSerial
+{
+    using Host = alpaka::acc::AccCpuSerial<Dim, Extent>;
+    using Acc = alpaka::acc::AccCpuSerial<Dim, Extent>;
+    using DevHost = alpaka::dev::Dev<Host>;
+    using DevAcc = alpaka::dev::Dev<Acc>;
+    using PltfHost = alpaka::pltf::Pltf<DevHost>;
+    using PltfAcc = alpaka::pltf::Pltf<DevAcc>;
+    using Stream = alpaka::queue::QueueCpuSync;
+    using Event = alpaka::event::Event<Stream>;
+    using MaxBlockSize = alpaka::dim::DimInt<1u>;
+};
+struct CpuThreads
+{
+    using Host = alpaka::acc::AccCpuThreads<Dim, Extent>;
+    using Acc = alpaka::acc::AccCpuThreads<Dim, Extent>;
+    using DevHost = alpaka::dev::Dev<Host>;
+    using DevAcc = alpaka::dev::Dev<Acc>;
+    using PltfHost = alpaka::pltf::Pltf<DevHost>;
+    using PltfAcc = alpaka::pltf::Pltf<DevAcc>;
+    using Stream = alpaka::queue::QueueCpuSync;
+    using Event = alpaka::event::Event<Stream>;
+    using MaxBlockSize = alpaka::dim::DimInt<1u>;
+};
+
 
 // use defines of a specific accelerator
 using Accelerator = CpuThreads;

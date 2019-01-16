@@ -15,10 +15,9 @@ namespace reduce {
     template<uint64_t blockSize, typename TAcc, typename TRed, typename TFunc, typename TBuffer, typename TDevAcc, typename TDevHost, typename TQueue, typename TIdx >
     auto deviceReduce(TDevAcc &devAcc, TDevHost &devHost, TQueue &queue,  TIdx n, TBuffer &buffer,  TFunc const &func, TRed const &init) -> TRed {
 
-        using Dim = alpaka::dim::DimInt<1u>;
+        // TODO: take care of queue management
+        using Dim = alpaka::dim::Dim<TAcc>;
         using WorkDiv = alpaka::workdiv::WorkDivMembers<Dim, TIdx>;
-        using DeviceBuf = alpaka::mem::buf::Buf <TDevAcc, TRed, Dim, TIdx>;
-        using HostBuf = alpaka::mem::buf::Buf<TDevHost, TRed, Dim, TIdx>;
 
         // calculate workdiv sizes
         TIdx blockCount = static_cast<TIdx>(
@@ -37,7 +36,7 @@ namespace reduce {
 
         // allocate helper buffers
         // this should not destroy the original data
-        DeviceBuf secondPhaseBuffer{alpaka::mem::buf::alloc<TRed, TIdx >(devAcc, n)};
+        auto secondPhaseBuffer{alpaka::mem::buf::alloc<TRed, TIdx >(devAcc, n)};
 
         detail::BlockThreadReduceKernel<blockSize, TRed, TFunc> multiBlockKernel, singleBlockKernel;
 
