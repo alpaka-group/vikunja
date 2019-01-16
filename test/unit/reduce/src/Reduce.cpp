@@ -54,10 +54,10 @@ struct TestTemplate {
         auto hostMem(alpaka::mem::buf::alloc<uint64_t, Idx>(devHost, n));
 
         alpaka::mem::view::copy(queueAcc, deviceMem, hostMem, n);
-        auto identityAssign = [](Idx i, Idx* arr) {
+        auto identityAssign = [=] ALPAKA_FN_HOST_ACC (Idx i, Idx* arr) {
             arr[i] = i + 1;
         };
-        auto sum = [](Idx i, Idx j) {
+        auto sum = [=] ALPAKA_FN_HOST_ACC (Idx i, Idx j) {
             return i + j;
         };
         vikunja::GenericLambdaKernel<decltype(identityAssign)> initKernel{identityAssign};
