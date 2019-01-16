@@ -12,6 +12,7 @@
 #include <iostream>
 #include <vikunja/GenericLambdaKernel.hpp>
 #include <vikunja/reduce/reduce.hpp>
+#include <cstdio>
 
 struct TestTemplate {
 
@@ -51,7 +52,9 @@ struct TestTemplate {
 
         auto deviceMem{alpaka::mem::buf::alloc<uint64_t, Idx>(devAcc, n)};
         auto hostMem{alpaka::mem::buf::alloc<uint64_t, Idx>(devHost, n)};
-        alpaka::mem::view::copy(queueAcc, deviceMem, hostMem, n);
+        auto ptr = alpaka::mem::view::getPtrNative(deviceMem);
+        printf("%p", ptr);
+        /*alpaka::mem::view::copy(queueAcc, deviceMem, hostMem, n);
         auto identityAssign = [](Idx i, Idx* arr) {
             arr[i] = i + 1;
         };
@@ -71,7 +74,7 @@ struct TestTemplate {
         std::cout << "Runtime of " << alpaka::acc::getAccName<TAcc>() << ": "
                 << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << " microseconds\n";
         using MemAccess = vikunja::mem::iterator::MemAccessPolicy<TAcc>;
-        std::cout << "MemAccessPolicy: " << MemAccess::getName() << "\n";
+        std::cout << "MemAccessPolicy: " << MemAccess::getName() << "\n";*/
     }
 };
 
