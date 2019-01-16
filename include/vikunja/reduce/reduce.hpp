@@ -6,6 +6,7 @@
 
 #include <alpaka/alpaka.hpp>
 #include <type_traits>
+#include <vikunja/mem/iterator/PolicyBasedBlockIterator.hpp>
 #include "vikunja/reduce/detail/BlockThreadReduceKernel.hpp"
 
 namespace vikunja {
@@ -36,8 +37,9 @@ namespace reduce {
         // allocate helper buffers
         // this should not destroy the original data
         auto secondPhaseBuffer{alpaka::mem::buf::alloc<TRed, TIdx >(devAcc, n)};
+        using MemAccessPolicy = vikunja::mem::iterator::MemAccessPolicy<TAcc>;
 
-        detail::BlockThreadReduceKernel<blockSize, TRed, TFunc> multiBlockKernel, singleBlockKernel;
+        detail::BlockThreadReduceKernel<blockSize, MemAccessPolicy, TRed, TFunc> multiBlockKernel, singleBlockKernel;
 
         // execute kernels
         alpaka::kernel::exec<TAcc>(queue, multiBlockWorkDiv, multiBlockKernel, alpaka::mem::view::getPtrNative(buffer), alpaka::mem::view::getPtrNative(secondPhaseBuffer), n, func);

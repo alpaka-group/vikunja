@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <vikunja/mem/iterator/PolicyBasedBlockIterator.hpp>
 #include <alpaka/alpaka.hpp>
 
 namespace vikunja {
@@ -74,12 +75,12 @@ namespace detail {
         }
     };
 
-    template<uint64_t TBlockSize, typename TRed, typename TFunc>
+    template<uint64_t TBlockSize, typename TMemAccessPolicy, typename TRed, typename TFunc>
     struct BlockThreadReduceKernel {
         template<typename TAcc, typename TIdx,
                 typename TInputIterator, typename TOutputIterator>
         ALPAKA_FN_ACC void operator()(TAcc const &acc,
-                TInputIterator source,
+                TInputIterator const * const source,
                 TOutputIterator destination,
                 TIdx const &n,
                 TFunc func) const  {
@@ -99,7 +100,8 @@ namespace detail {
             // blockIdx.x * TBlocksize + threadIdx.x
             auto indexInBlock{alpaka::idx::getIdx<alpaka::Grid, alpaka::Threads>(acc)[0]};
 
-            using MemPolicy = LinearMemAccessPolicy;
+            using MemPolicy = TMemAccessPolicy;
+            vikunja::mem::iterator::PolicyBasedBlockIterator<MemPolicy, TAcc, TInputIterator> iter{source, acc, n, TBlockSize};
             // grid striding
             /*auto startIndex = indexInBlock;
             auto endIndex = n;
@@ -110,6 +112,15 @@ namespace detail {
             auto endIndex = MemPolicy::getEndIndex(acc, n, TBlockSize);
             auto stepSize = MemPolicy::getStepSize(acc, n, TBlockSize);
             std::cout << "startIndex: " << startIndex << ", endIndex: " << endIndex << "\n";
+           /* if(iter >= iter.end()) {
+                return;
+            }
+            auto tSum = *iter;
+            ++iter;
+            while(iter < iter.end()) {
+                tSum = func(tSum, *iter);
+                ++iter;
+            }*/
 
             auto i = startIndex;
             if(i >= n) {
