@@ -5,7 +5,7 @@ set(_TARGET_NAME "reduceTest")
 
 alpaka_add_executable(
         ${_TARGET_NAME}
-        Reduce.cpp)
+        src/Reduce.cpp)
 target_include_directories(
         ${_TARGET_NAME}
         PRIVATE ${Boost_INCLUDE_DIRS})
