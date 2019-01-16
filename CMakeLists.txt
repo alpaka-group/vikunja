@@ -8,6 +8,12 @@ list(APPEND CMAKE_MODULE_PATH "${ALPAKA_ROOT}")
 set(ALPAKA_ACC_CPU_B_SEQ_T_SEQ_ENABLED ON)
 find_package(alpaka REQUIRED)
 
+if(ALPAKA_ACC_GPU_CUDA_ENABLE)
+    # activate support for host/device lambdas in cuda, currently (as of CUDA 10) still an experimental feature,
+    # but it seems to work.
+    set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS};--expt-extended-lambda")
+endif()
+
 add_subdirectory(src)
 # Use doxygen for api doc when available.
 find_package(Doxygen QUIET)
