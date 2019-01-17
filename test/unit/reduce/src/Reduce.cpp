@@ -29,7 +29,8 @@ struct TestTemplate {
 
         using DevAcc = alpaka::dev::Dev<TAcc>;
         using PltfAcc = alpaka::pltf::Pltf<DevAcc>;
-        using QueueAcc = alpaka::queue::QueueCpuSync;//alpaka::test::queue::DefaultQueue<alpaka::dev::Dev<TAcc>>;
+        // Async queue makes things slower on CPU?
+        using QueueAcc = alpaka::test::queue::DefaultQueue<alpaka::dev::Dev<TAcc>>;
         using PltfHost = alpaka::pltf::PltfCpu;
         using DevHost = alpaka::dev::Dev<PltfHost>;
         using QueueHost = alpaka::queue::QueueCpuSync;
