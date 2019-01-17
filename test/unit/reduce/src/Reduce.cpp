@@ -67,7 +67,7 @@ struct TestTemplate {
         std::cout << "Testing accelerator: " << alpaka::acc::getAccName<TAcc>() << "\n";
 
         auto start = std::chrono::high_resolution_clock::now();
-        Idx reduceResult = vikunja::reduce::deviceReduce<1, TAcc>(devAcc, devHost, queueAcc, n, deviceMem, sum, static_cast<uint64_t>(0));
+        Idx reduceResult = vikunja::reduce::deviceReduce<TAcc, 1>(devAcc, devHost, queueAcc, n, deviceMem, sum, static_cast<uint64_t>(0));
         auto end = std::chrono::high_resolution_clock::now();
         auto expectedResult = (n * (n + 1) / 2);
         REQUIRE(expectedResult == reduceResult);
