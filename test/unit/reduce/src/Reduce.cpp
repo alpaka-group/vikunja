@@ -12,6 +12,7 @@
 #include <iostream>
 #include <vikunja/GenericLambdaKernel.hpp>
 #include <vikunja/reduce/reduce.hpp>
+#include <type_traits>
 #include <cstdio>
 #include <vector>
 #include <thread>
@@ -30,9 +31,16 @@ struct TestTemplate {
         using DevAcc = alpaka::dev::Dev<TAcc>;
         using PltfAcc = alpaka::pltf::Pltf<DevAcc>;
         // Async queue makes things slower on CPU?
-        using QueueAcc = alpaka::test::queue::DefaultQueue<alpaka::dev::Dev<TAcc>>;
+       // using QueueAcc = alpaka::test::queue::DefaultQueue<alpaka::dev::Dev<TAcc>>;
         using PltfHost = alpaka::pltf::PltfCpu;
         using DevHost = alpaka::dev::Dev<PltfHost>;
+        using QueueAcc = typename std::conditional<std::is_same<PltfAcc, alpaka::pltf::PltfCpu>::value, alpaka::queue::QueueCpuSync,
+#ifdef  ALPAKA_ACC_GPU_CUDA_ENABLED
+        alpaka::queue::CudaRtSync
+#else
+        alpaka::queue::QueueCpuSync
+#endif
+        >::type;
         using QueueHost = alpaka::queue::QueueCpuSync;
         using WorkDiv = alpaka::workdiv::WorkDivMembers<Dim, Idx>;
 
