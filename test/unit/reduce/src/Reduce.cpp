@@ -32,6 +32,7 @@ struct TestTemplate {
         using DevHost = alpaka::dev::Dev<PltfHost>;
         using QueueHost = alpaka::queue::QueueCpuSync;
         using WorkDiv = alpaka::workdiv::WorkDivMembers<Dim, Idx>;
+
         // Get the host device.
         DevHost devHost(
                 alpaka::pltf::getDevByIdx<PltfHost>(0u));
@@ -52,8 +53,8 @@ struct TestTemplate {
 
         auto deviceMem(alpaka::mem::buf::alloc<uint64_t, Idx>(devAcc, n));
         auto hostMem(alpaka::mem::buf::alloc<uint64_t, Idx>(devHost, n));
-
         alpaka::mem::view::copy(queueAcc, deviceMem, hostMem, n);
+        alpaka::wait::wait(queueHost);
         auto identityAssign = [=] ALPAKA_FN_HOST_ACC (Idx i, Idx* arr) {
             arr[i] = i + 1;
         };
