@@ -12,10 +12,9 @@
 namespace vikunja {
 namespace reduce {
 
-    template<typename TAcc,uint64_t blockSize, typename TRed, typename TFunc, typename TBuffer, typename TDevAcc, typename TDevHost, typename TQueue, typename TIdx >
+    template<typename TAcc,uint64_t blockSize, typename MemAccessPolicy = vikunja::mem::iterator::MemAccessPolicy<TAcc>, typename TRed, typename TFunc, typename TBuffer, typename TDevAcc, typename TDevHost, typename TQueue, typename TIdx >
     auto deviceReduce(TDevAcc &devAcc, TDevHost &devHost, TQueue &queue,  TIdx n, TBuffer &buffer,  TFunc const &func, TRed const &init) -> TRed {
-        using MemAccessPolicy = vikunja::mem::iterator::MemAccessPolicy<TAcc>;
-        
+
         using Dim = alpaka::dim::Dim<TAcc>;
         using WorkDiv = alpaka::workdiv::WorkDivMembers<Dim, TIdx>;
 

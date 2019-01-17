@@ -51,26 +51,26 @@ namespace detail {
 
             using MemPolicy = TMemAccessPolicy;
             vikunja::mem::iterator::PolicyBasedBlockIterator<MemPolicy, TAcc, TInputIterator> iter(source, acc, n, TBlockSize);
-            // grid striding
-            /*auto startIndex = indexInBlock;
-            auto endIndex = n;
-            auto stepSize = gridSize;*/
 
             // sequential
             auto startIndex = MemPolicy::getStartIndex(acc, n, TBlockSize);
             auto endIndex = MemPolicy::getEndIndex(acc, n, TBlockSize);
             auto stepSize = MemPolicy::getStepSize(acc, n, TBlockSize);
-            //std::cout << "startIndex: " << startIndex << ", endIndex: " << endIndex << "\n";
-           /* if(iter >= iter.end()) {
+            std::cout << "startIndex: " << startIndex << ", endIndex: " << endIndex << ", stepSize: " << stepSize << "\n";
+            if(iter >= iter.end()) {
                 return;
             }
             auto tSum = *iter;
             ++iter;
+            while(iter + 3 < iter.end()) {
+                tSum = func(func(func(func(tSum, *iter), *(iter + 1)), *(iter + 2)), *(iter + 3));
+                iter += 4;
+            }
             while(iter < iter.end()) {
                 tSum = func(tSum, *iter);
                 ++iter;
-            }*/
-
+            }
+/*
             auto i = startIndex;
             if(i >= n) {
                 return;
@@ -82,7 +82,7 @@ namespace detail {
             while(i < endIndex) {
                 tSum = func(tSum, *(source + i));
                 i += stepSize;
-            }
+            }*/
             if(threadIndex < n) {
                 sdata[threadIndex] = tSum;
             }

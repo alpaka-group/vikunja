@@ -13,6 +13,7 @@
 #include <vikunja/GenericLambdaKernel.hpp>
 #include <vikunja/reduce/reduce.hpp>
 #include <cstdio>
+#include <vector>
 
 struct TestTemplate {
 
@@ -86,5 +87,18 @@ TEST_CASE("Test reduce", "[reduce]")
             std::uint64_t>;
     SECTION("deviceReduce") {
         alpaka::meta::forEachType<TestAccs>(TestTemplate());
+        std::vector<uint64_t> reduce(1 << 27);
+        for(uint64_t i = 0; i < reduce.size(); ++i) {
+            reduce[i] = i + 1;
+        }
+        auto start = std::chrono::high_resolution_clock::now();
+        uint64_t tSum = 0;
+        for(uint64_t i = 0; i < reduce.size(); ++i) {
+            tSum += reduce[i];
+        }
+        auto end = std::chrono::high_resolution_clock::now();
+        std::cout << "Runtime of dump loop: ";
+        std::cout << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << " microseconds\n";
+        std::cout << "tSum = " << tSum << "\n";
     }
 }
