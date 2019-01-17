@@ -7,25 +7,28 @@
 #include <alpaka/alpaka.hpp>
 #include <type_traits>
 #include <vikunja/mem/iterator/PolicyBasedBlockIterator.hpp>
+#include <vikunja/workdiv/BlockBasedWorkDiv.hpp>
 #include "vikunja/reduce/detail/BlockThreadReduceKernel.hpp"
 
 namespace vikunja {
 namespace reduce {
 
-    template<typename TAcc,uint64_t blockSize, typename MemAccessPolicy = vikunja::mem::iterator::MemAccessPolicy<TAcc>, typename TRed, typename TFunc, typename TBuffer, typename TDevAcc, typename TDevHost, typename TQueue, typename TIdx >
+    template<typename TAcc,typename WorkDivPolicy = vikunja::workdiv::BlockBasedPolicy<TAcc>, typename MemAccessPolicy = vikunja::mem::iterator::MemAccessPolicy<TAcc>, typename TRed, typename TFunc, typename TBuffer, typename TDevAcc, typename TDevHost, typename TQueue, typename TIdx >
     auto deviceReduce(TDevAcc &devAcc, TDevHost &devHost, TQueue &queue,  TIdx n, TBuffer &buffer,  TFunc const &func, TRed const &init) -> TRed {
 
+        constexpr uint64_t blockSize = WorkDivPolicy::template getBlockSize<TAcc>();
         using Dim = alpaka::dim::Dim<TAcc>;
         using WorkDiv = alpaka::workdiv::WorkDivMembers<Dim, TIdx>;
-
+        // TODO rename
+        TIdx blockCount = WorkDivPolicy::template getGridSize<TAcc>(devAcc);
         // calculate workdiv sizes
-        TIdx blockCount = static_cast<TIdx>(
+        /*TIdx blockCount = static_cast<TIdx>(
                 alpaka::acc::getAccDevProps<TAcc>(devAcc).m_multiProcessorCount *
-                8);
+                8);*/
         TIdx maxBlockCount = static_cast<TIdx>(
                 (((n + 1) / 2) - 1) / static_cast<TIdx>(blockSize) + 1);
 
-        std::cout << "blockCount: " << blockCount << "\n";
+        //std::cout << "blockCount: " << blockCount << "\n";
         WorkDiv multiBlockWorkDiv{ static_cast<TIdx>(blockCount),
                           static_cast<TIdx>(blockSize),
                           static_cast<TIdx>(1) };
@@ -40,8 +43,11 @@ namespace reduce {
         detail::BlockThreadReduceKernel<blockSize, MemAccessPolicy, TRed, TFunc> multiBlockKernel, singleBlockKernel;
 
         // execute kernels
+        auto start = std::chrono::high_resolution_clock::now();
         alpaka::kernel::exec<TAcc>(queue, multiBlockWorkDiv, multiBlockKernel, alpaka::mem::view::getPtrNative(buffer), alpaka::mem::view::getPtrNative(secondPhaseBuffer), n, func);
         alpaka::kernel::exec<TAcc>(queue, singleBlockWorkDiv, singleBlockKernel, alpaka::mem::view::getPtrNative(secondPhaseBuffer), alpaka::mem::view::getPtrNative(secondPhaseBuffer), blockCount, func);
+        auto endTime = std::chrono::high_resolution_clock::now();
+        //std::cout << std::chrono::duration_cast<std::chrono::microseconds>(endTime - start).count() << " microseconds\n";
         //stub
         //alpaka::mem::view::copy(queue, secondPhaseBuffer, copyOfBuffer, blockCount);
 

@@ -60,6 +60,7 @@ namespace detail {
             if(iter >= iter.end()) {
                 return;
             }
+           // auto start = std::chrono::high_resolution_clock::now();
             auto tSum = *iter;
             ++iter;
             while(iter + 3 < iter.end()) {
@@ -70,6 +71,8 @@ namespace detail {
                 tSum = func(tSum, *iter);
                 ++iter;
             }
+            //auto endTime = std::chrono::high_resolution_clock::now();
+            //std::cout << std::chrono::duration_cast<std::chrono::microseconds>(endTime - start).count() << " microseconds\n";
 /*
             auto i = startIndex;
             if(i >= n) {

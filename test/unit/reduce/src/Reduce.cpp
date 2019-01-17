@@ -14,6 +14,7 @@
 #include <vikunja/reduce/reduce.hpp>
 #include <cstdio>
 #include <vector>
+#include <thread>
 
 struct TestTemplate {
 
@@ -28,7 +29,7 @@ struct TestTemplate {
 
         using DevAcc = alpaka::dev::Dev<TAcc>;
         using PltfAcc = alpaka::pltf::Pltf<DevAcc>;
-        using QueueAcc = alpaka::test::queue::DefaultQueue<alpaka::dev::Dev<TAcc>>;
+        using QueueAcc = alpaka::queue::QueueCpuSync;//alpaka::test::queue::DefaultQueue<alpaka::dev::Dev<TAcc>>;
         using PltfHost = alpaka::pltf::PltfCpu;
         using DevHost = alpaka::dev::Dev<PltfHost>;
         using QueueHost = alpaka::queue::QueueCpuSync;
@@ -68,7 +69,7 @@ struct TestTemplate {
         std::cout << "Testing accelerator: " << alpaka::acc::getAccName<TAcc>() << "\n";
 
         auto start = std::chrono::high_resolution_clock::now();
-        Idx reduceResult = vikunja::reduce::deviceReduce<TAcc, 1>(devAcc, devHost, queueAcc, n, deviceMem, sum, static_cast<uint64_t>(0));
+        Idx reduceResult = vikunja::reduce::deviceReduce<TAcc>(devAcc, devHost, queueAcc, n, deviceMem, sum, static_cast<uint64_t>(0));
         auto end = std::chrono::high_resolution_clock::now();
         auto expectedResult = (n * (n + 1) / 2);
         REQUIRE(expectedResult == reduceResult);
@@ -85,6 +86,7 @@ TEST_CASE("Test reduce", "[reduce]")
     using TestAccs = alpaka::test::acc::EnabledAccs<
             alpaka::dim::DimInt<1u>,
             std::uint64_t>;
+    std::cout << std::thread::hardware_concurrency() << "\n";
     SECTION("deviceReduce") {
         alpaka::meta::forEachType<TestAccs>(TestTemplate());
         std::vector<uint64_t> reduce(1 << 27);
