@@ -56,7 +56,7 @@ namespace detail {
             auto startIndex = MemPolicy::getStartIndex(acc, n, TBlockSize);
             auto endIndex = MemPolicy::getEndIndex(acc, n, TBlockSize);
             auto stepSize = MemPolicy::getStepSize(acc, n, TBlockSize);
-            std::cout << "startIndex: " << startIndex << ", endIndex: " << endIndex << ", stepSize: " << stepSize << "\n";
+            //std::cout << "startIndex: " << startIndex << ", endIndex: " << endIndex << ", stepSize: " << stepSize << "\n";
             if(iter >= iter.end()) {
                 return;
             }
