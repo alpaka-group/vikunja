@@ -45,7 +45,7 @@ namespace vikunja {
                 }
                 template<typename TAcc, typename TDevAcc, typename TIdx = alpaka::idx::Idx<TAcc>>
                 static constexpr TIdx getGridSize(TDevAcc const &devAcc) noexcept {
-                    return 4;
+                    return 1;
                 }
             };
             // for CUDA

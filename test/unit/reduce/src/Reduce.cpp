@@ -100,10 +100,10 @@ TEST_CASE("Test reduce", "[reduce]")
     using TestAccs = alpaka::test::acc::EnabledAccs<
             alpaka::dim::DimInt<1u>,
             std::uint64_t>;
-    std::cout << std::thread::hardware_concurrency() << "\n";
+    //std::cout << std::thread::hardware_concurrency() << "\n";
     SECTION("deviceReduce") {
 
-        std::vector<uint64_t> memorySizes{1, 10, 16, (1<< 10) + 1, 1 << 27};
+        std::vector<uint64_t> memorySizes{ 10, 16, (1<< 10) + 1, 1 << 27};
 
         for(auto &memSize: memorySizes) {
             alpaka::meta::forEachType<TestAccs>(TestTemplate(memSize));

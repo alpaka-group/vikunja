@@ -31,7 +31,8 @@ namespace reduce {
         if(blockCount > maxBlockCount) {
             blockCount = maxBlockCount;
         }
-        //std::cout << "blockCount: " << blockCount << "\n";
+        std::cout << "blockCount/gridSize: " << blockCount << "\n";
+        std::cout << "threadCount/blockSize: " << blockSize << "\n";
         WorkDiv multiBlockWorkDiv{ static_cast<TIdx>(blockCount),
                           static_cast<TIdx>(blockSize),
                           static_cast<TIdx>(1) };
@@ -42,13 +43,14 @@ namespace reduce {
         // allocate helper buffers
         // this should not destroy the original data
         // TODO move this to external method
-        auto secondPhaseBuffer(alpaka::mem::buf::alloc<TRed, TIdx >(devAcc, n));
+        auto secondPhaseBuffer(alpaka::mem::buf::alloc<TRed, TIdx >(devAcc, blockCount));
 
         detail::BlockThreadReduceKernel<blockSize, MemAccessPolicy, TRed, TFunc> multiBlockKernel, singleBlockKernel;
 
         // execute kernels
         alpaka::kernel::exec<TAcc>(queue, multiBlockWorkDiv, multiBlockKernel, alpaka::mem::view::getPtrNative(buffer), alpaka::mem::view::getPtrNative(secondPhaseBuffer), n, func);
         alpaka::kernel::exec<TAcc>(queue, singleBlockWorkDiv, singleBlockKernel, alpaka::mem::view::getPtrNative(secondPhaseBuffer), alpaka::mem::view::getPtrNative(secondPhaseBuffer), blockCount, func);
+        std::cout << "finished second kernel\n";
 
         TRed result;
         alpaka::mem::view::ViewPlainPtr<TDevHost, TRed, Dim, TIdx> resultView{&result, devHost, static_cast<TIdx>(1)};

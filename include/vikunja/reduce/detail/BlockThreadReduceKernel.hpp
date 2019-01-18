@@ -51,13 +51,14 @@ namespace detail {
 
             using MemPolicy = TMemAccessPolicy;
             vikunja::mem::iterator::PolicyBasedBlockIterator<MemPolicy, TAcc, TInputIterator> iter(source, acc, n, TBlockSize);
-
+            //std::cout << "threadIndex: " << threadIndex << "\n";
             // sequential
             auto startIndex = MemPolicy::getStartIndex(acc, n, TBlockSize);
             auto endIndex = MemPolicy::getEndIndex(acc, n, TBlockSize);
             auto stepSize = MemPolicy::getStepSize(acc, n, TBlockSize);
-            //std::cout << "startIndex: " << startIndex << ", endIndex: " << endIndex << ", stepSize: " << stepSize << "\n";
+           // std::cout << "startIndex: " << startIndex << ", endIndex: " << endIndex << ", stepSize: " << stepSize << "\n";
             if(iter >= iter.end()) {
+                std::cout << "In return\n";
                 return;
             }
            // auto start = std::chrono::high_resolution_clock::now();
@@ -91,19 +92,23 @@ namespace detail {
             }
 
             alpaka::block::sync::syncBlockThreads(acc);
-
+            std::cout << "Got to here\n";
             // blockReduce
             // unroll for better performance
             for(TIdx bs = TBlockSize, bSup = (TBlockSize + 1) / 2;
             bs > 1; bs = bs / 2, bSup = (bs + 1) / 2) {
+                std::cout << ("Amokthread: " + std::to_string(threadIndex) + "\n");
                 bool condition = threadIndex < bSup && // only first half of block is working
                          (threadIndex + bSup) < TBlockSize && // index for second half must be in bounds
                          (indexInBlock + bSup) < n; // if element in second half has ben initialized before
                 if(condition) {
                     sdata[threadIndex] = func(sdata[threadIndex], sdata[threadIndex + bSup]);
                 }
-                alpaka::block::sync::syncBlockThreads(acc);
+                std::cout << "Before second block\n";
+               // alpaka::block::sync::syncBlockThreads(acc);
+                std::cout << "After second block\n";
             }
+            std::cout << "After loop\n";
             if(threadIndex == 0) {
                 *(destination + blockIndex) = sdata[0];
             }
