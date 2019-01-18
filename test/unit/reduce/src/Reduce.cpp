@@ -36,7 +36,7 @@ struct TestTemplate {
         using DevHost = alpaka::dev::Dev<PltfHost>;
         using QueueAcc = typename std::conditional<std::is_same<PltfAcc, alpaka::pltf::PltfCpu>::value, alpaka::queue::QueueCpuSync,
 #ifdef  ALPAKA_ACC_GPU_CUDA_ENABLED
-        alpaka::queue::CudaRtSync
+        alpaka::queue::QueueCudaRtSync
 #else
         alpaka::queue::QueueCpuSync
 #endif

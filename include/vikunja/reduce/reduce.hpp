@@ -28,6 +28,9 @@ namespace reduce {
         TIdx maxBlockCount = static_cast<TIdx>(
                 (((n + 1) / 2) - 1) / static_cast<TIdx>(blockSize) + 1);
 
+        if(blockCount > maxBlockCount) {
+            blockCount = blockCount;
+        }
         //std::cout << "blockCount: " << blockCount << "\n";
         WorkDiv multiBlockWorkDiv{ static_cast<TIdx>(blockCount),
                           static_cast<TIdx>(blockSize),

@@ -58,8 +58,9 @@ namespace vikunja {
                 template<typename TAcc, typename TDevAcc, typename TIdx = alpaka::idx::Idx<TAcc>>
                 static TIdx getGridSize(TDevAcc const &devAcc) {
                     // Jonas Schenke calculated this for CUDA
-                    static_cast<TIdx>(
-                            alpaka::acc::getAccDevProps<TAcc>(devAcc).m_multiProcessorCount * 8);
+                    return static_cast<TIdx>(
+                            alpaka::acc::getAccDevProps<TAcc>(devAcc).m_multiProcessorCount *
+                            8);
                 }
 
             };
