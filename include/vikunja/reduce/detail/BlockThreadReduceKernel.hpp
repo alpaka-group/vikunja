@@ -112,6 +112,7 @@ namespace detail {
             if(threadIndex == 0) {
                 *(destination + blockIndex) = sdata[0];
             }
+            std::cout << "Triggered last statement\n";
         }
     };
 }
