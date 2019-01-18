@@ -39,7 +39,8 @@ public:
        // using QueueAcc = alpaka::test::queue::DefaultQueue<alpaka::dev::Dev<TAcc>>;
         using PltfHost = alpaka::pltf::PltfCpu;
         using DevHost = alpaka::dev::Dev<PltfHost>;
-        using QueueAcc = typename std::conditional<std::is_same<PltfAcc, alpaka::pltf::PltfCpu>::value, alpaka::queue::QueueCpuSync,
+        using QueueAcc = //alpaka::queue::QueueCpuAsync;
+                typename std::conditional<std::is_same<PltfAcc, alpaka::pltf::PltfCpu>::value, alpaka::queue::QueueCpuSync,
 #ifdef  ALPAKA_ACC_GPU_CUDA_ENABLED
         alpaka::queue::QueueCudaRtSync
 #else
@@ -103,7 +104,7 @@ TEST_CASE("Test reduce", "[reduce]")
     //std::cout << std::thread::hardware_concurrency() << "\n";
     SECTION("deviceReduce") {
 
-        std::vector<uint64_t> memorySizes{ 10, 16, (1<< 10) + 1, 1 << 27};
+        std::vector<uint64_t> memorySizes{ 10, 16,  777,(1<< 10) + 1, 1 << 27};
 
         for(auto &memSize: memorySizes) {
             alpaka::meta::forEachType<TestAccs>(TestTemplate(memSize));
