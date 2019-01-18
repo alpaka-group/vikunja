@@ -29,7 +29,7 @@ namespace reduce {
                 (((n + 1) / 2) - 1) / static_cast<TIdx>(blockSize) + 1);
 
         if(blockCount > maxBlockCount) {
-            blockCount = blockCount;
+            blockCount = maxBlockCount;
         }
         //std::cout << "blockCount: " << blockCount << "\n";
         WorkDiv multiBlockWorkDiv{ static_cast<TIdx>(blockCount),
@@ -41,25 +41,21 @@ namespace reduce {
 
         // allocate helper buffers
         // this should not destroy the original data
+        // TODO move this to external method
         auto secondPhaseBuffer(alpaka::mem::buf::alloc<TRed, TIdx >(devAcc, n));
 
         detail::BlockThreadReduceKernel<blockSize, MemAccessPolicy, TRed, TFunc> multiBlockKernel, singleBlockKernel;
 
         // execute kernels
-        auto start = std::chrono::high_resolution_clock::now();
         alpaka::kernel::exec<TAcc>(queue, multiBlockWorkDiv, multiBlockKernel, alpaka::mem::view::getPtrNative(buffer), alpaka::mem::view::getPtrNative(secondPhaseBuffer), n, func);
         alpaka::kernel::exec<TAcc>(queue, singleBlockWorkDiv, singleBlockKernel, alpaka::mem::view::getPtrNative(secondPhaseBuffer), alpaka::mem::view::getPtrNative(secondPhaseBuffer), blockCount, func);
-        auto endTime = std::chrono::high_resolution_clock::now();
-        //std::cout << std::chrono::duration_cast<std::chrono::microseconds>(endTime - start).count() << " microseconds\n";
-        //stub
-        //alpaka::mem::view::copy(queue, secondPhaseBuffer, copyOfBuffer, blockCount);
 
         TRed result;
         alpaka::mem::view::ViewPlainPtr<TDevHost, TRed, Dim, TIdx> resultView{&result, devHost, static_cast<TIdx>(1)};
         alpaka::mem::view::copy(queue, resultView, secondPhaseBuffer, 1);
         // wait for result, otherwise the async CPU queue causes a segfault
         alpaka::wait::wait(queue);
-        return result;
+        return func(result, init);
     }
 }
 }

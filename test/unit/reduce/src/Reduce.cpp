@@ -18,15 +18,20 @@
 #include <thread>
 
 struct TestTemplate {
+private:
+    const uint64_t memSize;
+public:
+
+    TestTemplate(uint64_t const memSize) : memSize(memSize) {}
 
     template<typename TAcc>
     void operator()() {
         using Idx = alpaka::idx::Idx<TAcc>;
         using Dim = alpaka::dim::Dim<TAcc>;
-        constexpr Idx n = (1 << 27);
+        const Idx n = static_cast<Idx>(memSize);
         constexpr Idx blocksPerGrid = 8;
         constexpr Idx threadsPerBlock = 1;
-        constexpr Idx elementsPerThread = n / blocksPerGrid / threadsPerBlock + 1;
+        const Idx elementsPerThread = n / blocksPerGrid / threadsPerBlock + 1;
 
         using DevAcc = alpaka::dev::Dev<TAcc>;
         using PltfAcc = alpaka::pltf::Pltf<DevAcc>;
@@ -75,7 +80,7 @@ struct TestTemplate {
         vikunja::GenericLambdaKernel<decltype(identityAssign)> initKernel{identityAssign};
         alpaka::kernel::exec<TAcc>(queueAcc, workdiv, initKernel, n, alpaka::mem::view::getPtrNative(deviceMem));
 
-        std::cout << "Testing accelerator: " << alpaka::acc::getAccName<TAcc>() << "\n";
+        std::cout << "Testing accelerator: " << alpaka::acc::getAccName<TAcc>() << " with size: " << n <<"\n";
 
         auto start = std::chrono::high_resolution_clock::now();
         Idx reduceResult = vikunja::reduce::deviceReduce<TAcc>(devAcc, devHost, queueAcc, n, deviceMem, sum, static_cast<uint64_t>(0));
@@ -97,7 +102,12 @@ TEST_CASE("Test reduce", "[reduce]")
             std::uint64_t>;
     std::cout << std::thread::hardware_concurrency() << "\n";
     SECTION("deviceReduce") {
-        alpaka::meta::forEachType<TestAccs>(TestTemplate());
+
+        std::vector<uint64_t> memorySizes{1, 10, 16, (1<< 10) + 1, 1 << 27};
+
+        for(auto &memSize: memorySizes) {
+            alpaka::meta::forEachType<TestAccs>(TestTemplate(memSize));
+        }
         std::vector<uint64_t> reduce(1 << 27);
         for(uint64_t i = 0; i < reduce.size(); ++i) {
             reduce[i] = i + 1;
