@@ -17,7 +17,7 @@ namespace vikunja {
                 }
 
                 template<typename TAcc, typename TDevAcc, typename TIdx = alpaka::idx::Idx<TAcc>>
-                static constexpr TIdx getGridSize(TDevAcc const &devAcc) noexcept {
+                static constexpr TIdx getGridSize(TDevAcc const &devAcc __attribute__((unused))) noexcept {
                     return 1;
                 }
             };
@@ -29,7 +29,7 @@ namespace vikunja {
                 }
 
                 template<typename TAcc, typename TDevAcc, typename TIdx = alpaka::idx::Idx<TAcc>>
-                static TIdx getGridSize(TDevAcc const &devAcc) {
+                static TIdx getGridSize(TDevAcc const &devAcc __attribute__((unused))) {
                     return std::max(static_cast<TIdx>(1), static_cast<TIdx>(std::thread::hardware_concurrency()));
                 }
 
@@ -44,7 +44,7 @@ namespace vikunja {
                     return 16;
                 }
                 template<typename TAcc, typename TDevAcc, typename TIdx = alpaka::idx::Idx<TAcc>>
-                static constexpr TIdx getGridSize(TDevAcc const &devAcc) noexcept {
+                static constexpr TIdx getGridSize(TDevAcc const &devAcc __attribute__((unused))) noexcept {
                     return 1;
                 }
             };

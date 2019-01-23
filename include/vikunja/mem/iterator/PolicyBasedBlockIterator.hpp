@@ -131,26 +131,26 @@ namespace vikunja {
                 struct GridStridingMemAccessPolicy {
                     template<typename TAcc, typename TIdx>
                     ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE
-                    static auto getStartIndex(TAcc const &acc, TIdx const &problemSize, TIdx const &blockSize) -> TIdx const {
+                    static auto getStartIndex(TAcc const &acc, TIdx const &problemSize __attribute__((unused)), TIdx const &blockSize __attribute__((unused))) -> TIdx const {
                         return alpaka::idx::getIdx<alpaka::Grid, alpaka::Threads>(acc)[0];
                     }
 
                     template<typename TAcc, typename TIdx>
                     ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE
-                    static auto getEndIndex(TAcc const &acc, TIdx const &problemSize, TIdx const &blockSize) -> TIdx const {
+                    static auto getEndIndex(TAcc const &acc, TIdx const &problemSize, TIdx const &blockSize __attribute__((unused))) -> TIdx const {
                         return problemSize;
                     }
 
                     template<typename TAcc, typename TIdx>
                     ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE
-                    static auto getStepSize(TAcc const &acc, TIdx const &problemSize, TIdx const &blockSize) -> TIdx const {
+                    static auto getStepSize(TAcc const &acc, TIdx const &problemSize __attribute__((unused)), TIdx const &blockSize) -> TIdx const {
                         auto gridDimension = alpaka::workdiv::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[0];
                         return gridDimension * blockSize;
                     }
 
                     template<typename TAcc, typename TIdx>
                     ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE
-                    static auto isValidThreadResult(TAcc const &acc, TIdx const &problemSize, TIdx const &blockSize) -> bool const {
+                    static auto isValidThreadResult(TAcc const &acc, TIdx const &problemSize, TIdx const &blockSize __attribute__((unused))) -> bool const {
                         auto threadIndex = (alpaka::idx::getIdx<alpaka::Block, alpaka::Threads>(acc)[0]);
                         return threadIndex < problemSize;
                     }
@@ -186,13 +186,13 @@ namespace vikunja {
 
                     template<typename TAcc, typename TIdx>
                     ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE
-                    static constexpr auto getStepSize(TAcc const &acc, TIdx const &problemSize, TIdx const &blockSize) -> TIdx const {
+                    static constexpr auto getStepSize(TAcc const &acc __attribute__((unused)), TIdx const &problemSize __attribute__((unused)), TIdx const &blockSize __attribute__((unused))) -> TIdx const {
                         return 1;
                     }
 
                     template<typename TAcc, typename TIdx>
                     ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE
-                    static constexpr auto isValidThreadResult(TAcc const &acc, TIdx const &problemSize, TIdx const &blockSize) -> bool const {
+                    static constexpr auto isValidThreadResult(TAcc const &acc __attribute__((unused)), TIdx const &problemSize __attribute__((unused)), TIdx const &blockSize __attribute__((unused))) -> bool const {
                         return true;
                     }
 

@@ -37,13 +37,9 @@ namespace reduce {
 
 
         TIdx gridSize = WorkDivPolicy::template getGridSize<TAcc>(devAcc);
-        // calculate workdiv sizes
-        /*TIdx gridSize = static_cast<TIdx>(
-                alpaka::acc::getAccDevProps<TAcc>(devAcc).m_multiProcessorCount *
-                8);*/
+
         TIdx maxGridSize = static_cast<TIdx>(
                 (((n + 1) / 2) - 1) / static_cast<TIdx>(blockSize) + 1);
-
         if(gridSize > maxGridSize) {
             gridSize = maxGridSize;
         }
@@ -67,7 +63,6 @@ namespace reduce {
 
         // execute kernels
         alpaka::kernel::exec<TAcc>(queue, multiBlockWorkDiv, multiBlockKernel, alpaka::mem::view::getPtrNative(buffer), alpaka::mem::view::getPtrNative(secondPhaseBuffer), n, func);
-        std::cout << "After first reduce\n";
         alpaka::kernel::exec<TAcc>(queue, singleBlockWorkDiv, singleBlockKernel, alpaka::mem::view::getPtrNative(secondPhaseBuffer), alpaka::mem::view::getPtrNative(secondPhaseBuffer), gridSize, func);
 
         TRed result;
