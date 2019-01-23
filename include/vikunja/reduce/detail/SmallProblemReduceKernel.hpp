@@ -13,7 +13,7 @@ namespace vikunja {
             struct SmallProblemReduceKernel {
                 template<typename TAcc, typename TIdx,
                         typename TInputIterator, typename TOutputIterator>
-                ALPAKA_FN_ACC void operator()(TAcc const &acc,
+                ALPAKA_FN_ACC void operator()(TAcc const &acc __attribute__((unused)),
                                               TInputIterator const * const source,
                                               TOutputIterator destination,
                                               TIdx const &n,
