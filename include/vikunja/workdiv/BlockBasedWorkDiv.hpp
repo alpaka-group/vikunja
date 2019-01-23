@@ -41,7 +41,7 @@ namespace vikunja {
                 static constexpr TIdx getBlockSize() noexcept {
                     // TODO: figure out if this really needs to be a constexpr
                     // probably yes.
-                    return 2;
+                    return 16;
                 }
                 template<typename TAcc, typename TDevAcc, typename TIdx = alpaka::idx::Idx<TAcc>>
                 static constexpr TIdx getGridSize(TDevAcc const &devAcc) noexcept {

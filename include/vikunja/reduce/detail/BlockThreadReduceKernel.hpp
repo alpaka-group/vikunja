@@ -57,14 +57,14 @@ namespace detail {
             auto endIndex = MemPolicy::getEndIndex(acc, n, TBlockSize);
             auto stepSize = MemPolicy::getStepSize(acc, n, TBlockSize);
 
+            // ok, if the endIndex of this is actually bigger of the problem size,
+            // no memory access should happen.
+
             // WARNING: in theory, one might return here, but then the cpu kernels get stuck on the syncthreads.
+            // TODO: however, now an undefined memory access occurs if iter >= iter.end()
             /*if(iter >= iter.end()) {
-               // std::cout << "In return: startIndex: " + std::to_string(startIndex) + ", endIndex: " + std::to_string(endIndex) + ", threadIndex: " + std::to_string(threadIndex) +"\n";
                // return;
-            } else {
-               // std::cout << "startIndex: " + std::to_string(startIndex) + ", endIndex: " + std::to_string(endIndex) + "\n";
             }*/
-           // auto start = std::chrono::high_resolution_clock::now();
             auto tSum = *iter;
             ++iter;
             while(iter + 3 < iter.end()) {
@@ -75,8 +75,6 @@ namespace detail {
                 tSum = func(tSum, *iter);
                 ++iter;
             }
-            //auto endTime = std::chrono::high_resolution_clock::now();
-            //std::cout << std::chrono::duration_cast<std::chrono::microseconds>(endTime - start).count() << " microseconds\n";
 /*
             auto i = startIndex;
             if(i >= n) {
@@ -90,12 +88,16 @@ namespace detail {
                 tSum = func(tSum, *(source + i));
                 i += stepSize;
             }*/
+            // ok, so this condition actually relies on the memory access pattern
+            // when gridStriding is used, the first n threads always get the first n values
+            // but when the linearMemAccess is used, they do not
             if(threadIndex < n) {
                 sdata[threadIndex] = tSum;
+                //std::cout << "noIndex: " + std::to_string(startIndex) + ", endIndex: " + std::to_string(endIndex) + ", tSum = " + std::to_string(tSum) + "\n";
             }
 
-            alpaka::block::sync::syncBlockThreads(acc);
-           // std::cout << "Got to here\n";
+            alpaka::block::sync::syncBlockThreads(acc); // sync: after sdataMapping
+
             // blockReduce
             // unroll for better performance
             for(TIdx bs = TBlockSize, bSup = (TBlockSize + 1) / 2;
@@ -107,15 +109,11 @@ namespace detail {
                 if(condition) {
                     sdata[threadIndex] = func(sdata[threadIndex], sdata[threadIndex + bSup]);
                 }
-                //std::cout << "Before second block\n";
-                alpaka::block::sync::syncBlockThreads(acc);
-                //std::cout << "After second block\n";
+                alpaka::block::sync::syncBlockThreads(acc); // sync: block reduce loop
             }
-            //std::cout << "After loop\n";
             if(threadIndex == 0) {
                 *(destination + blockIndex) = sdata[0];
             }
-            //std::cout << "Triggered last statement\n";
         }
     };
 }
