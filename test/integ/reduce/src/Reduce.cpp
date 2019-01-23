@@ -109,6 +109,9 @@ TEST_CASE("Test reduce", "[reduce]")
         for(auto &memSize: memorySizes) {
             alpaka::meta::forEachType<TestAccs>(TestTemplate(memSize));
         }
+#ifdef VIKUNJA_REDUCE_COMPARING_BENCHMARKS
+        std::cout << "---------------------------------------------\n";
+        std::cout << "Now performing some benchmarks...\n";
         std::vector<uint64_t> reduce(1 << 27);
         for(uint64_t i = 0; i < reduce.size(); ++i) {
             reduce[i] = i + 1;
@@ -122,5 +125,7 @@ TEST_CASE("Test reduce", "[reduce]")
         std::cout << "Runtime of dump loop: ";
         std::cout << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << " microseconds\n";
         std::cout << "tSum = " << tSum << "\n";
+
+#endif
     }
 }

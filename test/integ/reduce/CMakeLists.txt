@@ -15,5 +15,8 @@ target_link_libraries(
         PRIVATE "vikunjaTestLib")
 
 set_target_properties(${_TARGET_NAME} PROPERTIES FOLDER "test/unit")
+if(VIKUNJA_REDUCE_COMPARING_BENCHMARKS_ENABLE)
+    target_compile_definitions(${_TARGET_NAME} PRIVATE "VIKUNJA_REDUCE_COMPARING_BENCHMARKS")
+endif()
 
 add_test(NAME ${_TARGET_NAME} COMMAND ${_TARGET_NAME} ${_VIKUNJA_TEST_OPTIONS})
