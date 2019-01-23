@@ -104,7 +104,7 @@ struct TestPolicyBasedBlockIterator {
 
 TEST_CASE("PolicyBasedBlockIterator", "[iterator]") {
 
-    constexpr Idx size = 64;
+//    constexpr Idx size = 64;
 
     SECTION("LinearMemAccessPolicy") {
 

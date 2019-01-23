@@ -12,13 +12,15 @@ set_target_properties(CatchMain PROPERTIES
 target_compile_definitions(CatchMain PUBLIC "CATCH_CONFIG_FAST_COMPILE")
 target_include_directories(CatchMain SYSTEM PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/../thirdParty/catch2/include)
-target_include_directories(CatchMain SYSTEM PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/../include)
-target_include_directories(CatchMain SYSTEM PUBLIC ${alpaka_INCLUDE_DIR})
-target_include_directories(CatchMain SYSTEM PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_include_directories(CatchMain SYSTEM PUBLIC ${alpaka_INCLUDE_DIR}/../test/common/include/)
-target_link_libraries(CatchMain PUBLIC "alpaka")
 
-list(APPEND _ALPAKA_TEST_OPTIONS "--use-colour yes")
+add_library(vikunjaTestLib dummy.cpp)
+target_include_directories(vikunjaTestLib SYSTEM PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/../include)
+target_include_directories(vikunjaTestLib SYSTEM PUBLIC ${alpaka_INCLUDE_DIR})
+target_include_directories(vikunjaTestLib SYSTEM PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(vikunjaTestLib SYSTEM PUBLIC ${alpaka_INCLUDE_DIR}/../test/common/include/)
+target_link_libraries(vikunjaTestLib PUBLIC "alpaka" "CatchMain")
+
+list(APPEND _VIKUNJA_TEST_OPTIONS "--use-colour yes")
 add_subdirectory("unit/")
