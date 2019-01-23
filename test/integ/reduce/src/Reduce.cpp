@@ -134,7 +134,7 @@ TEST_CASE("Test reduce", "[reduce]")
         std::cout << "tSum = " << tSum << "\n";
 #ifdef ALPAKA_ACC_GPU_CUDA_ENABLED
         // test against thrust
-        thrust::device_vector deviceReduce(reduce);
+        thrust::device_vector<std::uint64_t> deviceReduce(reduce);
         start = std::chrono::high_resolution_clock::now();
         tSum = thrust::reduce(deviceReduce.begin(), deviceReduce.end(), 0, thrust::plus<std::uint64_t>());
         end = std::chrono::high_resolution_clock::now();
