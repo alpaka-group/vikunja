@@ -57,43 +57,31 @@ namespace detail {
             auto endIndex = MemPolicy::getEndIndex(acc, n, TBlockSize);
             auto stepSize = MemPolicy::getStepSize(acc, n, TBlockSize);
 
-            // ok, if the endIndex of this is actually bigger of the problem size,
-            // no memory access should happen.
-
             // WARNING: in theory, one might return here, but then the cpu kernels get stuck on the syncthreads.
             // TODO: however, now an undefined memory access occurs if iter >= iter.end()
+            // fix this or discuss at least
             /*if(iter >= iter.end()) {
                // return;
             }*/
-            auto tSum = *iter;
-            ++iter;
-            while(iter + 3 < iter.end()) {
-                tSum = func(func(func(func(tSum, *iter), *(iter + 1)), *(iter + 2)), *(iter + 3));
-                iter += 4;
-            }
-            while(iter < iter.end()) {
-                tSum = func(tSum, *iter);
+            if(startIndex < n) {
+                auto tSum = *iter;
                 ++iter;
-            }
-/*
-            auto i = startIndex;
-            if(i >= n) {
-                return;
-            }
-
-            auto tSum = *(source + i);
-            i += stepSize;
-            // Level 1: Grid reduce, reading from global memory
-            while(i < endIndex) {
-                tSum = func(tSum, *(source + i));
-                i += stepSize;
-            }*/
-            // ok, so this condition actually relies on the memory access pattern
-            // when gridStriding is used, the first n threads always get the first n values
-            // but when the linearMemAccess is used, they do not
-            if(threadIndex < n) {
-                sdata[threadIndex] = tSum;
-                //std::cout << "noIndex: " + std::to_string(startIndex) + ", endIndex: " + std::to_string(endIndex) + ", tSum = " + std::to_string(tSum) + "\n";
+                while(iter + 3 < iter.end()) {
+                    tSum = func(func(func(func(tSum, *iter), *(iter + 1)), *(iter + 2)), *(iter + 3));
+                    iter += 4;
+                }
+                while(iter < iter.end()) {
+                    tSum = func(tSum, *iter);
+                    ++iter;
+                }
+                // This condition actually relies on the memory access pattern.
+                // When gridStriding is used, the first n threads always get the first n values,
+                // but when the linearMemAccess is used, they do not.
+                // This is circumvented by now that if the block size is bigger than the problem size, a sequential algorithm is used.
+                if(threadIndex < n) {
+                    sdata[threadIndex] = tSum;
+                    //std::cout << "noIndex: " + std::to_string(startIndex) + ", endIndex: " + std::to_string(endIndex) + ", tSum = " + std::to_string(tSum) + "\n";
+                }
             }
 
             alpaka::block::sync::syncBlockThreads(acc); // sync: after sdataMapping
