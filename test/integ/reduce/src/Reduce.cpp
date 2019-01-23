@@ -18,7 +18,9 @@
 #include <thread>
 
 #if defined(VIKUNJA_REDUCE_COMPARING_BENCHMARKS) && defined(ALPAKA_ACC_GPU_CUDA_ENABLED)
-#include <thrust/thrust.h>
+#include <thrust/device_vector.h>
+#include <thrust/reduce.h>
+#include <thrust/functional.h>
 #endif
 
 struct TestTemplate {
