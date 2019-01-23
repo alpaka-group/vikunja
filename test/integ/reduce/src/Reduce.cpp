@@ -17,6 +17,10 @@
 #include <vector>
 #include <thread>
 
+#if defined(VIKUNJA_REDUCE_COMPARING_BENCHMARKS) && defined(ALPAKA_ACC_GPU_CUDA_ENABLED)
+#include <thrust/thrust.h>
+#endif
+
 struct TestTemplate {
 private:
     const uint64_t memSize;
@@ -112,7 +116,8 @@ TEST_CASE("Test reduce", "[reduce]")
 #ifdef VIKUNJA_REDUCE_COMPARING_BENCHMARKS
         std::cout << "---------------------------------------------\n";
         std::cout << "Now performing some benchmarks...\n";
-        std::vector<uint64_t> reduce(1 << 27);
+        const std::uint64_t size = memorySizes.back();
+        std::vector<uint64_t> reduce(size);
         for(uint64_t i = 0; i < reduce.size(); ++i) {
             reduce[i] = i + 1;
         }
@@ -122,9 +127,20 @@ TEST_CASE("Test reduce", "[reduce]")
             tSum += reduce[i];
         }
         auto end = std::chrono::high_resolution_clock::now();
-        std::cout << "Runtime of dump loop: ";
+        std::cout << "Runtime of dump: ";
         std::cout << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << " microseconds\n";
         std::cout << "tSum = " << tSum << "\n";
+#ifdef ALPAKA_ACC_GPU_CUDA_ENABLED
+        // test against thrust
+        thrust::device_vector deviceReduce(reduce);
+        start = std::chrono::high_resolution_clock::now();
+        tSum = thrust::reduce(deviceReduce.begin(), deviceReduce.end(), 0, thrust::plus<std::uint64_t>());
+        end = std::chrono::high_resolution_clock::now();
+        std::cout << "Runtime of thrust reduce: ";
+        std::cout << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << " microseconds\n";
+        std::cout << "tSum = " << tSum << "\n";
+
+#endif
 
 #endif
     }
