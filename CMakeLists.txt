@@ -14,11 +14,10 @@ if(ALPAKA_ACC_GPU_CUDA_ENABLE)
     set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS};--expt-extended-lambda")
 endif()
 
-add_subdirectory(src)
 # Use doxygen for api doc when available.
 find_package(Doxygen QUIET)
 if(DOXYGEN_FOUND)
-    doxygen_add_docs(doc src/ include/)
+    doxygen_add_docs(doc include/)
 endif()
 enable_testing()
 add_subdirectory("test/")

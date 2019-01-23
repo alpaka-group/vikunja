@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 3.10)
 
-set(_TARGET_NAME "dummy")
+set(_TARGET_NAME "dummyTest")
 
 
 alpaka_add_executable(
         ${_TARGET_NAME}
-        Dummy.cpp)
+        src/Dummy.cpp)
 target_include_directories(
         ${_TARGET_NAME}
         PRIVATE ${Boost_INCLUDE_DIRS})
