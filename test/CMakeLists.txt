@@ -24,3 +24,4 @@ target_link_libraries(vikunjaTestLib PUBLIC "alpaka" "CatchMain")
 
 list(APPEND _VIKUNJA_TEST_OPTIONS "--use-colour yes")
 add_subdirectory("unit/")
+add_subdirectory("integ/")
