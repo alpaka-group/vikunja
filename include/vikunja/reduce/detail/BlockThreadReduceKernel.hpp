@@ -78,9 +78,8 @@ namespace detail {
                 // When gridStriding is used, the first n threads always get the first n values,
                 // but when the linearMemAccess is used, they do not.
                 // This is circumvented by now that if the block size is bigger than the problem size, a sequential algorithm is used.
-                if(threadIndex < n) {
+                if(MemPolicy::isValidThreadResult(acc, n, TBlockSize)) {
                     sdata[threadIndex] = tSum;
-                    //std::cout << "noIndex: " + std::to_string(startIndex) + ", endIndex: " + std::to_string(endIndex) + ", tSum = " + std::to_string(tSum) + "\n";
                 }
             }
 

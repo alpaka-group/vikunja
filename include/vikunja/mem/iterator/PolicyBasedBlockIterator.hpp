@@ -148,6 +148,13 @@ namespace vikunja {
                         return gridDimension * blockSize;
                     }
 
+                    template<typename TAcc, typename TIdx>
+                    ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE
+                    static auto isValidThreadResult(TAcc const &acc, TIdx const &problemSize, TIdx const &blockSize) -> bool const {
+                        auto threadIndex = (alpaka::idx::getIdx<alpaka::Block, alpaka::Threads>(acc)[0]);
+                        return threadIndex < problemSize;
+                    }
+
                     static constexpr bool isThreadOrderCompliant = true;
 
                     ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE
@@ -181,6 +188,12 @@ namespace vikunja {
                     ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE
                     static constexpr auto getStepSize(TAcc const &acc, TIdx const &problemSize, TIdx const &blockSize) -> TIdx const {
                         return 1;
+                    }
+
+                    template<typename TAcc, typename TIdx>
+                    ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE
+                    static constexpr auto isValidThreadResult(TAcc const &acc, TIdx const &problemSize, TIdx const &blockSize) -> bool const {
+                        return true;
                     }
 
                     static constexpr bool isThreadOrderCompliant = false;
