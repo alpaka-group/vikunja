@@ -16,11 +16,11 @@ namespace vikunja {
             //!
             //! \tparam T The type.
             //! \tparam TBuf The buffer type (standard is T).
-            template <typename T, typename TBuf = T>
+            template <typename T, typename TInputIterator = T*>
             class BaseIterator
             {
             protected:
-                const TBuf *mData;
+                TInputIterator const mData; // The underlying iterator should not be changed
                 uint64_t mIndex;
                 const uint64_t mMaximum;
 
@@ -31,7 +31,7 @@ namespace vikunja {
                 //! \param data A pointer to the data.
                 //! \param index The index.
                 //! \param maximum The first index outside of the iterator memory.
-                ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE BaseIterator(const TBuf *data,
+                ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE BaseIterator(TInputIterator const &data,
                                                              uint64_t index,
                                                              uint64_t maximum)
                         : mData(data), mIndex(index), mMaximum(maximum)
@@ -123,9 +123,9 @@ namespace vikunja {
                 //! Returns the current element.
                 //!
                 //! Returns a reference to the current index.
-                ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto operator*() -> const T &
+                ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto operator*() -> T &
                 {
-                    return mData[mIndex];
+                    return *(mData + mIndex);
                 }
             };
         }

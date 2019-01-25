@@ -46,6 +46,11 @@ TEST_CASE("BaseIterator", "[iterator]") {
     REQUIRE(*one == 1);
     REQUIRE(copyOfZeroFirst == zeroFirst);
 
+    *zeroFirst = 2;
+    REQUIRE(*zeroFirst == 2);
+    REQUIRE(*zeroSecond == 2);
+
+
 };
 
 template<typename MemAccessPolicy>

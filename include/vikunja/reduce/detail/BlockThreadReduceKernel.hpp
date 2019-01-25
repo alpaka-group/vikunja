@@ -29,8 +29,8 @@ namespace detail {
         template<typename TAcc, typename TIdx,
                 typename TInputIterator, typename TOutputIterator>
         ALPAKA_FN_ACC void operator()(TAcc const &acc,
-                TInputIterator const * const source,
-                TOutputIterator destination,
+                TInputIterator &source,
+                TOutputIterator &destination,
                 TIdx const &n,
                 TFunc func) const  {
             // Shared Mem
@@ -47,7 +47,7 @@ namespace detail {
             auto indexInBlock(alpaka::idx::getIdx<alpaka::Grid, alpaka::Threads>(acc)[0]);
 
             using MemPolicy = TMemAccessPolicy;
-            vikunja::mem::iterator::PolicyBasedBlockIterator<MemPolicy, TAcc, TInputIterator> iter(source, acc, n, TBlockSize);
+            vikunja::mem::iterator::PolicyBasedBlockIterator<MemPolicy, TAcc, TRed> iter(source, acc, n, TBlockSize);
             auto startIndex = MemPolicy::getStartIndex(acc, n, TBlockSize);
             auto endIndex = MemPolicy::getEndIndex(acc, n, TBlockSize);
             auto stepSize = MemPolicy::getStepSize(acc, n, TBlockSize);

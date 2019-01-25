@@ -10,13 +10,13 @@
 namespace vikunja {
     namespace mem {
         namespace iterator {
-            template <typename MemAccessPolicy, typename TAcc, typename T, typename TBuf = T>
-            class PolicyBasedBlockIterator : public BaseIterator<T, TBuf> {
+            template <typename MemAccessPolicy, typename TAcc, typename T, typename TInputIterator = T*>
+            class PolicyBasedBlockIterator : public BaseIterator<T, TInputIterator> {
             private:
                 uint64_t mStep;
             public:
                 
-                ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE PolicyBasedBlockIterator(const TBuf * data, TAcc const &acc, uint64_t problemSize, uint64_t blockSize) : BaseIterator<T, TBuf>(data, MemAccessPolicy::getStartIndex(acc, problemSize, blockSize), MemAccessPolicy::getEndIndex(acc, problemSize, blockSize)), mStep(MemAccessPolicy::getStepSize(acc, problemSize, blockSize))
+                ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE PolicyBasedBlockIterator(TInputIterator const &data, TAcc const &acc, uint64_t problemSize, uint64_t blockSize) : BaseIterator<T, TInputIterator>(data, MemAccessPolicy::getStartIndex(acc, problemSize, blockSize), MemAccessPolicy::getEndIndex(acc, problemSize, blockSize)), mStep(MemAccessPolicy::getStepSize(acc, problemSize, blockSize))
                 {}
 
                 ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE PolicyBasedBlockIterator(const PolicyBasedBlockIterator &other) = default;

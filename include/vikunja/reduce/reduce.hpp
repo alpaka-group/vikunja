@@ -15,7 +15,7 @@ namespace vikunja {
 namespace reduce {
 
     template<typename TAcc, typename TRed, typename WorkDivPolicy = vikunja::workdiv::BlockBasedPolicy<TAcc>, typename MemAccessPolicy = vikunja::mem::iterator::MemAccessPolicy<TAcc>, typename TFunc, typename TBuffer, typename TDevAcc, typename TDevHost, typename TQueue, typename TIdx >
-    auto deviceReduce(TDevAcc &devAcc, TDevHost &devHost, TQueue &queue,  TIdx n, TBuffer &buffer,  TFunc const &func) -> TRed {
+    auto deviceReduce(TDevAcc &devAcc, TDevHost &devHost, TQueue &queue,  TIdx n, TBuffer const &buffer,  TFunc const &func) -> TRed {
 
         // ok, now we have to think about what to do now
         if(n == 0) {
@@ -30,7 +30,7 @@ namespace reduce {
             auto resultBuffer(alpaka::mem::buf::alloc<TRed, TIdx>(devAcc, static_cast<TIdx>(1)));
             WorkDiv dummyWorkDiv{static_cast<TIdx>(1), static_cast<TIdx>(1), static_cast<TIdx>(1)};
             detail::SmallProblemReduceKernel<TFunc> kernel;
-            alpaka::kernel::exec<TAcc>(queue, dummyWorkDiv, kernel, alpaka::mem::view::getPtrNative(buffer), alpaka::mem::view::getPtrNative(resultBuffer), n, func);
+            alpaka::kernel::exec<TAcc>(queue, dummyWorkDiv, kernel, buffer, alpaka::mem::view::getPtrNative(resultBuffer), n, func);
             TRed result;
             alpaka::mem::view::ViewPlainPtr<TDevHost, TRed, Dim, TIdx> resultView{&result, devHost, static_cast<TIdx>(1)};
             alpaka::mem::view::copy(queue, resultView, resultBuffer, 1);
@@ -65,7 +65,7 @@ namespace reduce {
         detail::BlockThreadReduceKernel<blockSize, MemAccessPolicy, TRed, TFunc> multiBlockKernel, singleBlockKernel;
 
         // execute kernels
-        alpaka::kernel::exec<TAcc>(queue, multiBlockWorkDiv, multiBlockKernel, alpaka::mem::view::getPtrNative(buffer), alpaka::mem::view::getPtrNative(secondPhaseBuffer), n, func);
+        alpaka::kernel::exec<TAcc>(queue, multiBlockWorkDiv, multiBlockKernel, buffer, alpaka::mem::view::getPtrNative(secondPhaseBuffer), n, func);
         alpaka::kernel::exec<TAcc>(queue, singleBlockWorkDiv, singleBlockKernel, alpaka::mem::view::getPtrNative(secondPhaseBuffer), alpaka::mem::view::getPtrNative(secondPhaseBuffer), gridSize, func);
 
         TRed result;
