@@ -15,12 +15,12 @@ namespace vikunja {
             //! An iterator base class.
             //!
             //! \tparam T The type.
-            //! \tparam TBuf The buffer type (standard is T).
+            //! \tparam TInputIterator The iterator type (standard is T*)
             template <typename T, typename TInputIterator = T*>
             class BaseIterator
             {
             protected:
-                TInputIterator const mData; // The underlying iterator should not be changed
+                TInputIterator const mData; // The underlying iterator must be const as we pass it by ref
                 uint64_t mIndex;
                 const uint64_t mMaximum;
 

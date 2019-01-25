@@ -29,10 +29,10 @@ namespace detail {
         template<typename TAcc, typename TIdx,
                 typename TInputIterator, typename TOutputIterator>
         ALPAKA_FN_ACC void operator()(TAcc const &acc,
-                TInputIterator &source,
-                TOutputIterator &destination,
+                TInputIterator const &source,
+                TOutputIterator const &destination,
                 TIdx const &n,
-                TFunc func) const  {
+                TFunc const &func) const  {
             // Shared Mem
             auto &sdata(
                     alpaka::block::shared::st::allocVar<sharedStaticArray<TRed, TBlockSize>,
