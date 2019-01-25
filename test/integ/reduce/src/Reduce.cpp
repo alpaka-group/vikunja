@@ -90,7 +90,7 @@ public:
         std::cout << "Testing accelerator: " << alpaka::acc::getAccName<TAcc>() << " with size: " << n <<"\n";
 
         auto start = std::chrono::high_resolution_clock::now();
-        Idx reduceResult = vikunja::reduce::deviceReduce<TAcc>(devAcc, devHost, queueAcc, n, deviceMem, sum, static_cast<uint64_t>(0));
+        Idx reduceResult = vikunja::reduce::deviceReduce<TAcc, Idx>(devAcc, devHost, queueAcc, n, deviceMem, sum);
         auto end = std::chrono::high_resolution_clock::now();
         auto expectedResult = (n * (n + 1) / 2);
         REQUIRE(expectedResult == reduceResult);

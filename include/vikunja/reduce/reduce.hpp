@@ -14,10 +14,13 @@
 namespace vikunja {
 namespace reduce {
 
-    template<typename TAcc,typename WorkDivPolicy = vikunja::workdiv::BlockBasedPolicy<TAcc>, typename MemAccessPolicy = vikunja::mem::iterator::MemAccessPolicy<TAcc>, typename TRed, typename TFunc, typename TBuffer, typename TDevAcc, typename TDevHost, typename TQueue, typename TIdx >
-    auto deviceReduce(TDevAcc &devAcc, TDevHost &devHost, TQueue &queue,  TIdx n, TBuffer &buffer,  TFunc const &func, TRed const &init) -> TRed {
+    template<typename TAcc, typename TRed, typename WorkDivPolicy = vikunja::workdiv::BlockBasedPolicy<TAcc>, typename MemAccessPolicy = vikunja::mem::iterator::MemAccessPolicy<TAcc>, typename TFunc, typename TBuffer, typename TDevAcc, typename TDevHost, typename TQueue, typename TIdx >
+    auto deviceReduce(TDevAcc &devAcc, TDevHost &devHost, TQueue &queue,  TIdx n, TBuffer &buffer,  TFunc const &func) -> TRed {
 
-        if(n == 0) return init;
+        // ok, now we have to think about what to do now
+        if(n == 0) {
+            return static_cast<TRed>(0);
+        }
         constexpr uint64_t blockSize = WorkDivPolicy::template getBlockSize<TAcc>();
         using Dim = alpaka::dim::Dim<TAcc>;
         using WorkDiv = alpaka::workdiv::WorkDivMembers<Dim, TIdx>;
@@ -32,7 +35,7 @@ namespace reduce {
             alpaka::mem::view::ViewPlainPtr<TDevHost, TRed, Dim, TIdx> resultView{&result, devHost, static_cast<TIdx>(1)};
             alpaka::mem::view::copy(queue, resultView, resultBuffer, 1);
             alpaka::wait::wait(queue);
-            return func(result, init);
+            return result;
         }
 
 
@@ -70,7 +73,7 @@ namespace reduce {
         alpaka::mem::view::copy(queue, resultView, secondPhaseBuffer, 1);
         // wait for result, otherwise the async CPU queue causes a segfault
         alpaka::wait::wait(queue);
-        return func(result, init);
+        return result;
     }
 }
 }
