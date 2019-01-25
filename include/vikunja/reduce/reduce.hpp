@@ -13,7 +13,7 @@
 
 namespace vikunja {
 namespace reduce {
-    
+
     template<typename TAcc, typename TRed, typename WorkDivPolicy = vikunja::workdiv::BlockBasedPolicy<TAcc>, typename MemAccessPolicy = vikunja::mem::iterator::MemAccessPolicy<TAcc>, typename TFunc, typename TInputIterator, typename TDevAcc, typename TDevHost, typename TQueue, typename TIdx >
     auto deviceReduce(TDevAcc &devAcc, TDevHost &devHost, TQueue &queue,  TIdx n, TInputIterator const &buffer,  TFunc const &func) -> TRed {
 
