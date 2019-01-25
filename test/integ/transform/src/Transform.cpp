@@ -21,6 +21,12 @@
 //#include <thrust/reduce.h>
 #include <thrust/functional.h>
 #endif
+struct incOne {
+    ALPAKA_FN_HOST_ACC std::uint64_t operator()(const std::uint64_t &val) {
+        return val + 1;
+    }
+};
+
 
 struct TestTemplate {
 private:
@@ -140,11 +146,6 @@ TEST_CASE("Test reduce", "[reduce]")
         }
         std::cout << "New sum: " << (tSum - (size * (size + 1) / 2)) << "\n";
 #ifdef ALPAKA_ACC_GPU_CUDA_ENABLED
-        struct incOne {
-            __host__ __device__ std::uint64_t operator(const std::uint64_t &val) {
-                return val + 1;
-            }
-        };
         // test against thrust
         thrust::device_vector<std::uint64_t> deviceReduce(reduce);
         start = std::chrono::high_resolution_clock::now();
