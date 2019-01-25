@@ -140,14 +140,19 @@ TEST_CASE("Test reduce", "[reduce]")
         }
         std::cout << "New sum: " << (tSum - (size * (size + 1) / 2)) << "\n";
 #ifdef ALPAKA_ACC_GPU_CUDA_ENABLED
+        struct incOne {
+            __host__ __device__ std::uint64_t operator(const std::uint64_t &val) {
+                return val + 1;
+            }
+        };
         // test against thrust
         thrust::device_vector<std::uint64_t> deviceReduce(reduce);
         start = std::chrono::high_resolution_clock::now();
-        tSum = thrust::reduce(deviceReduce.begin(), deviceReduce.end(), static_cast<std::uint64_t>(0), thrust::plus<std::uint64_t>());
+        thrust::transform(deviceReduce.begin(), deviceReduce.end(), deviceReduce.begin(), incOne());
         end = std::chrono::high_resolution_clock::now();
         std::cout << "Runtime of thrust reduce: ";
         std::cout << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << " microseconds\n";
-        std::cout << "tSum = " << tSum << "\n";
+        //std::cout << "tSum = " << tSum << "\n";
 
 #endif
 
