@@ -14,7 +14,7 @@ target_link_libraries(
         ${_TARGET_NAME}
         PRIVATE "vikunjaTestLib")
 
-set_target_properties(${_TARGET_NAME} PROPERTIES FOLDER "test/unit")
+set_target_properties(${_TARGET_NAME} PROPERTIES FOLDER "test/integ")
 if(VIKUNJA_REDUCE_COMPARING_BENCHMARKS_ENABLE)
     target_compile_definitions(${_TARGET_NAME} PRIVATE "VIKUNJA_REDUCE_COMPARING_BENCHMARKS")
 endif()
