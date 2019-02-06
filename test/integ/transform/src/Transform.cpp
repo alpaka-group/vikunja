@@ -96,7 +96,7 @@ public:
 
         auto start = std::chrono::high_resolution_clock::now();
         // insert new call here
-        vikunja::transform::deviceTransform<TAcc, Idx>(devAcc, devHost, queueAcc, n, alpaka::mem::view::getPtrNative(deviceMem),
+        vikunja::transform::deviceTransform<TAcc>(devAcc, devHost, queueAcc, n, alpaka::mem::view::getPtrNative(deviceMem),
                 alpaka::mem::view::getPtrNative(deviceMem), incrementOne);
         auto end = std::chrono::high_resolution_clock::now();
         alpaka::mem::view::copy(queueAcc, hostMem, deviceMem, n);

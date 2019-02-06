@@ -11,7 +11,7 @@ namespace vikunja {
     namespace transform {
         namespace detail {
 
-            template<uint64_t TBlockSize, typename TMemAccessPolicy, typename TIn, typename TOut>
+            template<uint64_t TBlockSize, typename TMemAccessPolicy>
             struct BlockThreadTransformKernel {
 
                 template<typename TAcc, typename TIdx,
@@ -21,8 +21,8 @@ namespace vikunja {
                                               TOutputIterator const &destination,
                                               TIdx const &n,
                                               TFunc const &func) const {
-                    vikunja::mem::iterator::PolicyBasedBlockIterator<TMemAccessPolicy, TAcc, TIn> inputIterator(source, acc, n, TBlockSize);
-                    vikunja::mem::iterator::PolicyBasedBlockIterator<TMemAccessPolicy, TAcc, TOut> outputIterator(source, acc, n, TBlockSize);
+                    vikunja::mem::iterator::PolicyBasedBlockIterator<TMemAccessPolicy, TAcc, TInputIterator> inputIterator(source, acc, n, TBlockSize);
+                    vikunja::mem::iterator::PolicyBasedBlockIterator<TMemAccessPolicy, TAcc, TOutputIterator> outputIterator(source, acc, n, TBlockSize);
 
                     while(inputIterator < inputIterator.end()) {
                         *outputIterator = func(*inputIterator);

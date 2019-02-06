@@ -14,7 +14,7 @@ namespace vikunja {
     namespace transform {
 
 
-        template<typename TAcc, typename TIn, typename TOut = TIn, typename WorkDivPolicy = vikunja::workdiv::BlockBasedPolicy<TAcc>, typename MemAccessPolicy = vikunja::mem::iterator::MemAccessPolicy<TAcc>, typename TFunc, typename TInputIterator, typename TOutputIterator, typename TDevAcc, typename TDevHost, typename TQueue, typename TIdx >
+        template<typename TAcc, typename WorkDivPolicy = vikunja::workdiv::BlockBasedPolicy<TAcc>, typename MemAccessPolicy = vikunja::mem::iterator::MemAccessPolicy<TAcc>, typename TFunc, typename TInputIterator, typename TOutputIterator, typename TDevAcc, typename TDevHost, typename TQueue, typename TIdx >
         auto deviceTransform(TDevAcc &devAcc, TDevHost &devHost, TQueue &queue,  TIdx n, TInputIterator const &source, TOutputIterator const &destination, TFunc const &func) -> void {
             if(n == 0) {
                 return;
@@ -38,7 +38,7 @@ namespace vikunja {
             WorkDiv multiBlockWorkDiv{ static_cast<TIdx>(workDivGridSize),
                            static_cast<TIdx>(workDivBlockSize),
                            static_cast<TIdx>(1) };
-            detail::BlockThreadTransformKernel<blockSize, MemAccessPolicy, TIn, TOut> kernel;
+            detail::BlockThreadTransformKernel<blockSize, MemAccessPolicy> kernel;
             alpaka::kernel::exec<TAcc>(queue, multiBlockWorkDiv, kernel, source, destination, n, func);
         }
     } // transform
