@@ -22,7 +22,7 @@ namespace vikunja {
                                               TIdx const &n,
                                               TFunc const &func) const {
                     vikunja::mem::iterator::PolicyBasedBlockIterator<TMemAccessPolicy, TAcc, TInputIterator> inputIterator(source, acc, n, TBlockSize);
-                    vikunja::mem::iterator::PolicyBasedBlockIterator<TMemAccessPolicy, TAcc, TOutputIterator> outputIterator(source, acc, n, TBlockSize);
+                    vikunja::mem::iterator::PolicyBasedBlockIterator<TMemAccessPolicy, TAcc, TOutputIterator> outputIterator(destination, acc, n, TBlockSize);
 
                     while(inputIterator < inputIterator.end()) {
                         *outputIterator = func(*inputIterator);
