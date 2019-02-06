@@ -14,9 +14,11 @@
 namespace vikunja {
 namespace reduce {
 
-    template<typename TAcc, typename TRed, typename WorkDivPolicy = vikunja::workdiv::BlockBasedPolicy<TAcc>, typename MemAccessPolicy = vikunja::mem::iterator::MemAccessPolicy<TAcc>, typename TFunc, typename TInputIterator, typename TDevAcc, typename TDevHost, typename TQueue, typename TIdx >
-    auto deviceReduce(TDevAcc &devAcc, TDevHost &devHost, TQueue &queue,  TIdx n, TInputIterator const &buffer,  TFunc const &func) -> TRed {
+    template<typename TAcc, typename WorkDivPolicy = vikunja::workdiv::BlockBasedPolicy<TAcc>, typename MemAccessPolicy = vikunja::mem::iterator::MemAccessPolicy<TAcc>, typename TFunc, typename TInputIterator, typename TDevAcc, typename TDevHost, typename TQueue, typename TIdx >
+    auto deviceReduce(TDevAcc &devAcc, TDevHost &devHost, TQueue &queue,  TIdx n, TInputIterator const &buffer,  TFunc const &func) -> decltype(func(*buffer, *buffer)) {
 
+        // TODO: more elegant way to obtain return type + avoid that double declaration
+        using TRed = decltype(func(*buffer, *buffer));
         // ok, now we have to think about what to do now
         if(n == 0) {
             return static_cast<TRed>(0);
