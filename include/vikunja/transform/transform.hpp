@@ -14,8 +14,8 @@ namespace vikunja {
     namespace transform {
 
 
-        template<typename TAcc, typename WorkDivPolicy = vikunja::workdiv::BlockBasedPolicy<TAcc>, typename MemAccessPolicy = vikunja::mem::iterator::MemAccessPolicy<TAcc>, typename TFunc, typename TInputIterator, typename TOutputIterator, typename TDevAcc, typename TDevHost, typename TQueue, typename TIdx >
-        auto deviceTransform(TDevAcc &devAcc, TDevHost &devHost, TQueue &queue,  TIdx n, TInputIterator const &source, TOutputIterator const &destination, TFunc const &func) -> void {
+        template<typename TAcc, typename WorkDivPolicy = vikunja::workdiv::BlockBasedPolicy<TAcc>, typename MemAccessPolicy = vikunja::mem::iterator::MemAccessPolicy<TAcc>, typename TFunc, typename TInputIterator, typename TOutputIterator, typename TDevAcc, typename TQueue, typename TIdx >
+        auto deviceTransform(TDevAcc &devAcc, TQueue &queue,  TIdx const &n, TInputIterator const &source, TOutputIterator const &destination, TFunc const &func) -> void {
             if(n == 0) {
                 return;
             }
