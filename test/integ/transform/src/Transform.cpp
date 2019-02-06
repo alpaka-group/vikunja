@@ -109,14 +109,14 @@ public:
     }
 };
 
-TEST_CASE("Test reduce", "[reduce]")
+TEST_CASE("Test transform", "[transform]")
 {
 
     using TestAccs = alpaka::test::acc::EnabledAccs<
             alpaka::dim::DimInt<1u>,
             std::uint64_t>;
     //std::cout << std::thread::hardware_concurrency() << "\n";
-    SECTION("deviceReduce") {
+    SECTION("deviceTransform") {
 
         std::vector<uint64_t> memorySizes{1,10, 16,  777,(1<< 10) + 1, 1 << 15, 1 << 25, 1 << 27};
 
