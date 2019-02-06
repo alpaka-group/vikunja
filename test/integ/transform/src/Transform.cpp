@@ -81,16 +81,14 @@ public:
 
         auto deviceMem(alpaka::mem::buf::alloc<uint64_t, Idx>(devAcc, n));
         auto hostMem(alpaka::mem::buf::alloc<uint64_t, Idx>(devHost, n));
-        //alpaka::mem::view::copy(queueAcc, deviceMem, hostMem, n);
-        alpaka::wait::wait(queueHost);
-        auto identityAssign = [=] ALPAKA_FN_HOST_ACC (Idx i, Idx* arr) {
-            arr[i] = i + 1;
-        };
+        uint64_t* hostNative = alpaka::mem::view::getPtrNative(hostMem);
+        for(Idx i = 0; i < memSize; ++i) {
+            hostNative[i] = i + 1;
+        }
+        alpaka::mem::view::copy(queueAcc, deviceMem, hostMem, n);
         auto incrementOne = [=] ALPAKA_FN_HOST_ACC (Idx i) {
             return i + 1;
         };
-        vikunja::GenericLambdaKernel<decltype(identityAssign)> initKernel{identityAssign};
-        alpaka::kernel::exec<TAcc>(queueAcc, workdiv, initKernel, n, alpaka::mem::view::getPtrNative(deviceMem));
 
         std::cout << "Testing accelerator: " << alpaka::acc::getAccName<TAcc>() << " with size: " << n <<"\n";
 
