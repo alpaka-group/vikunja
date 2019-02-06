@@ -129,7 +129,7 @@ TEST_CASE("Test reduce", "[reduce]")
             tSum += reduce[i];
         }
         auto end = std::chrono::high_resolution_clock::now();
-        std::cout << "Runtime of dump: ";
+        std::cout << "Runtime of dumb: ";
         std::cout << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << " microseconds\n";
         std::cout << "tSum = " << tSum << "\n";
 #ifdef ALPAKA_ACC_GPU_CUDA_ENABLED

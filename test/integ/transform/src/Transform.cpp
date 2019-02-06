@@ -138,7 +138,7 @@ TEST_CASE("Test reduce", "[reduce]")
             ++reduce[i];
         }
         auto end = std::chrono::high_resolution_clock::now();
-        std::cout << "Runtime of dump: ";
+        std::cout << "Runtime of dumb: ";
         std::cout << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << " microseconds\n";
         uint64_t tSum = 0;
         for(uint64_t i = 0; i < reduce.size(); ++i) {
