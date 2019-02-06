@@ -15,12 +15,12 @@ namespace vikunja {
             //! An iterator base class.
             //!
             //! \tparam T The type.
-            //! \tparam TInputIterator The iterator type (standard is T*)
-            template <typename T, typename TInputIterator = T*>
+            //! \tparam TIterator The iterator type (standard is T*)
+            template <typename TIterator>
             class BaseIterator
             {
             protected:
-                TInputIterator const mData; // The underlying iterator must be const as we pass it by ref
+                TIterator const mData; // The underlying iterator must be const as we pass it by ref
                 uint64_t mIndex;
                 const uint64_t mMaximum;
 
@@ -31,7 +31,7 @@ namespace vikunja {
                 //! \param data A pointer to the data.
                 //! \param index The index.
                 //! \param maximum The first index outside of the iterator memory.
-                ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE BaseIterator(TInputIterator const &data,
+                ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE BaseIterator(TIterator const &data,
                                                              uint64_t index,
                                                              uint64_t maximum)
                         : mData(data), mIndex(index), mMaximum(maximum)
@@ -123,7 +123,7 @@ namespace vikunja {
                 //! Returns the current element.
                 //!
                 //! Returns a reference to the current index.
-                ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto operator*() -> T &
+                ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto operator*() -> decltype(*(mData + mIndex)) &
                 {
                     return *(mData + mIndex);
                 }

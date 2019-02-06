@@ -9,6 +9,7 @@
 #include <vector>
 
 using Type = uint64_t;
+using IType = Type*;
 using Idx = std::size_t;
 using namespace vikunja::mem::iterator;
 
@@ -25,10 +26,10 @@ TEST_CASE("BaseIterator", "[iterator]") {
     constexpr Idx size = 64;
     std::vector<Type> testData{generateIndexVector(size)};
 
-    BaseIterator<Type> zeroFirst(testData.data(), 0, size);
-    BaseIterator<Type> zeroSecond(testData.data(), 0, size);
-    BaseIterator<Type> one(testData.data(), 1, size);
-    BaseIterator<Type> copyOfZeroFirst(zeroFirst);
+    BaseIterator<IType> zeroFirst(testData.data(), 0, size);
+    BaseIterator<IType> zeroSecond(testData.data(), 0, size);
+    BaseIterator<IType> one(testData.data(), 1, size);
+    BaseIterator<IType> copyOfZeroFirst(zeroFirst);
 
 
     REQUIRE(zeroFirst == zeroSecond);
