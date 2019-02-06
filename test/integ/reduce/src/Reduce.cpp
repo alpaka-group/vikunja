@@ -76,17 +76,14 @@ public:
 
         auto deviceMem(alpaka::mem::buf::alloc<uint64_t, Idx>(devAcc, n));
         auto hostMem(alpaka::mem::buf::alloc<uint64_t, Idx>(devHost, n));
+        uint64_t* hostNative = alpaka::mem::view::getPtrNative(hostMem);
+        for(Idx i = 0; i < memSize; ++i) {
+            hostNative[i] = i + 1;
+        }
         alpaka::mem::view::copy(queueAcc, deviceMem, hostMem, n);
-        alpaka::wait::wait(queueHost);
-        auto identityAssign = [=] ALPAKA_FN_HOST_ACC (Idx i, Idx* arr) {
-            arr[i] = i + 1;
-        };
         auto sum = [=] ALPAKA_FN_HOST_ACC (Idx i, Idx j) {
             return i + j;
         };
-        vikunja::GenericLambdaKernel<decltype(identityAssign)> initKernel{identityAssign};
-        alpaka::kernel::exec<TAcc>(queueAcc, workdiv, initKernel, n, alpaka::mem::view::getPtrNative(deviceMem));
-
         std::cout << "Testing accelerator: " << alpaka::acc::getAccName<TAcc>() << " with size: " << n <<"\n";
 
         auto start = std::chrono::high_resolution_clock::now();
@@ -110,7 +107,7 @@ TEST_CASE("Test reduce", "[reduce]")
     //std::cout << std::thread::hardware_concurrency() << "\n";
     SECTION("deviceReduce") {
 
-        std::vector<uint64_t> memorySizes{1,10, 16,  777,(1<< 10) + 1, 1 << 15, 1 << 25, 1 << 27};
+        std::vector<uint64_t> memorySizes{1,10, 16,  777,(1<< 10) + 1, 1 << 12, 1 << 14, 1 << 15, 1 << 18, (1 << 18) + 1, 1 << 25, 1 << 27};
 
         for(auto &memSize: memorySizes) {
             alpaka::meta::forEachType<TestAccs>(TestTemplate(memSize));
