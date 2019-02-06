@@ -150,8 +150,9 @@ TEST_CASE("Test reduce", "[reduce]")
         thrust::device_vector<std::uint64_t> deviceReduce(reduce);
         start = std::chrono::high_resolution_clock::now();
         thrust::transform(deviceReduce.begin(), deviceReduce.end(), deviceReduce.begin(), incOne());
+	cudaDeviceSynchronize();
         end = std::chrono::high_resolution_clock::now();
-        std::uint64_t tSum = thrust::reduce(deviceReduce.begin(), deviceReduce.end(), static_cast<std::uint64_t>(0), thrust::plus<std::uint64_t>());
+        tSum = thrust::reduce(deviceReduce.begin(), deviceReduce.end(), static_cast<std::uint64_t>(0), thrust::plus<std::uint64_t>());
         std::cout << "Runtime of thrust reduce: ";
         std::cout << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << " microseconds\n";
         std::cout << "tSum = " << tSum << "\n";
