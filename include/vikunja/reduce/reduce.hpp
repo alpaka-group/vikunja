@@ -13,9 +13,17 @@
 
 namespace vikunja {
 namespace reduce {
+    namespace detail {
+        template <typename T>
+        struct Identity {
+            constexpr ALPAKA_FN_HOST_ACC T operator()(T const &arg) const {
+                return arg;
+            }
+        };
+    }
 
-    template<typename TAcc, typename WorkDivPolicy = vikunja::workdiv::BlockBasedPolicy<TAcc>, typename MemAccessPolicy = vikunja::mem::iterator::MemAccessPolicy<TAcc>, typename TFunc, typename TInputIterator, typename TDevAcc, typename TDevHost, typename TQueue, typename TIdx >
-    auto deviceReduce(TDevAcc &devAcc, TDevHost &devHost, TQueue &queue,  TIdx const &n, TInputIterator const &buffer,  TFunc const &func) -> decltype(func(*buffer, *buffer)) {
+    template<typename TAcc, typename WorkDivPolicy = vikunja::workdiv::BlockBasedPolicy<TAcc>, typename MemAccessPolicy = vikunja::mem::iterator::MemAccessPolicy<TAcc>, typename TTransformFunc, typename TFunc, typename TInputIterator, typename TDevAcc, typename TDevHost, typename TQueue, typename TIdx >
+    auto deviceTransformReduce(TDevAcc &devAcc, TDevHost &devHost, TQueue &queue,  TIdx const &n, TInputIterator const &buffer, TTransformFunc const &transformFunc, TFunc const &func) -> decltype(func(*buffer, *buffer)) {
 
         // TODO: more elegant way to obtain return type + avoid that double declaration
         using TRed = decltype(func(*buffer, *buffer));
@@ -31,8 +39,8 @@ namespace reduce {
         if(n < blockSize || n < 1024) {
             auto resultBuffer(alpaka::mem::buf::alloc<TRed, TIdx>(devAcc, static_cast<TIdx>(1)));
             WorkDiv dummyWorkDiv{static_cast<TIdx>(1), static_cast<TIdx>(1), static_cast<TIdx>(1)};
-            detail::SmallProblemReduceKernel<TFunc> kernel;
-            alpaka::kernel::exec<TAcc>(queue, dummyWorkDiv, kernel, buffer, alpaka::mem::view::getPtrNative(resultBuffer), n, func);
+            detail::SmallProblemReduceKernel kernel;
+            alpaka::kernel::exec<TAcc>(queue, dummyWorkDiv, kernel, buffer, alpaka::mem::view::getPtrNative(resultBuffer), n, transformFunc, func);
             TRed result;
             alpaka::mem::view::ViewPlainPtr<TDevHost, TRed, Dim, TIdx> resultView{&result, devHost, static_cast<TIdx>(1)};
             alpaka::mem::view::copy(queue, resultView, resultBuffer, 1);
@@ -64,11 +72,11 @@ namespace reduce {
         // TODO move this to external method
         auto secondPhaseBuffer(alpaka::mem::buf::alloc<TRed, TIdx >(devAcc, gridSize));
 
-        detail::BlockThreadReduceKernel<blockSize, MemAccessPolicy, TRed, TFunc> multiBlockKernel, singleBlockKernel;
+        detail::BlockThreadReduceKernel<blockSize, MemAccessPolicy, TRed> multiBlockKernel, singleBlockKernel;
 
         // execute kernels
-        alpaka::kernel::exec<TAcc>(queue, multiBlockWorkDiv, multiBlockKernel, buffer, alpaka::mem::view::getPtrNative(secondPhaseBuffer), n, func);
-        alpaka::kernel::exec<TAcc>(queue, singleBlockWorkDiv, singleBlockKernel, alpaka::mem::view::getPtrNative(secondPhaseBuffer), alpaka::mem::view::getPtrNative(secondPhaseBuffer), gridSize, func);
+        alpaka::kernel::exec<TAcc>(queue, multiBlockWorkDiv, multiBlockKernel, buffer, alpaka::mem::view::getPtrNative(secondPhaseBuffer), n, transformFunc, func);
+        alpaka::kernel::exec<TAcc>(queue, singleBlockWorkDiv, singleBlockKernel, alpaka::mem::view::getPtrNative(secondPhaseBuffer), alpaka::mem::view::getPtrNative(secondPhaseBuffer), gridSize, transformFunc, func);
 
         TRed result;
         alpaka::mem::view::ViewPlainPtr<TDevHost, TRed, Dim, TIdx> resultView{&result, devHost, static_cast<TIdx>(1)};
@@ -76,6 +84,13 @@ namespace reduce {
         // wait for result, otherwise the async CPU queue causes a segfault
         alpaka::wait::wait(queue);
         return result;
+    }
+
+    template<typename TAcc, typename WorkDivPolicy = vikunja::workdiv::BlockBasedPolicy<TAcc>, typename MemAccessPolicy = vikunja::mem::iterator::MemAccessPolicy<TAcc>, typename TFunc, typename TInputIterator, typename TDevAcc, typename TDevHost, typename TQueue, typename TIdx >
+    auto deviceReduce(TDevAcc &devAcc, TDevHost &devHost, TQueue &queue,  TIdx const &n, TInputIterator const &buffer,  TFunc const &func) -> decltype(func(*buffer, *buffer)) {
+
+        using TRed = decltype(func(*buffer, *buffer));
+        return deviceTransformReduce<TAcc, WorkDivPolicy, MemAccessPolicy, detail::Identity<TRed>, TFunc, TInputIterator, TDevAcc, TDevHost, TQueue, TIdx>(devAcc, devHost, queue, n, buffer, detail::Identity<TRed>(), func);
     }
 }
 }

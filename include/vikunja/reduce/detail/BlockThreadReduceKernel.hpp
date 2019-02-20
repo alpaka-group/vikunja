@@ -24,14 +24,16 @@ namespace detail {
         }
     };
 
-    template<uint64_t TBlockSize, typename TMemAccessPolicy, typename TRed, typename TFunc>
+    // TODO: move TFunc to operator()
+    template<uint64_t TBlockSize, typename TMemAccessPolicy, typename TRed>
     struct BlockThreadReduceKernel {
         template<typename TAcc, typename TIdx,
-                typename TInputIterator, typename TOutputIterator>
+                typename TInputIterator, typename TOutputIterator, typename TTransformFunc, typename TFunc>
         ALPAKA_FN_ACC void operator()(TAcc const &acc,
                 TInputIterator const &source,
                 TOutputIterator const &destination,
                 TIdx const &n,
+                TTransformFunc const &transformFunc,
                 TFunc const &func) const  {
             // Shared Mem
             auto &sdata(
@@ -51,7 +53,6 @@ namespace detail {
             auto startIndex = MemPolicy::getStartIndex(acc, n, TBlockSize);
             auto endIndex = MemPolicy::getEndIndex(acc, n, TBlockSize);
             auto stepSize = MemPolicy::getStepSize(acc, n, TBlockSize);
-
             // WARNING: in theory, one might return here, but then the cpu kernels get stuck on the syncthreads.
             // TODO: however, now an undefined memory access occurs if iter >= iter.end()
             // fix this or discuss at least
@@ -59,14 +60,14 @@ namespace detail {
                // return;
             }*/
             if(startIndex < n) {
-                auto tSum = *iter;
+                auto tSum = transformFunc(*iter);
                 ++iter;
                 while(iter + 3 < iter.end()) {
-                    tSum = func(func(func(func(tSum, *iter), *(iter + 1)), *(iter + 2)), *(iter + 3));
+                    tSum = func(func(func(func(tSum, transformFunc(*iter) ), transformFunc(*(iter + 1)) ), transformFunc(*(iter + 2)) ), transformFunc(*(iter + 3)) );
                     iter += 4;
                 }
                 while(iter < iter.end()) {
-                    tSum = func(tSum, *iter);
+                    tSum = func(tSum, transformFunc(*iter));
                     ++iter;
                 }
                 // This condition actually relies on the memory access pattern.
