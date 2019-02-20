@@ -80,7 +80,7 @@ namespace reduce {
 
         TRed result;
         alpaka::mem::view::ViewPlainPtr<TDevHost, TRed, Dim, TIdx> resultView{&result, devHost, static_cast<TIdx>(1u)};
-      	alpaka::mem::view::copy(queue, resultView, secondPhaseBuffer, 1);
+      	alpaka::mem::view::copy(queue, resultView, secondPhaseBuffer, static_cast<TIdx>(1u));
         // wait for result, otherwise the async CPU queue causes a segfault
         alpaka::wait::wait(queue);
         return result;

@@ -50,9 +50,9 @@ namespace detail {
 
             using MemPolicy = TMemAccessPolicy;
             vikunja::mem::iterator::PolicyBasedBlockIterator<MemPolicy, TAcc, TInputIterator> iter(source, acc, n, TBlockSize);
-            auto startIndex = MemPolicy::getStartIndex(acc, n, TBlockSize);
-            auto endIndex = MemPolicy::getEndIndex(acc, n, TBlockSize);
-            auto stepSize = MemPolicy::getStepSize(acc, n, TBlockSize);
+            auto startIndex = MemPolicy::getStartIndex(acc, static_cast<TIdx>(n), static_cast<TIdx>(TBlockSize));
+            //auto endIndex = MemPolicy::getEndIndex(acc, static_cast<TIdx>(n), static_cast<TIdx>(TBlockSize));
+            //auto stepSize = MemPolicy::getStepSize(acc, static_cast<TIdx>(n), static_cast<TIdx>(TBlockSize));
             // WARNING: in theory, one might return here, but then the cpu kernels get stuck on the syncthreads.
             // TODO: however, now an undefined memory access occurs if iter >= iter.end()
             // fix this or discuss at least
@@ -74,7 +74,7 @@ namespace detail {
                 // When gridStriding is used, the first n threads always get the first n values,
                 // but when the linearMemAccess is used, they do not.
                 // This is circumvented by now that if the block size is bigger than the problem size, a sequential algorithm is used.
-                if(MemPolicy::isValidThreadResult(acc, n, TBlockSize)) {
+                if(MemPolicy::isValidThreadResult(acc, static_cast<TIdx>(n), static_cast<TIdx>(n))) {
                     sdata[threadIndex] = tSum;
                 }
             }
