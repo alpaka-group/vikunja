@@ -84,6 +84,9 @@ public:
         auto sum = [=] ALPAKA_FN_HOST_ACC (Idx i, Idx j) {
             return i + j;
         };
+        auto doubleNum = [=] ALPAKA_FN_HOST_ACC (Idx i) {
+            return 2 * i;
+        };
         std::cout << "Testing accelerator: " << alpaka::acc::getAccName<TAcc>() << " with size: " << n <<"\n";
 
         auto start = std::chrono::high_resolution_clock::now();
@@ -95,6 +98,10 @@ public:
                 << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << " microseconds\n";
         using MemAccess = vikunja::mem::iterator::MemAccessPolicy<TAcc>;
         std::cout << "MemAccessPolicy: " << MemAccess::getName() << "\n";
+
+        auto expectedTransformReduce = expectedResult * 2;
+        Idx transformReduceResult = vikunja::reduce::deviceTransformReduce<TAcc>(devAcc, devHost, queueAcc, n, alpaka::mem::view::getPtrNative(deviceMem), doubleNum, sum);
+        REQUIRE(expectedTransformReduce == transformReduceResult);
     }
 };
 
