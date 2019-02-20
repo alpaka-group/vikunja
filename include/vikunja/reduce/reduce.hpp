@@ -37,13 +37,13 @@ namespace reduce {
         // in case n < blockSize, the block reductions only work
         // if the MemAccessPolicy maps the correct values.
         if(n < blockSize || n < 1024) {
-            auto resultBuffer(alpaka::mem::buf::alloc<TRed, TIdx>(devAcc, static_cast<TIdx>(1)));
-            WorkDiv dummyWorkDiv{static_cast<TIdx>(1), static_cast<TIdx>(1), static_cast<TIdx>(1)};
+            auto resultBuffer(alpaka::mem::buf::alloc<TRed, TIdx>(devAcc, static_cast<TIdx>(1u)));
+            WorkDiv dummyWorkDiv{static_cast<TIdx>(1u), static_cast<TIdx>(1u), static_cast<TIdx>(1u)};
             detail::SmallProblemReduceKernel kernel;
             alpaka::kernel::exec<TAcc>(queue, dummyWorkDiv, kernel, buffer, alpaka::mem::view::getPtrNative(resultBuffer), n, transformFunc, func);
             TRed result;
-            alpaka::mem::view::ViewPlainPtr<TDevHost, TRed, Dim, TIdx> resultView{&result, devHost, static_cast<TIdx>(1)};
-            alpaka::mem::view::copy(queue, resultView, resultBuffer, 1);
+            alpaka::mem::view::ViewPlainPtr<TDevHost, TRed, Dim, TIdx> resultView{&result, devHost, static_cast<TIdx>(1u)};
+            alpaka::mem::view::copy(queue, resultView, resultBuffer, static_cast<TIdx>(1u));
             alpaka::wait::wait(queue);
             return result;
         }
@@ -62,10 +62,10 @@ namespace reduce {
 
         WorkDiv multiBlockWorkDiv{ static_cast<TIdx>(workDivGridSize),
                           static_cast<TIdx>(workDivBlockSize),
-                          static_cast<TIdx>(1) };
-        WorkDiv singleBlockWorkDiv{ static_cast<TIdx>(1),
+                          static_cast<TIdx>(1u) };
+        WorkDiv singleBlockWorkDiv{ static_cast<TIdx>(1u),
                           static_cast<TIdx>(workDivBlockSize),
-                          static_cast<TIdx>(1) };
+                          static_cast<TIdx>(1u) };
 
         // allocate helper buffers
         // this should not destroy the original data
@@ -79,7 +79,7 @@ namespace reduce {
         alpaka::kernel::exec<TAcc>(queue, singleBlockWorkDiv, singleBlockKernel, alpaka::mem::view::getPtrNative(secondPhaseBuffer), alpaka::mem::view::getPtrNative(secondPhaseBuffer), gridSize, detail::Identity<TRed>(), func);
 
         TRed result;
-        alpaka::mem::view::ViewPlainPtr<TDevHost, TRed, Dim, TIdx> resultView{&result, devHost, static_cast<TIdx>(1)};
+        alpaka::mem::view::ViewPlainPtr<TDevHost, TRed, Dim, TIdx> resultView{&result, devHost, static_cast<TIdx>(1u)};
         alpaka::mem::view::copy(queue, resultView, secondPhaseBuffer, 1);
         // wait for result, otherwise the async CPU queue causes a segfault
         alpaka::wait::wait(queue);
