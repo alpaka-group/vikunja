@@ -23,13 +23,14 @@ namespace reduce {
     }
 
     template<typename TAcc, typename WorkDivPolicy = vikunja::workdiv::BlockBasedPolicy<TAcc>, typename MemAccessPolicy = vikunja::mem::iterator::MemAccessPolicy<TAcc>, typename TTransformFunc, typename TFunc, typename TInputIterator, typename TDevAcc, typename TDevHost, typename TQueue, typename TIdx >
-    auto deviceTransformReduce(TDevAcc &devAcc, TDevHost &devHost, TQueue &queue,  TIdx const &n, TInputIterator const &buffer, TTransformFunc const &transformFunc, TFunc const &func) -> decltype(func(*buffer, *buffer)) {
+    auto deviceTransformReduce(TDevAcc &devAcc, TDevHost &devHost, TQueue &queue,  TIdx const &n, TInputIterator const &buffer, TTransformFunc const &transformFunc, TFunc const &func) -> decltype(func(transformFunc(*buffer), transformFunc(*buffer))) {
 
         // TODO: more elegant way to obtain return type + avoid that double declaration
-        using TRed = decltype(func(*buffer, *buffer));
+        using TRed = decltype(func(transformFunc(*buffer), transformFunc(*buffer)));
         // ok, now we have to think about what to do now
+        // TODO: think of proper solution for this.
         if(n == 0) {
-            return static_cast<TRed>(0);
+//            return static_cast<TRed>(0);
         }
         constexpr uint64_t blockSize = WorkDivPolicy::template getBlockSize<TAcc>();
         using Dim = alpaka::dim::Dim<TAcc>;
