@@ -13,7 +13,7 @@
 #include <iostream>
 
 #ifdef ALPAKA_ACC_GPU_CUDA_ENABLED
-#define LAST_ERROR(cmd) std::cout << "In: " << cmd << " last error is: " << cudaGetErrorString(cudaGetLastError());
+#define LAST_ERROR(cmd) {cudaDeviceSynchronize();std::cout << "In: " << cmd << " last error is: " << cudaGetErrorString(cudaGetLastError()) << "\n";}
 #else
 #define LAST_ERROR(cmd)
 #endif
