@@ -49,11 +49,13 @@ namespace reduce {
             WorkDiv dummyWorkDiv{static_cast<TIdx>(1u), static_cast<TIdx>(1u), static_cast<TIdx>(1u)};
             detail::SmallProblemReduceKernel kernel;
             alpaka::kernel::exec<TAcc>(queue, dummyWorkDiv, kernel, buffer, alpaka::mem::view::getPtrNative(resultBuffer), n, transformFunc, func);
-            TRed result;
-            alpaka::mem::view::ViewPlainPtr<TDevHost, TRed, Dim, TIdx> resultView{&result, devHost, static_cast<TIdx>(1u)};
+            auto resultView(alpaka::mem::buf::alloc<TRed, TIdx >(devHost, static_cast<TIdx>(1u)));
+           // TRed result;
+           // alpaka::mem::view::ViewPlainPtr<TDevHost, TRed, Dim, TIdx> resultView{&result, devHost, static_cast<TIdx>(1u)};
             alpaka::mem::view::copy(queue, resultView, resultBuffer, static_cast<TIdx>(1u));
             alpaka::wait::wait(queue);
-            return result;
+            auto result = alpaka::mem::view::getPtrNative(resultView);
+            return *result;
         }
 
 
@@ -91,15 +93,17 @@ namespace reduce {
         alpaka::kernel::exec<TAcc>(queue, singleBlockWorkDiv, singleBlockKernel, alpaka::mem::view::getPtrNative(secondPhaseBuffer), alpaka::mem::view::getPtrNative(secondPhaseBuffer), gridSize, detail::Identity<TRed>(), func);
         std::cout << "after second kernel\n";
 
-        TRed result;
-        alpaka::mem::view::ViewPlainPtr<TDevHost, TRed, Dim, TIdx> resultView{&result, devHost, static_cast<TIdx>(1u)};
+        //TRed result;
+        auto resultView(alpaka::mem::buf::alloc<TRed, TIdx >(devHost, static_cast<TIdx>(1u)));
+        //alpaka::mem::view::ViewPlainPtr<TDevHost, TRed, Dim, TIdx> resultView{&result, devHost, static_cast<TIdx>(1u)};
         std::cout << "after view setup\n";
         alpaka::mem::view::copy(queue, resultView, secondPhaseBuffer, static_cast<TIdx>(1u));
         std::cout << "after view copy\n";
         // wait for result, otherwise the async CPU queue causes a segfault
         alpaka::wait::wait(queue);
         std::cout << "after wait \n";
-        return result;
+        auto result = alpaka::mem::view::getPtrNative(resultView);
+        return *result;
     }
 
     template<typename TAcc, typename WorkDivPolicy = vikunja::workdiv::BlockBasedPolicy<TAcc>, typename MemAccessPolicy = vikunja::mem::iterator::MemAccessPolicy<TAcc>, typename TFunc, typename TInputIterator, typename TDevAcc, typename TDevHost, typename TQueue, typename TIdx >
