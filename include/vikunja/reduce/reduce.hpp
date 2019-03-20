@@ -42,17 +42,26 @@ namespace reduce {
         constexpr uint64_t blockSize = WorkDivPolicy::template getBlockSize<TAcc>();
         using Dim = alpaka::dim::Dim<TAcc>;
         using WorkDiv = alpaka::workdiv::WorkDivMembers<Dim, TIdx>;
+        using Vec = alpaka::vec::Vec<Dim, TIdx>;
+
+        Vec elementsPerThread(Vec::all(static_cast<TIdx>(1u)));
+        Vec threadsPerBlock(Vec::all(static_cast<TIdx>(1u)));
+        Vec blocksPerGrid(Vec::all(static_cast<TIdx>(1u)));
+
+        Vec const resultBufferExtent(Vec::all(static_cast<TIdx>(1u)));
+
+
         // in case n < blockSize, the block reductions only work
         // if the MemAccessPolicy maps the correct values.
         if(n < blockSize || n < 1024) {
-            auto resultBuffer(alpaka::mem::buf::alloc<TRed, TIdx>(devAcc, static_cast<TIdx>(1u)));
-            WorkDiv dummyWorkDiv{static_cast<TIdx>(1u), static_cast<TIdx>(1u), static_cast<TIdx>(1u)};
+            auto resultBuffer(alpaka::mem::buf::alloc<TRed, TIdx>(devAcc, resultBufferExtent));
+            WorkDiv dummyWorkDiv{blocksPerGrid, threadsPerBlock, elementsPerThread};
             detail::SmallProblemReduceKernel kernel;
             alpaka::kernel::exec<TAcc>(queue, dummyWorkDiv, kernel, buffer, alpaka::mem::view::getPtrNative(resultBuffer), n, transformFunc, func);
-            auto resultView(alpaka::mem::buf::alloc<TRed, TIdx >(devHost, static_cast<TIdx>(1u)));
+            auto resultView(alpaka::mem::buf::alloc<TRed, TIdx >(devHost, resultBufferExtent));
            // TRed result;
            // alpaka::mem::view::ViewPlainPtr<TDevHost, TRed, Dim, TIdx> resultView{&result, devHost, static_cast<TIdx>(1u)};
-            alpaka::mem::view::copy(queue, resultView, resultBuffer, static_cast<TIdx>(1u));
+            alpaka::mem::view::copy(queue, resultView, resultBuffer, resultBufferExtent);
             alpaka::wait::wait(queue);
             auto result = alpaka::mem::view::getPtrNative(resultView);
             return *result;
@@ -70,19 +79,25 @@ namespace reduce {
         TIdx workDivGridSize = gridSize;
         TIdx workDivBlockSize = blockSize;
 
-        WorkDiv multiBlockWorkDiv{ static_cast<TIdx>(workDivGridSize),
-                          static_cast<TIdx>(workDivBlockSize),
-                          static_cast<TIdx>(1u) };
-        WorkDiv singleBlockWorkDiv{ static_cast<TIdx>(1u),
-                          static_cast<TIdx>(workDivBlockSize),
-                          static_cast<TIdx>(1u) };
+        blocksPerGrid[0] = workDivGridSize;
+        threadsPerBlock[0] = workDivBlockSize;
+
+        Vec const singleElementsPerThread(Vec::all(static_cast<TIdx>(1u)));
+        Vec const singleThreadsPerBlock(Vec::all(static_cast<TIdx>(1u)));
+        Vec const singleBlocksPerGrid(Vec::all(static_cast<TIdx>(1u)));
+
+        Vec sharedMemExtent(Vec::all(static_cast<TIdx>(1u)));
+        sharedMemExtent[0] = gridSize;
+
+        WorkDiv multiBlockWorkDiv{ blocksPerGrid, threadsPerBlock, elementsPerThread };
+        WorkDiv singleBlockWorkDiv{ singleBlocksPerGrid, singleThreadsPerBlock, singleElementsPerThread};
 
         // allocate helper buffers
         // this should not destroy the original data
         // TODO move this to external method
 
         LAST_ERROR("beforeInit")
-        auto secondPhaseBuffer(alpaka::mem::buf::alloc<TRed, TIdx >(devAcc, gridSize));
+        auto secondPhaseBuffer(alpaka::mem::buf::alloc<TRed, TIdx >(devAcc, sharedMemExtent));
         LAST_ERROR("afterInit")
 
         detail::BlockThreadReduceKernel<blockSize, MemAccessPolicy, TRed> multiBlockKernel, singleBlockKernel;
@@ -94,10 +109,10 @@ namespace reduce {
         std::cout << "after second kernel\n";
 
         //TRed result;
-        auto resultView(alpaka::mem::buf::alloc<TRed, TIdx >(devHost, static_cast<TIdx>(1u)));
+        auto resultView(alpaka::mem::buf::alloc<TRed, TIdx >(devHost, resultBufferExtent));
         //alpaka::mem::view::ViewPlainPtr<TDevHost, TRed, Dim, TIdx> resultView{&result, devHost, static_cast<TIdx>(1u)};
         std::cout << "after view setup\n";
-        alpaka::mem::view::copy(queue, resultView, secondPhaseBuffer, static_cast<TIdx>(1u));
+        alpaka::mem::view::copy(queue, resultView, secondPhaseBuffer, resultBufferExtent);
         std::cout << "after view copy\n";
         // wait for result, otherwise the async CPU queue causes a segfault
         alpaka::wait::wait(queue);

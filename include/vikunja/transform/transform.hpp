@@ -22,6 +22,7 @@ namespace vikunja {
             constexpr uint64_t blockSize = WorkDivPolicy::template getBlockSize<TAcc>();
             using Dim = alpaka::dim::Dim<TAcc>;
             using WorkDiv = alpaka::workdiv::WorkDivMembers<Dim, TIdx>;
+            using Vec = alpaka::vec::Vec<Dim, TIdx>;
             if(n < blockSize) {
                 // TODO fix this?
                 // maybe not needed
@@ -35,9 +36,14 @@ namespace vikunja {
             TIdx workDivGridSize = gridSize;
             TIdx workDivBlockSize = blockSize;
 
-            WorkDiv multiBlockWorkDiv{ static_cast<TIdx>(workDivGridSize),
-                           static_cast<TIdx>(workDivBlockSize),
-                           static_cast<TIdx>(1) };
+            Vec elementsPerThread(Vec::all(static_cast<TIdx>(1u)));
+            Vec threadsPerBlock(Vec::all(static_cast<TIdx>(1u)));
+            Vec blocksPerGrid(Vec::all(static_cast<TIdx>(1u)));
+
+            blocksPerGrid[0] = workDivGridSize;
+            threadsPerBlock[0] = workDivBlockSize;
+
+            WorkDiv multiBlockWorkDiv{ blocksPerGrid, threadsPerBlock, elementsPerThread};
             detail::BlockThreadTransformKernel<blockSize, MemAccessPolicy> kernel;
             alpaka::kernel::exec<TAcc>(queue, multiBlockWorkDiv, kernel, source, destination, n, func);
         }
@@ -50,6 +56,7 @@ namespace vikunja {
             constexpr uint64_t blockSize = WorkDivPolicy::template getBlockSize<TAcc>();
             using Dim = alpaka::dim::Dim<TAcc>;
             using WorkDiv = alpaka::workdiv::WorkDivMembers<Dim, TIdx>;
+            using Vec = alpaka::vec::Vec<Dim, TIdx>;
             if(n < blockSize) {
                 // TODO fix this?
                 // maybe not needed
@@ -63,9 +70,14 @@ namespace vikunja {
             TIdx workDivGridSize = gridSize;
             TIdx workDivBlockSize = blockSize;
 
-            WorkDiv multiBlockWorkDiv{ static_cast<TIdx>(workDivGridSize),
-                                       static_cast<TIdx>(workDivBlockSize),
-                                       static_cast<TIdx>(1) };
+            Vec elementsPerThread(Vec::all(static_cast<TIdx>(1u)));
+            Vec threadsPerBlock(Vec::all(static_cast<TIdx>(1u)));
+            Vec blocksPerGrid(Vec::all(static_cast<TIdx>(1u)));
+
+            blocksPerGrid[0] = workDivGridSize;
+            threadsPerBlock[0] = workDivBlockSize;
+
+            WorkDiv multiBlockWorkDiv{ blocksPerGrid, threadsPerBlock, elementsPerThread};
             detail::BlockThreadTransformKernel<blockSize, MemAccessPolicy> kernel;
             alpaka::kernel::exec<TAcc>(queue, multiBlockWorkDiv, kernel, source, sourceSecond, destination, n, func);
         }
