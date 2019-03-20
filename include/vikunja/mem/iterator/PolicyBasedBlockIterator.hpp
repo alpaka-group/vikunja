@@ -132,7 +132,8 @@ namespace vikunja {
                     template<typename TAcc, typename TIdx>
                     ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE
                     static auto getStartIndex(TAcc const &acc, TIdx const &problemSize __attribute__((unused)), TIdx const &blockSize __attribute__((unused))) -> TIdx const {
-                        return alpaka::idx::getIdx<alpaka::Grid, alpaka::Threads>(acc)[0];
+                        constexpr TIdx xIndex = alpaka::dim::Dim<TAcc>::value - 1u;
+                        return alpaka::idx::getIdx<alpaka::Grid, alpaka::Threads>(acc)[xIndex];
                     }
 
                     template<typename TAcc, typename TIdx>
@@ -144,14 +145,16 @@ namespace vikunja {
                     template<typename TAcc, typename TIdx>
                     ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE
                     static auto getStepSize(TAcc const &acc, TIdx const &problemSize __attribute__((unused)), TIdx const &blockSize) -> TIdx const {
-                        auto gridDimension = alpaka::workdiv::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[0];
+                        constexpr TIdx xIndex = alpaka::dim::Dim<TAcc>::value - 1u;
+                        auto gridDimension = alpaka::workdiv::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[xIndex];
                         return gridDimension * blockSize;
                     }
 
                     template<typename TAcc, typename TIdx>
                     ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE
                     static auto isValidThreadResult(TAcc const &acc, TIdx const &problemSize, TIdx const &blockSize __attribute__((unused))) -> bool const {
-                        auto threadIndex = (alpaka::idx::getIdx<alpaka::Block, alpaka::Threads>(acc)[0]);
+                        constexpr TIdx xIndex = alpaka::dim::Dim<TAcc>::value - 1u;
+                        auto threadIndex = (alpaka::idx::getIdx<alpaka::Block, alpaka::Threads>(acc)[xIndex]);
                         return threadIndex < problemSize;
                     }
 
@@ -167,8 +170,9 @@ namespace vikunja {
                     template<typename TAcc, typename TIdx>
                     ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE
                     static auto getStartIndex(TAcc const &acc, TIdx const &problemSize, TIdx const &blockSize) -> TIdx const {
-                        auto gridDimension = alpaka::workdiv::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[0];
-                        auto indexInBlock = alpaka::idx::getIdx<alpaka::Grid, alpaka::Threads>(acc)[0];
+                        constexpr TIdx xIndex = alpaka::dim::Dim<TAcc>::value - 1u;
+                        auto gridDimension = alpaka::workdiv::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[xIndex];
+                        auto indexInBlock = alpaka::idx::getIdx<alpaka::Grid, alpaka::Threads>(acc)[xIndex];
                         auto gridSize = gridDimension * blockSize;
                         // TODO: catch overflow
                         return (problemSize * indexInBlock) / gridSize;
@@ -177,8 +181,9 @@ namespace vikunja {
                     template<typename TAcc, typename TIdx>
                     ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE
                     static auto getEndIndex(TAcc const &acc, TIdx const &problemSize, TIdx const &blockSize) -> TIdx const {
-                        auto gridDimension = alpaka::workdiv::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[0];
-                        auto indexInBlock = alpaka::idx::getIdx<alpaka::Grid, alpaka::Threads>(acc)[0];
+                        constexpr TIdx xIndex = alpaka::dim::Dim<TAcc>::value - 1u;
+                        auto gridDimension = alpaka::workdiv::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[xIndex];
+                        auto indexInBlock = alpaka::idx::getIdx<alpaka::Grid, alpaka::Threads>(acc)[xIndex];
                         auto gridSize = gridDimension * blockSize;
                         // TODO: catch overflow
                         return (problemSize * indexInBlock + problemSize) / gridSize;

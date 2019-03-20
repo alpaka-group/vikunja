@@ -40,13 +40,14 @@ namespace detail {
                     alpaka::block::shared::st::allocVar<sharedStaticArray<TRed, TBlockSize>,
                     __COUNTER__>(acc));
 
+            constexpr TIdx xIndex = alpaka::dim::Dim<TAcc>::value - 1u;
 
             // blockIdx.x
-            auto blockIndex = (alpaka::idx::getIdx<alpaka::Grid, alpaka::Blocks>(acc)[0]);
+            auto blockIndex = (alpaka::idx::getIdx<alpaka::Grid, alpaka::Blocks>(acc)[xIndex]);
             // threadIdx.x
-            auto threadIndex = (alpaka::idx::getIdx<alpaka::Block, alpaka::Threads>(acc)[0]);
+            auto threadIndex = (alpaka::idx::getIdx<alpaka::Block, alpaka::Threads>(acc)[xIndex]);
             // blockIdx.x * TBlocksize + threadIdx.x
-            auto indexInBlock(alpaka::idx::getIdx<alpaka::Grid, alpaka::Threads>(acc)[0]);
+            auto indexInBlock(alpaka::idx::getIdx<alpaka::Grid, alpaka::Threads>(acc)[xIndex]);
 
             using MemPolicy = TMemAccessPolicy;
             vikunja::mem::iterator::PolicyBasedBlockIterator<MemPolicy, TAcc, TInputIterator> iter(source, acc, n, TBlockSize);
