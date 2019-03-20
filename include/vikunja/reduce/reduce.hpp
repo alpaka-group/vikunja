@@ -43,6 +43,7 @@ namespace reduce {
         using Dim = alpaka::dim::Dim<TAcc>;
         using WorkDiv = alpaka::workdiv::WorkDivMembers<Dim, TIdx>;
         using Vec = alpaka::vec::Vec<Dim, TIdx>;
+        constexpr TIdx xIndex = Dim::value - 1u;
 
         Vec elementsPerThread(Vec::all(static_cast<TIdx>(1u)));
         Vec threadsPerBlock(Vec::all(static_cast<TIdx>(1u)));
@@ -79,16 +80,16 @@ namespace reduce {
         TIdx workDivGridSize = gridSize;
         TIdx workDivBlockSize = blockSize;
 
-        blocksPerGrid[0] = workDivGridSize;
-        threadsPerBlock[0] = workDivBlockSize;
+        blocksPerGrid[xIndex] = workDivGridSize;
+        threadsPerBlock[xIndex] = workDivBlockSize;
 
         Vec const singleElementsPerThread(Vec::all(static_cast<TIdx>(1u)));
         Vec singleThreadsPerBlock(Vec::all(static_cast<TIdx>(1u)));
         Vec const singleBlocksPerGrid(Vec::all(static_cast<TIdx>(1u)));
-        singleThreadsPerBlock[0] = workDivBlockSize;
+        singleThreadsPerBlock[xIndex] = workDivBlockSize;
 
         Vec sharedMemExtent(Vec::all(static_cast<TIdx>(1u)));
-        sharedMemExtent[0] = gridSize;
+        sharedMemExtent[xIndex] = gridSize;
 
         std::cout << "elementsPerThread: " << singleElementsPerThread << "\n";
         std::cout << "threadsPerBlock: " << singleThreadsPerBlock << "\n";
