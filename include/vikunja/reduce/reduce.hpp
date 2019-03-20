@@ -10,6 +10,13 @@
 #include <vikunja/workdiv/BlockBasedWorkDiv.hpp>
 #include <vikunja/reduce/detail/SmallProblemReduceKernel.hpp>
 #include <vikunja/reduce/detail/BlockThreadReduceKernel.hpp>
+#include <iostream>
+
+#ifdef ALPAKA_ACC_GPU_CUDA_ENABLED
+#define LAST_ERROR(cmd) std::cout << "In: " << cmd << " last error is: " << cudaGetErrorString(cudaGetLastError());
+#else
+#define LAST_ERROR(cmd)
+#endif
 
 namespace vikunja {
 namespace reduce {
@@ -71,7 +78,10 @@ namespace reduce {
         // allocate helper buffers
         // this should not destroy the original data
         // TODO move this to external method
+
+        LAST_ERROR("beforeInit")
         auto secondPhaseBuffer(alpaka::mem::buf::alloc<TRed, TIdx >(devAcc, gridSize));
+        LAST_ERROR("afterInit")
 
         detail::BlockThreadReduceKernel<blockSize, MemAccessPolicy, TRed> multiBlockKernel, singleBlockKernel;
 
