@@ -91,13 +91,13 @@ namespace reduce {
         alpaka::kernel::exec<TAcc>(queue, singleBlockWorkDiv, singleBlockKernel, alpaka::mem::view::getPtrNative(secondPhaseBuffer), alpaka::mem::view::getPtrNative(secondPhaseBuffer), gridSize, detail::Identity<TRed>(), func);
         std::cout << "after second kernel\n";
 
-        TRed result = 0;
+        TRed result;
         alpaka::mem::view::ViewPlainPtr<TDevHost, TRed, Dim, TIdx> resultView{&result, devHost, static_cast<TIdx>(1u)};
         std::cout << "after view setup\n";
-        //alpaka::mem::view::copy(queue, resultView, secondPhaseBuffer, static_cast<TIdx>(1u));
+        alpaka::mem::view::copy(queue, resultView, secondPhaseBuffer, static_cast<TIdx>(1u));
         std::cout << "after view copy\n";
         // wait for result, otherwise the async CPU queue causes a segfault
-        //alpaka::wait::wait(queue);
+        alpaka::wait::wait(queue);
         std::cout << "after wait \n";
         return result;
     }
