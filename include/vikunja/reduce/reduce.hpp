@@ -89,7 +89,7 @@ namespace reduce {
 
         Vec sharedMemExtent(Vec::all(static_cast<TIdx>(1u)));
         sharedMemExtent[0] = gridSize;
-        
+
         std::cout << "elementsPerThread: " << singleElementsPerThread << "\n";
         std::cout << "threadsPerBlock: " << singleThreadsPerBlock << "\n";
         std::cout << "blocksPerGrid: " << singleBlocksPerGrid << "\n";
@@ -111,6 +111,7 @@ namespace reduce {
         alpaka::kernel::exec<TAcc>(queue, multiBlockWorkDiv, multiBlockKernel, buffer, alpaka::mem::view::getPtrNative(secondPhaseBuffer), n, transformFunc, func);
         std::cout << "after first kernel\n";
         alpaka::kernel::exec<TAcc>(queue, singleBlockWorkDiv, singleBlockKernel, alpaka::mem::view::getPtrNative(secondPhaseBuffer), alpaka::mem::view::getPtrNative(secondPhaseBuffer), gridSize, detail::Identity<TRed>(), func);
+        LAST_ERROR("afterLaunch");
         std::cout << "after second kernel\n";
 
         //TRed result;
