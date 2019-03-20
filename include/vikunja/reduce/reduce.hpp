@@ -65,7 +65,7 @@ namespace reduce {
             alpaka::mem::view::copy(queue, resultView, resultBuffer, resultBufferExtent);
             alpaka::wait::wait(queue);
             auto result = alpaka::mem::view::getPtrNative(resultView);
-            return *result;
+            return result[0];
         }
 
 
@@ -125,7 +125,7 @@ namespace reduce {
         alpaka::wait::wait(queue);
         std::cout << "after wait \n";
         auto result = alpaka::mem::view::getPtrNative(resultView);
-        return *result;
+        return result[0];
     }
 
     template<typename TAcc, typename WorkDivPolicy = vikunja::workdiv::BlockBasedPolicy<TAcc>, typename MemAccessPolicy = vikunja::mem::iterator::MemAccessPolicy<TAcc>, typename TFunc, typename TInputIterator, typename TDevAcc, typename TDevHost, typename TQueue, typename TIdx >
