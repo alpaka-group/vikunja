@@ -11,6 +11,7 @@
 #include <vikunja/reduce/detail/SmallProblemReduceKernel.hpp>
 #include <vikunja/reduce/detail/BlockThreadReduceKernel.hpp>
 #include <iostream>
+#include <catch2/catch.hpp>
 
 #ifdef ALPAKA_ACC_GPU_CUDA_ENABLED
 #define LAST_ERROR(cmd) {cudaDeviceSynchronize();std::cout << "In: " << cmd << " last error is: " << cudaGetErrorString(cudaGetLastError()) << "\n";}
@@ -50,7 +51,7 @@ namespace reduce {
         Vec blocksPerGrid(Vec::all(static_cast<TIdx>(1u)));
 
         Vec const resultBufferExtent(Vec::all(static_cast<TIdx>(1u)));
-
+        auto resultBuffer(alpaka::mem::buf::alloc<TRed, TIdx>(devAcc, resultBufferExtent));
 
         // in case n < blockSize, the block reductions only work
         // if the MemAccessPolicy maps the correct values.
@@ -114,6 +115,10 @@ namespace reduce {
         alpaka::kernel::exec<TAcc>(queue, singleBlockWorkDiv, singleBlockKernel, alpaka::mem::view::getPtrNative(secondPhaseBuffer), alpaka::mem::view::getPtrNative(secondPhaseBuffer), gridSize, detail::Identity<TRed>(), func);
         LAST_ERROR("afterLaunch");
         std::cout << "after second kernel\n";
+        auto sharedMemPointer = alpaka::mem::view::getPtrNative(secondPhaseBuffer);
+        for(TIdx i = 0; i < gridSize; ++i) {
+            WARN("i: " << i << " val: " << sharedMemPointer[i]);
+        }
 
         //TRed result;
         auto resultView(alpaka::mem::buf::alloc<TRed, TIdx >(devHost, resultBufferExtent));
@@ -124,6 +129,8 @@ namespace reduce {
         // wait for result, otherwise the async CPU queue causes a segfault
         alpaka::wait::wait(queue);
         std::cout << "after wait \n";
+
+
         auto result = alpaka::mem::view::getPtrNative(resultView);
         return result[0];
     }

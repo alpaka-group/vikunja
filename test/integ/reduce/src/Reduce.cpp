@@ -39,6 +39,20 @@ public:
         constexpr Idx threadsPerBlock = 1;
         const Idx elementsPerThread = n / blocksPerGrid / threadsPerBlock + 1;
 
+        using Vec = alpaka::vec::Vec<Dim, Idx>;
+        constexpr Idx xIndex = Dim::value - 1u;
+
+        Vec gridSize(Vec::all(static_cast<Idx>(1u)));
+        Vec blockSize(Vec::all(static_cast<Idx>(1u)));
+        Vec threadSize(Vec::all(static_cast<Idx>(1u)));
+
+        Vec extent(Vec::all(static_cast<Idx>(1)));
+        extent[xIndex] = n;
+
+        gridSize[xIndex] = blocksPerGrid;
+        blockSize[xIndex] = threadsPerBlock;
+        threadSize[xIndex] = elementsPerThread;
+
         using DevAcc = alpaka::dev::Dev<TAcc>;
         using PltfAcc = alpaka::pltf::Pltf<DevAcc>;
         // Async queue makes things slower on CPU?
@@ -69,18 +83,19 @@ public:
         QueueAcc queueAcc(
                 devAcc);
         WorkDiv workdiv{
-                blocksPerGrid,
-                threadsPerBlock,
-                elementsPerThread
+                gridSize,
+                blockSize,
+                threadSize
         };
 
-        auto deviceMem(alpaka::mem::buf::alloc<uint64_t, Idx>(devAcc, n));
-        auto hostMem(alpaka::mem::buf::alloc<uint64_t, Idx>(devHost, n));
+        auto deviceMem(alpaka::mem::buf::alloc<uint64_t, Idx>(devAcc, extent));
+        auto hostMem(alpaka::mem::buf::alloc<uint64_t, Idx>(devHost, extent));
         uint64_t* hostNative = alpaka::mem::view::getPtrNative(hostMem);
-        for(Idx i = 0; i < memSize; ++i) {
+        for(Idx i = 0; i < n; ++i) {
+            //std::cout << i << "\n";
             hostNative[i] = i + 1;
         }
-        alpaka::mem::view::copy(queueAcc, deviceMem, hostMem, n);
+        alpaka::mem::view::copy(queueAcc, deviceMem, hostMem, extent);
         auto sum = [=] ALPAKA_FN_HOST_ACC (Idx i, Idx j) {
             return i + j;
         };
@@ -109,12 +124,12 @@ TEST_CASE("Test reduce", "[reduce]")
 {
 
     using TestAccs = alpaka::test::acc::EnabledAccs<
-            alpaka::dim::DimInt<1u>,
+            alpaka::dim::DimInt<3u>,
             std::uint64_t>;
     //std::cout << std::thread::hardware_concurrency() << "\n";
     SECTION("deviceReduce") {
 
-        std::vector<uint64_t> memorySizes{1,10, 16,  777,(1<< 10) + 1, 1 << 12, 1 << 14, 1 << 15, 1 << 18, (1 << 18) + 1, 1 << 25, 1 << 27};
+        std::vector<uint64_t> memorySizes{1, 10, 777,(1<< 10) + 1, 1 << 12, 1 << 14, 1 << 15, 1 << 18, (1 << 18) + 1, 1 << 25, 1 << 27};
 
         for(auto &memSize: memorySizes) {
             alpaka::meta::forEachType<TestAccs>(TestTemplate(memSize));
