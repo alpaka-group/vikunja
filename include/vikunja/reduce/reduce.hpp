@@ -83,8 +83,9 @@ namespace reduce {
         threadsPerBlock[0] = workDivBlockSize;
 
         Vec const singleElementsPerThread(Vec::all(static_cast<TIdx>(1u)));
-        Vec const singleThreadsPerBlock(Vec::all(static_cast<TIdx>(1u)));
+        Vec singleThreadsPerBlock(Vec::all(static_cast<TIdx>(1u)));
         Vec const singleBlocksPerGrid(Vec::all(static_cast<TIdx>(1u)));
+        singleThreadsPerBlock[0] = workDivBlockSize;
 
         Vec sharedMemExtent(Vec::all(static_cast<TIdx>(1u)));
         sharedMemExtent[0] = gridSize;
