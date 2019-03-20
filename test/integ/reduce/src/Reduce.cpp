@@ -32,6 +32,8 @@ public:
 
     template<typename TAcc>
     void operator()() {
+        using TRed = uint64_t;
+        
         using Idx = alpaka::idx::Idx<TAcc>;
         using Dim = alpaka::dim::Dim<TAcc>;
         const Idx n = static_cast<Idx>(memSize);
@@ -88,18 +90,18 @@ public:
                 threadSize
         };
 
-        auto deviceMem(alpaka::mem::buf::alloc<uint64_t, Idx>(devAcc, extent));
-        auto hostMem(alpaka::mem::buf::alloc<uint64_t, Idx>(devHost, extent));
-        uint64_t* hostNative = alpaka::mem::view::getPtrNative(hostMem);
+        auto deviceMem(alpaka::mem::buf::alloc<TRed, Idx>(devAcc, extent));
+        auto hostMem(alpaka::mem::buf::alloc<TRed, Idx>(devHost, extent));
+        TRed* hostNative = alpaka::mem::view::getPtrNative(hostMem);
         for(Idx i = 0; i < n; ++i) {
             //std::cout << i << "\n";
-            hostNative[i] = i + 1;
+            hostNative[i] = static_cast<TRed>(i + 1);
         }
         alpaka::mem::view::copy(queueAcc, deviceMem, hostMem, extent);
-        auto sum = [=] ALPAKA_FN_HOST_ACC (Idx i, Idx j) {
+        auto sum = [=] ALPAKA_FN_HOST_ACC (TRed i, TRed j) {
             return i + j;
         };
-        auto doubleNum = [=] ALPAKA_FN_HOST_ACC (Idx i) {
+        auto doubleNum = [=] ALPAKA_FN_HOST_ACC (TRed i) {
             return 2 * i;
         };
         std::cout << "Testing accelerator: " << alpaka::acc::getAccName<TAcc>() << " with size: " << n <<"\n";

@@ -121,6 +121,7 @@ namespace reduce {
         //alpaka::mem::view::ViewPlainPtr<TDevHost, TRed, Dim, TIdx> resultView{&result, devHost, static_cast<TIdx>(1u)};
         std::cout << "after view setup\n";
         alpaka::mem::view::copy(queue, resultView, secondPhaseBuffer, resultBufferExtent);
+        LAST_ERROR("afterCopy")
         std::cout << "after view copy\n";
         // wait for result, otherwise the async CPU queue causes a segfault
         alpaka::wait::wait(queue);
