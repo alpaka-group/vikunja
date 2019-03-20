@@ -11,7 +11,6 @@
 #include <vikunja/reduce/detail/SmallProblemReduceKernel.hpp>
 #include <vikunja/reduce/detail/BlockThreadReduceKernel.hpp>
 #include <iostream>
-#include <catch2/catch.hpp>
 
 #ifdef ALPAKA_ACC_GPU_CUDA_ENABLED
 #define LAST_ERROR(cmd) {cudaDeviceSynchronize();std::cout << "In: " << cmd << " last error is: " << cudaGetErrorString(cudaGetLastError()) << "\n";}
@@ -116,9 +115,6 @@ namespace reduce {
         LAST_ERROR("afterLaunch");
         std::cout << "after second kernel\n";
         auto sharedMemPointer = alpaka::mem::view::getPtrNative(secondPhaseBuffer);
-        for(TIdx i = 0; i < gridSize; ++i) {
-            WARN("i: " << i << " val: " << sharedMemPointer[i]);
-        }
 
         //TRed result;
         auto resultView(alpaka::mem::buf::alloc<TRed, TIdx >(devHost, resultBufferExtent));
