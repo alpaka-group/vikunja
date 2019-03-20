@@ -89,6 +89,10 @@ namespace reduce {
 
         Vec sharedMemExtent(Vec::all(static_cast<TIdx>(1u)));
         sharedMemExtent[0] = gridSize;
+        
+        std::cout << "elementsPerThread: " << singleElementsPerThread << "\n";
+        std::cout << "threadsPerBlock: " << singleThreadsPerBlock << "\n";
+        std::cout << "blocksPerGrid: " << singleBlocksPerGrid << "\n";
 
         WorkDiv multiBlockWorkDiv{ blocksPerGrid, threadsPerBlock, elementsPerThread };
         WorkDiv singleBlockWorkDiv{ singleBlocksPerGrid, singleThreadsPerBlock, singleElementsPerThread};
