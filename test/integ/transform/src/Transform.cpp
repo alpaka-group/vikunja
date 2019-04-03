@@ -37,6 +37,8 @@ public:
 
     template<typename TAcc>
     void operator()() {
+        using TRed = uint64_t;
+
         using Idx = alpaka::idx::Idx<TAcc>;
         using Dim = alpaka::dim::Dim<TAcc>;
         const Idx n = static_cast<Idx>(memSize);
@@ -44,18 +46,32 @@ public:
         constexpr Idx threadsPerBlock = 1;
         const Idx elementsPerThread = n / blocksPerGrid / threadsPerBlock + 1;
 
+        using Vec = alpaka::vec::Vec<Dim, Idx>;
+        constexpr Idx xIndex = Dim::value - 1u;
+
+        Vec gridSize(Vec::all(static_cast<Idx>(1u)));
+        Vec blockSize(Vec::all(static_cast<Idx>(1u)));
+        Vec threadSize(Vec::all(static_cast<Idx>(1u)));
+
+        Vec extent(Vec::all(static_cast<Idx>(1)));
+        extent[xIndex] = n;
+
+        gridSize[xIndex] = blocksPerGrid;
+        blockSize[xIndex] = threadsPerBlock;
+        threadSize[xIndex] = elementsPerThread;
+
         using DevAcc = alpaka::dev::Dev<TAcc>;
         using PltfAcc = alpaka::pltf::Pltf<DevAcc>;
         // Async queue makes things slower on CPU?
-       // using QueueAcc = alpaka::test::queue::DefaultQueue<alpaka::dev::Dev<TAcc>>;
+        // using QueueAcc = alpaka::test::queue::DefaultQueue<alpaka::dev::Dev<TAcc>>;
         using PltfHost = alpaka::pltf::PltfCpu;
         using DevHost = alpaka::dev::Dev<PltfHost>;
         using QueueAcc = //alpaka::queue::QueueCpuAsync;
-                typename std::conditional<std::is_same<PltfAcc, alpaka::pltf::PltfCpu>::value, alpaka::queue::QueueCpuSync,
+        typename std::conditional<std::is_same<PltfAcc, alpaka::pltf::PltfCpu>::value, alpaka::queue::QueueCpuSync,
 #ifdef  ALPAKA_ACC_GPU_CUDA_ENABLED
-        alpaka::queue::QueueCudaRtSync
+                alpaka::queue::QueueCudaRtSync
 #else
-        alpaka::queue::QueueCpuSync
+                alpaka::queue::QueueCpuSync
 #endif
         >::type;
         using QueueHost = alpaka::queue::QueueCpuSync;
@@ -74,18 +90,18 @@ public:
         QueueAcc queueAcc(
                 devAcc);
         WorkDiv workdiv{
-                blocksPerGrid,
-                threadsPerBlock,
-                elementsPerThread
+                gridSize,
+                blockSize,
+                threadSize
         };
 
-        auto deviceMem(alpaka::mem::buf::alloc<uint64_t, Idx>(devAcc, n));
-        auto hostMem(alpaka::mem::buf::alloc<uint64_t, Idx>(devHost, n));
+        auto deviceMem(alpaka::mem::buf::alloc<TRed, Idx>(devAcc, extent));
+        auto hostMem(alpaka::mem::buf::alloc<TRed, Idx>(devHost, extent));
         uint64_t* hostNative = alpaka::mem::view::getPtrNative(hostMem);
         for(Idx i = 0; i < memSize; ++i) {
             hostNative[i] = i + 1;
         }
-        alpaka::mem::view::copy(queueAcc, deviceMem, hostMem, n);
+        alpaka::mem::view::copy(queueAcc, deviceMem, hostMem, extent);
         auto incrementOne = [=] ALPAKA_FN_HOST_ACC (Idx i) {
             return i + 1;
         };
@@ -97,7 +113,7 @@ public:
         vikunja::transform::deviceTransform<TAcc>(devAcc, queueAcc, n, alpaka::mem::view::getPtrNative(deviceMem),
                 alpaka::mem::view::getPtrNative(deviceMem), incrementOne);
         auto end = std::chrono::high_resolution_clock::now();
-        alpaka::mem::view::copy(queueAcc, hostMem, deviceMem, n);
+        alpaka::mem::view::copy(queueAcc, hostMem, deviceMem, extent);
         auto nativePointer = alpaka::mem::view::getPtrNative(hostMem);
         bool isValid = true;
         for(Idx i = 0; i < n; ++i) {
@@ -113,7 +129,7 @@ TEST_CASE("Test transform", "[transform]")
 {
 
     using TestAccs = alpaka::test::acc::EnabledAccs<
-            alpaka::dim::DimInt<1u>,
+            alpaka::dim::DimInt<3u>,
             std::uint64_t>;
     //std::cout << std::thread::hardware_concurrency() << "\n";
     SECTION("deviceTransform") {

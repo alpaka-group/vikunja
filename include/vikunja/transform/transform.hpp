@@ -23,6 +23,7 @@ namespace vikunja {
             using Dim = alpaka::dim::Dim<TAcc>;
             using WorkDiv = alpaka::workdiv::WorkDivMembers<Dim, TIdx>;
             using Vec = alpaka::vec::Vec<Dim, TIdx>;
+            constexpr TIdx xIndex = Dim::value - 1u;
             if(n < blockSize) {
                 // TODO fix this?
                 // maybe not needed
@@ -40,8 +41,8 @@ namespace vikunja {
             Vec threadsPerBlock(Vec::all(static_cast<TIdx>(1u)));
             Vec blocksPerGrid(Vec::all(static_cast<TIdx>(1u)));
 
-            blocksPerGrid[0] = workDivGridSize;
-            threadsPerBlock[0] = workDivBlockSize;
+            blocksPerGrid[xIndex] = workDivGridSize;
+            threadsPerBlock[xIndex] = workDivBlockSize;
 
             WorkDiv multiBlockWorkDiv{ blocksPerGrid, threadsPerBlock, elementsPerThread};
             detail::BlockThreadTransformKernel<blockSize, MemAccessPolicy> kernel;
@@ -57,6 +58,7 @@ namespace vikunja {
             using Dim = alpaka::dim::Dim<TAcc>;
             using WorkDiv = alpaka::workdiv::WorkDivMembers<Dim, TIdx>;
             using Vec = alpaka::vec::Vec<Dim, TIdx>;
+            constexpr TIdx xIndex = Dim::value - 1u;
             if(n < blockSize) {
                 // TODO fix this?
                 // maybe not needed
@@ -74,8 +76,8 @@ namespace vikunja {
             Vec threadsPerBlock(Vec::all(static_cast<TIdx>(1u)));
             Vec blocksPerGrid(Vec::all(static_cast<TIdx>(1u)));
 
-            blocksPerGrid[0] = workDivGridSize;
-            threadsPerBlock[0] = workDivBlockSize;
+            blocksPerGrid[xIndex] = workDivGridSize;
+            threadsPerBlock[xIndex] = workDivBlockSize;
 
             WorkDiv multiBlockWorkDiv{ blocksPerGrid, threadsPerBlock, elementsPerThread};
             detail::BlockThreadTransformKernel<blockSize, MemAccessPolicy> kernel;
