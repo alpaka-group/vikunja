@@ -12,12 +12,6 @@
 #include <vikunja/reduce/detail/BlockThreadReduceKernel.hpp>
 #include <iostream>
 
-#ifdef ALPAKA_ACC_GPU_CUDA_ENABLED
-#define LAST_ERROR(cmd) {cudaDeviceSynchronize();std::cout << "In: " << cmd << " last error is: " << cudaGetErrorString(cudaGetLastError()) << "\n";}
-#else
-#define LAST_ERROR(cmd)
-#endif
-
 namespace vikunja {
 namespace reduce {
     namespace detail {
