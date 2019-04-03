@@ -91,9 +91,9 @@ namespace reduce {
         Vec sharedMemExtent(Vec::all(static_cast<TIdx>(1u)));
         sharedMemExtent[xIndex] = gridSize;
 
-        std::cout << "elementsPerThread: " << singleElementsPerThread << "\n";
-        std::cout << "threadsPerBlock: " << singleThreadsPerBlock << "\n";
-        std::cout << "blocksPerGrid: " << singleBlocksPerGrid << "\n";
+        //std::cout << "elementsPerThread: " << singleElementsPerThread << "\n";
+        //std::cout << "threadsPerBlock: " << singleThreadsPerBlock << "\n";
+        //std::cout << "blocksPerGrid: " << singleBlocksPerGrid << "\n";
 
         WorkDiv multiBlockWorkDiv{ blocksPerGrid, threadsPerBlock, elementsPerThread };
         WorkDiv singleBlockWorkDiv{ singleBlocksPerGrid, singleThreadsPerBlock, singleElementsPerThread};
@@ -102,33 +102,34 @@ namespace reduce {
         // this should not destroy the original data
         // TODO move this to external method
 
-        LAST_ERROR("beforeInit")
+        //LAST_ERROR("beforeInit")
         auto secondPhaseBuffer(alpaka::mem::buf::alloc<TRed, TIdx >(devAcc, sharedMemExtent));
-        LAST_ERROR("afterInit")
+        //LAST_ERROR("afterInit")
 
         detail::BlockThreadReduceKernel<blockSize, MemAccessPolicy, TRed> multiBlockKernel, singleBlockKernel;
-        std::cout << "after kernel create\n";
+        //std::cout << "after kernel create\n";
         // execute kernels
         alpaka::kernel::exec<TAcc>(queue, multiBlockWorkDiv, multiBlockKernel, buffer, alpaka::mem::view::getPtrNative(secondPhaseBuffer), n, transformFunc, func);
-        std::cout << "after first kernel\n";
+        //std::cout << "after first kernel\n";
         alpaka::kernel::exec<TAcc>(queue, singleBlockWorkDiv, singleBlockKernel, alpaka::mem::view::getPtrNative(secondPhaseBuffer), alpaka::mem::view::getPtrNative(secondPhaseBuffer), gridSize, detail::Identity<TRed>(), func);
-        LAST_ERROR("afterLaunch");
-        std::cout << "after second kernel\n";
+        //LAST_ERROR("afterLaunch");
+        //std::cout << "after second kernel\n";
         auto sharedMemPointer = alpaka::mem::view::getPtrNative(secondPhaseBuffer);
 
         //TRed result;
         auto resultView(alpaka::mem::buf::alloc<TRed, TIdx >(devHost, resultBufferExtent));
         //alpaka::mem::view::ViewPlainPtr<TDevHost, TRed, Dim, TIdx> resultView{&result, devHost, static_cast<TIdx>(1u)};
-        std::cout << "after view setup\n";
+        //std::cout << "after view setup\n";
         alpaka::mem::view::copy(queue, resultView, secondPhaseBuffer, resultBufferExtent);
-        LAST_ERROR("afterCopy")
-        std::cout << "after view copy\n";
+        //LAST_ERROR("afterCopy")
+        //std::cout << "after view copy\n";
         // wait for result, otherwise the async CPU queue causes a segfault
         alpaka::wait::wait(queue);
-        std::cout << "after wait \n";
+        //std::cout << "after wait \n";
 
-
+        std::cout << "before fetch result";
         auto result = alpaka::mem::view::getPtrNative(resultView);
+        std::cout << "after fetch result";
         return result[0];
     }
 
