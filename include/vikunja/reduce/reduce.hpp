@@ -127,9 +127,7 @@ namespace reduce {
         alpaka::wait::wait(queue);
         //std::cout << "after wait \n";
 
-        std::cout << "before fetch result";
         auto result = alpaka::mem::view::getPtrNative(resultView);
-        std::cout << "after fetch result";
         return result[0];
     }
 
