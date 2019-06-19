@@ -1,9 +1,4 @@
-//
-// Created by hauke on 11.01.19.
-//
-
-#ifndef VIKUNJA_ALPAKASETUP_HPP
-#define VIKUNJA_ALPAKASETUP_HPP
+#pragma once
 
 #include <alpaka/alpaka.hpp>
 
@@ -35,5 +30,3 @@ namespace test {
     };
 }
 }
-
-#endif //VIKUNJA_ALPAKASETUP_HPP

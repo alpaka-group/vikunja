@@ -1,7 +1,3 @@
-//
-// Created by hauke on 11.01.19.
-//
-
 #include <vikunja/test/AlpakaSetup.hpp>
 #include <vikunja/reduce/detail/BlockThreadReduceKernel.hpp>
 #include <alpaka/alpaka.hpp>

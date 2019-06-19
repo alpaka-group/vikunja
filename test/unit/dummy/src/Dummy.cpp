@@ -1,6 +1,3 @@
-//
-// Created by hauke on 10.01.19.
-//
 #include <catch2/catch.hpp>
 
 int two() {

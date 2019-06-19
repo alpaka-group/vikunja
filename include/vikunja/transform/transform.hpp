@@ -1,7 +1,3 @@
-//
-// Created by hauke on 25.01.19.
-//
-
 #pragma once
 
 #include <vikunja/mem/iterator/PolicyBasedBlockIterator.hpp>

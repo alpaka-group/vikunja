@@ -1,7 +1,3 @@
-//
-// Created by mewes30 on 19.12.18.
-//
-
 #pragma once
 
 #include <alpaka/alpaka.hpp>

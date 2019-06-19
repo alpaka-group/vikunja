@@ -1,7 +1,3 @@
-//
-// Created by mewes30 on 16.01.19.
-//
-
 #include <vikunja/mem/iterator/BaseIterator.hpp>
 #include <vikunja/mem/iterator/PolicyBasedBlockIterator.hpp>
 #include <alpaka/alpaka.hpp>
