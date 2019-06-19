@@ -27,8 +27,8 @@ namespace vikunja {
 
                 template<typename TAcc, typename TDevAcc, typename TIdx = alpaka::idx::Idx<TAcc>>
                 static TIdx getGridSize(TDevAcc const &devAcc __attribute__((unused))) {
-                    // TODO: make sure this is reasonable
-                    return std::max(static_cast<TIdx>(1), static_cast<TIdx>(std::thread::hardware_concurrency()));
+                    static TIdx threadCount(std::thread::hardware_concurrency());
+                    return std::max(static_cast<TIdx>(1), threadCount);
                 }
 
             };
@@ -50,15 +50,20 @@ namespace vikunja {
             struct BlockBasedCudaPolicy {
                 template<typename TAcc, typename TIdx = alpaka::idx::Idx<TAcc>>
                 static constexpr TIdx getBlockSize() noexcept {
-                    // TODO
-                    return 1024;
+                    // René Widera suggests this as a standard default.
+                    return 256;
                 }
+                // TODO: This might be not optimal if multiple devices with different multiProcessorCounts are used
+                // within the same executed binary. This is a rare edge case, as most Multi-GPU except for test nodes
+                // are homogeneous, but it should be mentioned here. Still, it is not critical as this should only
+                // affect the performance, not the functionality of the code.
                 template<typename TAcc, typename TDevAcc, typename TIdx = alpaka::idx::Idx<TAcc>>
                 static TIdx getGridSize(TDevAcc const &devAcc) {
+                    static TIdx maxGridSize(static_cast<TIdx>(
+                                                    alpaka::acc::getAccDevProps<TAcc>(devAcc).m_multiProcessorCount *
+                                                    8));
                     // Jonas Schenke calculated this for CUDA
-                    return static_cast<TIdx>(
-                            alpaka::acc::getAccDevProps<TAcc>(devAcc).m_multiProcessorCount *
-                            2);
+                    return maxGridSize;
                 }
 
             };
