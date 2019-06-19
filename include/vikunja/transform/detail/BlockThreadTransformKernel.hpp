@@ -7,6 +7,11 @@ namespace vikunja {
     namespace transform {
         namespace detail {
 
+            /**
+             * This provides transform kernels for both the single-input and the double-input transform operation.
+             * @tparam TBlockSize The block size of the kernel.
+             * @tparam TMemAccessPolicy The memory access policy of the kernel.
+             */
             template<uint64_t TBlockSize, typename TMemAccessPolicy>
             struct BlockThreadTransformKernel {
 

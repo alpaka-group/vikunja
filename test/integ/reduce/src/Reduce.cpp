@@ -6,7 +6,6 @@
 #include <catch2/catch.hpp>
 #include <cstdlib>
 #include <iostream>
-#include <vikunja/GenericLambdaKernel.hpp>
 #include <vikunja/reduce/reduce.hpp>
 #include <type_traits>
 #include <cstdio>

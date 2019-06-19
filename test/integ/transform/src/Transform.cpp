@@ -1,5 +1,4 @@
 #include <vikunja/test/AlpakaSetup.hpp>
-#include <vikunja/GenericLambdaKernel.hpp>
 #include <vikunja/transform/transform.hpp>
 #include <alpaka/alpaka.hpp>
 #include <alpaka/test/acc/Acc.hpp>
