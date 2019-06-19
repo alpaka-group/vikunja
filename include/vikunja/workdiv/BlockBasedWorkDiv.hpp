@@ -6,6 +6,9 @@
 namespace vikunja {
     namespace workdiv {
         namespace policies {
+            /**
+             * Sequential policy. Both grid and block size are 1.
+             */
             struct BlockBasedSequentialPolicy {
                 template<typename TAcc, typename TIdx = alpaka::idx::Idx<TAcc>>
                 static constexpr TIdx getBlockSize() noexcept {
@@ -17,7 +20,9 @@ namespace vikunja {
                     return 1;
                 }
             };
-            // for accelerators that parallelize on the grid-block-level
+            /**
+             * For accelerators that parallelize on the grid-block-level
+             */
             struct BlockBasedGridBlockPolicy {
 
                 template<typename TAcc, typename TIdx = alpaka::idx::Idx<TAcc>>
@@ -46,7 +51,9 @@ namespace vikunja {
                     return 1;
                 }
             };
-            // for CUDA
+            /**
+             * For CUDA.
+             */
             struct BlockBasedCudaPolicy {
                 template<typename TAcc, typename TIdx = alpaka::idx::Idx<TAcc>>
                 static constexpr TIdx getBlockSize() noexcept {
@@ -69,7 +76,7 @@ namespace vikunja {
             };
         } // policies
 
-        // TODO: implement for other accelerators
+        // TODO: implement for other accelerators, especially HIP.
         namespace traits {
             template<typename TAcc, typename TSfinae = void>
             struct GetBlockBasedPolicy{

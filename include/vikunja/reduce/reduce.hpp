@@ -48,7 +48,7 @@ namespace reduce {
      * @param devAcc The alpaka accelerator.
      * @param devHost The alpaka host.
      * @param queue The alpaka queue.
-     * @param n The number of input elements. Must be of type TIdx
+     * @param n The number of input elements. Must be of type TIdx.
      * @param buffer The input iterator. Should be a pointer-like object.
      * @param transformFunc The transform operator.
      * @param func The reduce operator.

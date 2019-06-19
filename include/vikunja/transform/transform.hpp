@@ -10,6 +10,29 @@ namespace vikunja {
     namespace transform {
 
 
+        /**
+         * This is a function that transforms every element of an input iterator to another element in an output
+         * iterator, i.e. if one has the array [1,2,3,4] and the transform function (x) -> x + 1, the output
+         * will contain [2,3,4,5].
+         * Input and output iterator can be the same. The output must be at least as big as the input, otherwise bad things are bound to happen.
+         * @tparam TAcc The alpaka accelerator type.
+         * @tparam WorkDivPolicy The working division policy. Defaults to a templated value depending on the accelerator.
+         * For the API of this, see workdiv/BlockBasedWorkDiv.hpp
+         * @tparam MemAccessPolicy The memory access policy. Defaults to a templated value depending on the accelerator.
+         * For the API of this, see mem/iterator/PolicyBasedBlockIterator
+         * @tparam TFunc Type of the transform operator.
+         * @tparam TInputIterator  Type of the input iterator. Should be a pointer-like type.
+         * @tparam TOutputIterator Type of the output iterator. Should be a pointer-like type.
+         * @tparam TDevAcc The type of the alpaka accelerator.
+         * @tparam TQueue The type of the alpaka queue.
+         * @tparam TIdx The index type to use.
+         * @param devAcc The alpaka accelerator.
+         * @param queue The alpaka queue.
+         * @param n The number of input elements. Must be of type TIdx.
+         * @param source The input iterator. Should be pointer-like.
+         * @param destination The output iterator. Should be pointer-like.
+         * @param func The transform operator.
+         */
         template<typename TAcc, typename WorkDivPolicy = vikunja::workdiv::BlockBasedPolicy<TAcc>, typename MemAccessPolicy = vikunja::mem::iterator::MemAccessPolicy<TAcc>, typename TFunc, typename TInputIterator, typename TOutputIterator, typename TDevAcc, typename TQueue, typename TIdx >
         auto deviceTransform(TDevAcc &devAcc, TQueue &queue,  TIdx const &n, TInputIterator const &source, TOutputIterator const &destination, TFunc const &func) -> void {
             if(n == 0) {
@@ -45,6 +68,26 @@ namespace vikunja {
             alpaka::kernel::exec<TAcc>(queue, multiBlockWorkDiv, kernel, source, destination, n, func);
         }
 
+        /**
+         * A transform similar to the above, except that two input iterators are used in parallel.
+         * @tparam TAcc
+         * @tparam WorkDivPolicy
+         * @tparam MemAccessPolicy
+         * @tparam TFunc
+         * @tparam TInputIterator
+         * @tparam TInputIteratorSecond
+         * @tparam TOutputIterator
+         * @tparam TDevAcc
+         * @tparam TQueue
+         * @tparam TIdx
+         * @param devAcc
+         * @param queue
+         * @param n
+         * @param source
+         * @param sourceSecond
+         * @param destination
+         * @param func
+         */
         template<typename TAcc, typename WorkDivPolicy = vikunja::workdiv::BlockBasedPolicy<TAcc>, typename MemAccessPolicy = vikunja::mem::iterator::MemAccessPolicy<TAcc>, typename TFunc, typename TInputIterator, typename TInputIteratorSecond, typename TOutputIterator, typename TDevAcc, typename TQueue, typename TIdx >
         auto deviceTransform(TDevAcc &devAcc, TQueue &queue,  TIdx const &n, TInputIterator const &source, TInputIteratorSecond const &sourceSecond, TOutputIterator const &destination, TFunc const &func) -> void {
             if(n == 0) {
