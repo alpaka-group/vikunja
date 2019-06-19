@@ -23,6 +23,7 @@ namespace vikunja {
             };
             // for accelerators that parallelize on the grid-block-level
             struct BlockBasedGridBlockPolicy {
+
                 template<typename TAcc, typename TIdx = alpaka::idx::Idx<TAcc>>
                 static constexpr TIdx getBlockSize() {
                     return 1;
