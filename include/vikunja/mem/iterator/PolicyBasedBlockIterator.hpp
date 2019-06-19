@@ -1,7 +1,3 @@
-//
-// Created by mewes30 on 16.01.19.
-//
-
 #pragma once
 
 #include "BaseIterator.hpp"
@@ -10,15 +6,38 @@
 namespace vikunja {
     namespace mem {
         namespace iterator {
+            /**
+             * A policy based iterator that splits the data into chunks. Depending on the memory access policy,
+             * these chunks can access the data sequential or in a striding pattern.
+             * @tparam MemAccessPolicy The memory access policy to use.
+             * @tparam TAcc The alpaka accelerator type.
+             * @tparam TIterator The underlying iterator.
+             *
+             * The memory access policy should provide three values:
+             * - The startIndex of the iterator, which is the first index to use.
+             * - The endIndex of the iterator, which is the last index to use.
+             * - The stepSize of the iterator, which tells how far the iterator should move.
+             */
             template <typename MemAccessPolicy, typename TAcc, typename TIterator>
             class PolicyBasedBlockIterator : public BaseIterator<TIterator> {
             private:
-                uint64_t mStep;
+                uint64_t mStep; /**< The step size of this iterator. */
             public:
-                
+
+                /**
+                 * Create a policy based block iterator
+                 * @param data The data to iterate over.
+                 * @param acc The accelerator type to use.
+                 * @param problemSize The size of the original iterator.
+                 * @param blockSize The size of the blocks.
+                 */
                 ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE PolicyBasedBlockIterator(TIterator const &data, TAcc const &acc, uint64_t problemSize, uint64_t blockSize) : BaseIterator<TIterator>(data, MemAccessPolicy::getStartIndex(acc, problemSize, blockSize), MemAccessPolicy::getEndIndex(acc, problemSize, blockSize)), mStep(MemAccessPolicy::getStepSize(acc, problemSize, blockSize))
                 {}
 
+                /**
+                 * Default copy constructor.
+                 * @param other To be copied.
+                 */
                 ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE PolicyBasedBlockIterator(const PolicyBasedBlockIterator &other) = default;
                 
                 //-----------------------------------------------------------------------------
@@ -128,6 +147,9 @@ namespace vikunja {
             };
             
             namespace policies {
+                /**
+                 * A memory policy for the PolicyBlockBasedIterator that provides grid striding memory access.
+                 */
                 struct GridStridingMemAccessPolicy {
                     template<typename TAcc, typename TIdx>
                     ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE
@@ -166,6 +188,9 @@ namespace vikunja {
                     }
                 };
 
+                /**
+                 * A memory access policy for the PolicyBlockBasedIterator that provides linear memory access.
+                 */
                 struct LinearMemAccessPolicy {
                     template<typename TAcc, typename TIdx>
                     ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE
@@ -211,15 +236,26 @@ namespace vikunja {
             } // policies
 
             namespace traits {
-                template<typename TAcc, typename TSfinae = void>
+                /**
+                 * The memory access policy getter trait by platform.
+                 * @tparam TAcc The platform type.
+                 * @tparam TSfinae
+                 */
+                template<typename TPtlf, typename TSfinae = void>
                 struct GetMemAccessPolicyByPltf{};
 
+                /**
+                 * On cpu, default memory access is linear.
+                 */
                 template<>
                 struct GetMemAccessPolicyByPltf<alpaka::pltf::PltfCpu> {
                     using type = policies::LinearMemAccessPolicy;
                 };
 
 #ifdef ALPAKA_ACC_GPU_CUDA_ENABLED
+                /**
+                 * On cuda, default memory access is grid striding.
+                 */
                 template<>
                 struct GetMemAccessPolicyByPltf<alpaka::pltf::PltfCudaRt> {
                     using type = policies::GridStridingMemAccessPolicy;
@@ -228,7 +264,9 @@ namespace vikunja {
 
             } //traits
 
-            // shortcut to derive policy from accelerator
+            /**
+             * Shortcut to derive memory access policy from accelerator.
+             */
             template<typename TAcc>
             using MemAccessPolicy = typename traits::GetMemAccessPolicyByPltf<alpaka::pltf::Pltf<alpaka::dev::Dev<TAcc>>>::type;
         } // iterator

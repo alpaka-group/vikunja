@@ -1,7 +1,3 @@
-//
-// Created by hauke on 11.01.19.
-//
-
 #include <vikunja/test/AlpakaSetup.hpp>
 #include <vikunja/GenericLambdaKernel.hpp>
 #include <vikunja/transform/transform.hpp>
