@@ -107,6 +107,12 @@ namespace vikunja {
                 using type = policies::BlockBasedCudaPolicy;
             };
 #endif
+#ifdef ALPAKA_ACC_GPU_HIP_ENABLED
+            template<typename... TArgs>
+            struct GetBlockBasedPolicy<alpaka::acc::AccGpuHipRt<TArgs...>> {
+                using type = policies::BlockBasedCudaPolicy;
+            };
+#endif
         } // traits
 
         template<typename TAcc>

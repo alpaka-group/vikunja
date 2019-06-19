@@ -60,6 +60,8 @@ public:
                 typename std::conditional<std::is_same<PltfAcc, alpaka::pltf::PltfCpu>::value, alpaka::queue::QueueCpuSync,
 #ifdef  ALPAKA_ACC_GPU_CUDA_ENABLED
         alpaka::queue::QueueCudaRtSync
+#elseif ALPAKA_ACC_GPU_HIP_ENABLED
+        alpaka::queue::QueueHipRtSync
 #else
         alpaka::queue::QueueCpuSync
 #endif
