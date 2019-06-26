@@ -126,7 +126,6 @@ namespace reduce {
         // execute kernels
         alpaka::kernel::exec<TAcc>(queue, multiBlockWorkDiv, multiBlockKernel, buffer, alpaka::mem::view::getPtrNative(secondPhaseBuffer), n, transformFunc, func);
         alpaka::kernel::exec<TAcc>(queue, singleBlockWorkDiv, singleBlockKernel, alpaka::mem::view::getPtrNative(secondPhaseBuffer), alpaka::mem::view::getPtrNative(secondPhaseBuffer), gridSize, detail::Identity<TRed>(), func);
-        auto sharedMemPointer = alpaka::mem::view::getPtrNative(secondPhaseBuffer);
 
         auto resultView(alpaka::mem::buf::alloc<TRed, TIdx >(devHost, resultBufferExtent));
         alpaka::mem::view::copy(queue, resultView, secondPhaseBuffer, resultBufferExtent);

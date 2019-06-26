@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 
-set(_TARGET_NAME "iteratorTest")
+set(_TARGET_NAME "test_iterator")
 
 
 alpaka_add_executable(

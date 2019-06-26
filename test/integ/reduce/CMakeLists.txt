@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 
-set(_TARGET_NAME "reduceTest")
+set(_TARGET_NAME "test_reduce")
 
 
 alpaka_add_executable(

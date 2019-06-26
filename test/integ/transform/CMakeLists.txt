@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 
-set(_TARGET_NAME "transformTest")
+set(_TARGET_NAME "test_transform")
 
 
 alpaka_add_executable(
