@@ -75,7 +75,8 @@ int main() {
 
 
     // TRANSFORM CALL:
-    // Takes the arguments: accelerator device, host device, accelerator queue, size of data, pointer-like to memory, transform lambda, reduce lambda.
+    // Takes the arguments: accelerator device, host device, accelerator queue, size of data, input pointer-like, output pointer-like, transform lambda.
+    // Can be in-place or out-of-place.
     vikunja::transform::deviceTransform<TAcc>(devAcc, queueAcc, n, alpaka::mem::view::getPtrNative(deviceMem), alpaka::mem::view::getPtrNative(deviceMem), doubleNum);
 
     // copy back to host to validate
