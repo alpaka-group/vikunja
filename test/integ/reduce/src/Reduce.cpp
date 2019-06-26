@@ -39,16 +39,9 @@ public:
         using Vec = alpaka::vec::Vec<Dim, Idx>;
         constexpr Idx xIndex = Dim::value - 1u;
 
-        Vec gridSize(Vec::all(static_cast<Idx>(1u)));
-        Vec blockSize(Vec::all(static_cast<Idx>(1u)));
-        Vec threadSize(Vec::all(static_cast<Idx>(1u)));
-
         Vec extent(Vec::all(static_cast<Idx>(1)));
         extent[xIndex] = n;
-
-        gridSize[xIndex] = blocksPerGrid;
-        blockSize[xIndex] = threadsPerBlock;
-        threadSize[xIndex] = elementsPerThread;
+        
 
         using DevAcc = alpaka::dev::Dev<TAcc>;
         using PltfAcc = alpaka::pltf::Pltf<DevAcc>;
@@ -67,7 +60,6 @@ public:
 #endif
         >::type;
         using QueueHost = alpaka::queue::QueueCpuSync;
-        using WorkDiv = alpaka::workdiv::WorkDivMembers<Dim, Idx>;
 
         // Get the host device.
         DevHost devHost(
@@ -81,11 +73,6 @@ public:
         // Get a queue on the accelerator device.
         QueueAcc queueAcc(
                 devAcc);
-        WorkDiv workdiv{
-                gridSize,
-                blockSize,
-                threadSize
-        };
 
         auto deviceMem(alpaka::mem::buf::alloc<TRed, Idx>(devAcc, extent));
         auto hostMem(alpaka::mem::buf::alloc<TRed, Idx>(devHost, extent));
