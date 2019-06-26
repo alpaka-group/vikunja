@@ -10,7 +10,7 @@ Directories:
     - `workdiv`: This contains various working divisions for the different backends. 
 
 ## Current Alpaka version
-For the tests to run, Alpaka needs to be provided as an external dependency (e.g. via cmake -DALPAKA_ROOT=...). As the Alpaka API is rather unstable right now, the last working commit of Alpaka is `6038953c403251e3e27a19e0abd74ca31a4c131b`. Newer commits might work, but there is some renaming going on in Alpaka that is not yet incorporated into this code.
+For the tests to run, Alpaka needs to be provided as an external dependency (e.g. via cmake -DALPAKA_ROOT=...). Please use the latest version of the Alpaka dev branch.
 
 ## Examples
 Two small examples can be found in the folder `example/`.
