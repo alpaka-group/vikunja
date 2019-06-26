@@ -13,6 +13,7 @@ target_compile_definitions(CatchMain PUBLIC "CATCH_CONFIG_FAST_COMPILE")
 target_include_directories(CatchMain SYSTEM PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/../thirdParty/catch2/include)
 
+# Link other tests against this library to avoid repeated compilation of Catch2.
 add_library(vikunjaTestLib dummy.cpp)
 target_include_directories(vikunjaTestLib SYSTEM PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/../include)
