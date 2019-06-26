@@ -41,7 +41,7 @@ public:
 
         Vec extent(Vec::all(static_cast<Idx>(1)));
         extent[xIndex] = n;
-        
+
 
         using DevAcc = alpaka::dev::Dev<TAcc>;
         using PltfAcc = alpaka::pltf::Pltf<DevAcc>;
@@ -50,16 +50,16 @@ public:
         using PltfHost = alpaka::pltf::PltfCpu;
         using DevHost = alpaka::dev::Dev<PltfHost>;
         using QueueAcc = //alpaka::queue::QueueCpuAsync;
-                typename std::conditional<std::is_same<PltfAcc, alpaka::pltf::PltfCpu>::value, alpaka::queue::QueueCpuSync,
+                typename std::conditional<std::is_same<PltfAcc, alpaka::pltf::PltfCpu>::value, alpaka::queue::QueueCpuBlocking,
 #ifdef  ALPAKA_ACC_GPU_CUDA_ENABLED
-        alpaka::queue::QueueCudaRtSync
+        alpaka::queue::QueueCudaRtBlocking
 #elseif ALPAKA_ACC_GPU_HIP_ENABLED
-        alpaka::queue::QueueHipRtSync
+        alpaka::queue::QueueHipRtBlocking
 #else
-        alpaka::queue::QueueCpuSync
+        alpaka::queue::QueueCpuBlocking
 #endif
         >::type;
-        using QueueHost = alpaka::queue::QueueCpuSync;
+        using QueueHost = alpaka::queue::QueueCpuBlocking;
 
         // Get the host device.
         DevHost devHost(

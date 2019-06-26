@@ -77,11 +77,11 @@ struct TestPolicyBasedBlockIterator {
 
         using DevAcc = alpaka::dev::Dev<TAcc>;
         using PltfAcc = alpaka::pltf::Pltf<DevAcc>;
-        using QueueAcc = alpaka::queue::QueueCpuSync;
+        using QueueAcc = alpaka::queue::QueueCpuBlocking;
         //alpaka::test::queue::DefaultQueue<alpaka::dev::Dev<TAcc>>;
         using PltfHost = alpaka::pltf::PltfCpu;
         using DevHost = alpaka::dev::Dev<PltfHost>;
-        using QueueHost = alpaka::queue::QueueCpuSync;
+        using QueueHost = alpaka::queue::QueueCpuBlocking;
         using WorkDiv = alpaka::workdiv::WorkDivMembers<Dim, Idx>;
         // Get the host device.
         DevHost devHost(
