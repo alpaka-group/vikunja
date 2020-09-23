@@ -39,7 +39,7 @@ namespace vikunja {
                  * @param other To be copied.
                  */
                 ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE PolicyBasedBlockIterator(const PolicyBasedBlockIterator &other) = default;
-                
+
                 //-----------------------------------------------------------------------------
                 //! Returns the iterator for the last item.
                 ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto end() const -> PolicyBasedBlockIterator
@@ -145,7 +145,7 @@ namespace vikunja {
                     return *this;
                 }
             };
-            
+
             namespace policies {
                 /**
                  * A memory policy for the PolicyBlockBasedIterator that provides grid striding memory access.
@@ -257,7 +257,7 @@ namespace vikunja {
                  * On cuda, default memory access is grid striding.
                  */
                 template<>
-                struct GetMemAccessPolicyByPltf<alpaka::pltf::PltfCudaRt> {
+                struct GetMemAccessPolicyByPltf<alpaka::pltf::PltfUniformCudaHipRt> {
                     using type = policies::GridStridingMemAccessPolicy;
                 };
 #endif // ALPAKA_ACC_GPU_CUDA_ENABLED

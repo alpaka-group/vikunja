@@ -1,7 +1,7 @@
 #include <vikunja/test/AlpakaSetup.hpp>
 #include <vikunja/reduce/detail/BlockThreadReduceKernel.hpp>
 #include <alpaka/alpaka.hpp>
-#include <alpaka/test/acc/Acc.hpp>
+#include <alpaka/test/acc/TestAccs.hpp>
 #include <alpaka/test/queue/Queue.hpp>
 #include <catch2/catch.hpp>
 #include <cstdlib>
@@ -28,13 +28,13 @@ public:
     template<typename TAcc>
     void operator()() {
         using TRed = uint64_t;
-        
+
         using Idx = alpaka::idx::Idx<TAcc>;
         using Dim = alpaka::dim::Dim<TAcc>;
         const Idx n = static_cast<Idx>(memSize);
-        constexpr Idx blocksPerGrid = 8;
-        constexpr Idx threadsPerBlock = 1;
-        const Idx elementsPerThread = n / blocksPerGrid / threadsPerBlock + 1;
+        //constexpr Idx blocksPerGrid = 8;
+        //constexpr Idx threadsPerBlock = 1;
+        //const Idx elementsPerThread = n / blocksPerGrid / threadsPerBlock + 1;
 
         using Vec = alpaka::vec::Vec<Dim, Idx>;
         constexpr Idx xIndex = Dim::value - 1u;
@@ -53,7 +53,7 @@ public:
                 typename std::conditional<std::is_same<PltfAcc, alpaka::pltf::PltfCpu>::value, alpaka::queue::QueueCpuBlocking,
 #ifdef  ALPAKA_ACC_GPU_CUDA_ENABLED
         alpaka::queue::QueueCudaRtBlocking
-#elseif ALPAKA_ACC_GPU_HIP_ENABLED
+#elif ALPAKA_ACC_GPU_HIP_ENABLED
         alpaka::queue::QueueHipRtBlocking
 #else
         alpaka::queue::QueueCpuBlocking

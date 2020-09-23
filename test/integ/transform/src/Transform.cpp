@@ -1,7 +1,7 @@
 #include <vikunja/test/AlpakaSetup.hpp>
 #include <vikunja/transform/transform.hpp>
 #include <alpaka/alpaka.hpp>
-#include <alpaka/test/acc/Acc.hpp>
+#include <alpaka/test/acc/TestAccs.hpp>
 #include <alpaka/test/queue/Queue.hpp>
 #include <catch2/catch.hpp>
 #include <cstdlib>
@@ -36,7 +36,7 @@ public:
     typename std::conditional<std::is_same<PltfAcc, alpaka::pltf::PltfCpu>::value, alpaka::queue::QueueCpuBlocking,
 #ifdef  ALPAKA_ACC_GPU_CUDA_ENABLED
             alpaka::queue::QueueCudaRtBlocking
-#elseif ALPAKA_ACC_GPU_HIP_ENABLED
+#elif ALPAKA_ACC_GPU_HIP_ENABLED
         alpaka::queue::QueueHipRtBlocking
 #else
             alpaka::queue::QueueCpuBlocking

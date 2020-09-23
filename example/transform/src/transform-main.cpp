@@ -35,7 +35,7 @@ int main() {
     typename std::conditional<std::is_same<PltfAcc, alpaka::pltf::PltfCpu>::value, alpaka::queue::QueueCpuBlocking,
 #ifdef  ALPAKA_ACC_GPU_CUDA_ENABLED
             alpaka::queue::QueueCudaRtBlocking
-#elseif ALPAKA_ACC_GPU_HIP_ENABLED
+#elif ALPAKA_ACC_GPU_HIP_ENABLED
         alpaka::queue::QueueHipRtBlocking
 #else
             alpaka::queue::QueueCpuBlocking
