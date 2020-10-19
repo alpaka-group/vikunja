@@ -1,8 +1,7 @@
 #include <vikunja/test/AlpakaSetup.hpp>
 #include <vikunja/reduce/detail/BlockThreadReduceKernel.hpp>
 #include <alpaka/alpaka.hpp>
-#include <alpaka/test/acc/TestAccs.hpp>
-#include <alpaka/test/queue/Queue.hpp>
+#include <alpaka/example/ExampleDefaultAcc.hpp>
 #include <catch2/catch.hpp>
 #include <cstdlib>
 #include <iostream>
@@ -49,16 +48,9 @@ public:
        // using QueueAcc = alpaka::test::queue::DefaultQueue<alpaka::dev::Dev<TAcc>>;
         using PltfHost = alpaka::pltf::PltfCpu;
         using DevHost = alpaka::dev::Dev<PltfHost>;
-        using QueueAcc = //alpaka::queue::QueueCpuAsync;
-                typename std::conditional<std::is_same<PltfAcc, alpaka::pltf::PltfCpu>::value, alpaka::queue::QueueCpuBlocking,
-#ifdef  ALPAKA_ACC_GPU_CUDA_ENABLED
-        alpaka::queue::QueueCudaRtBlocking
-#elif ALPAKA_ACC_GPU_HIP_ENABLED
-        alpaka::queue::QueueHipRtBlocking
-#else
-        alpaka::queue::QueueCpuBlocking
-#endif
-        >::type;
+
+	using QueueAcc = alpaka::queue::Queue<DevAcc, alpaka::queue::Blocking>;
+
         using QueueHost = alpaka::queue::QueueCpuBlocking;
 
         // Get the host device.
@@ -109,7 +101,7 @@ public:
 TEST_CASE("Test reduce", "[reduce]")
 {
 
-    using TestAccs = alpaka::test::acc::EnabledAccs<
+    using TestAccs = alpaka::example::ExampleDefaultAcc<
             alpaka::dim::DimInt<3u>,
             std::uint64_t>;
     //std::cout << std::thread::hardware_concurrency() << "\n";
@@ -118,7 +110,10 @@ TEST_CASE("Test reduce", "[reduce]")
         std::vector<uint64_t> memorySizes{1, 10, 777,(1<< 10) + 1, 1 << 12, 1 << 14, 1 << 15, 1 << 18, (1 << 18) + 1, 1 << 25, 1 << 27};
 
         for(auto &memSize: memorySizes) {
-            alpaka::meta::forEachType<TestAccs>(TestTemplate(memSize));
+	  // alpaka currently offers no function to keep all active back-ends
+	  //alpaka::meta::forEachType<TestAccs>(TestTemplate(memSize));
+	  TestTemplate t(memSize);
+	  t.operator()<TestAccs>();
         }
 #ifdef VIKUNJA_REDUCE_COMPARING_BENCHMARKS
         std::cout << "---------------------------------------------\n";
