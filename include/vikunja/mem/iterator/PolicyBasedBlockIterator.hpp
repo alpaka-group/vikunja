@@ -252,7 +252,7 @@ namespace vikunja {
                     using type = policies::LinearMemAccessPolicy;
                 };
 
-#ifdef ALPAKA_ACC_GPU_CUDA_ENABLED
+#if defined(ALPAKA_ACC_GPU_CUDA_ENABLED) || defined(ALPAKA_ACC_GPU_HIP_ENABLED)
                 /**
                  * On cuda, default memory access is grid striding.
                  */
@@ -260,7 +260,7 @@ namespace vikunja {
                 struct GetMemAccessPolicyByPltf<alpaka::pltf::PltfUniformCudaHipRt> {
                     using type = policies::GridStridingMemAccessPolicy;
                 };
-#endif // ALPAKA_ACC_GPU_CUDA_ENABLED
+#endif // (ALPAKA_ACC_GPU_CUDA_ENABLED) || defined(ALPAKA_ACC_GPU_HIP_ENABLED)
 
             } //traits
 
