@@ -6,20 +6,21 @@
 #include <alpaka/alpaka.hpp>
 #include <type_traits>
 
-namespace vikunja {
-    namespace transform {
-
-
+namespace vikunja
+{
+    namespace transform
+    {
         /**
          * This is a function that transforms every element of an input iterator to another element in an output
          * iterator, i.e. if one has the array [1,2,3,4] and the transform function (x) -> x + 1, the output
          * will contain [2,3,4,5].
-         * Input and output iterator can be the same. The output must be at least as big as the input, otherwise bad things are bound to happen.
+         * Input and output iterator can be the same. The output must be at least as big as the input, otherwise bad
+         * things are bound to happen.
          * @tparam TAcc The alpaka accelerator type.
-         * @tparam WorkDivPolicy The working division policy. Defaults to a templated value depending on the accelerator.
-         * For the API of this, see workdiv/BlockBasedWorkDiv.hpp
-         * @tparam MemAccessPolicy The memory access policy. Defaults to a templated value depending on the accelerator.
-         * For the API of this, see mem/iterator/PolicyBasedBlockIterator
+         * @tparam WorkDivPolicy The working division policy. Defaults to a templated value depending on the
+         * accelerator. For the API of this, see workdiv/BlockBasedWorkDiv.hpp
+         * @tparam MemAccessPolicy The memory access policy. Defaults to a templated value depending on the
+         * accelerator. For the API of this, see mem/iterator/PolicyBasedBlockIterator
          * @tparam TFunc Type of the transform operator.
          * @tparam TInputIterator  Type of the input iterator. Should be a pointer-like type.
          * @tparam TOutputIterator Type of the output iterator. Should be a pointer-like type.
@@ -33,9 +34,26 @@ namespace vikunja {
          * @param destination The output iterator. Should be pointer-like.
          * @param func The transform operator.
          */
-        template<typename TAcc, typename WorkDivPolicy = vikunja::workdiv::BlockBasedPolicy<TAcc>, typename MemAccessPolicy = vikunja::mem::iterator::MemAccessPolicy<TAcc>, typename TFunc, typename TInputIterator, typename TOutputIterator, typename TDevAcc, typename TQueue, typename TIdx >
-        auto deviceTransform(TDevAcc &devAcc, TQueue &queue,  TIdx const &n, TInputIterator const &source, TOutputIterator const &destination, TFunc const &func) -> void {
-            if(n == 0) {
+        template<
+            typename TAcc,
+            typename WorkDivPolicy = vikunja::workdiv::BlockBasedPolicy<TAcc>,
+            typename MemAccessPolicy = vikunja::mem::iterator::MemAccessPolicy<TAcc>,
+            typename TFunc,
+            typename TInputIterator,
+            typename TOutputIterator,
+            typename TDevAcc,
+            typename TQueue,
+            typename TIdx>
+        auto deviceTransform(
+            TDevAcc& devAcc,
+            TQueue& queue,
+            TIdx const& n,
+            TInputIterator const& source,
+            TOutputIterator const& destination,
+            TFunc const& func) -> void
+        {
+            if(n == 0)
+            {
                 return;
             }
             constexpr uint64_t blockSize = WorkDivPolicy::template getBlockSize<TAcc>();
@@ -43,14 +61,15 @@ namespace vikunja {
             using WorkDiv = alpaka::workdiv::WorkDivMembers<Dim, TIdx>;
             using Vec = alpaka::vec::Vec<Dim, TIdx>;
             constexpr TIdx xIndex = Dim::value - 1u;
-            if(n < blockSize) {
+            if(n < blockSize)
+            {
                 // TODO fix this?
                 // maybe not needed
             }
             TIdx gridSize = WorkDivPolicy::template getGridSize<TAcc>(devAcc);
-            TIdx maxGridSize = static_cast<TIdx>(
-                    (((n + 1) / 2) - 1) / static_cast<TIdx>(blockSize) + 1);
-            if(gridSize > maxGridSize) {
+            TIdx maxGridSize = static_cast<TIdx>((((n + 1) / 2) - 1) / static_cast<TIdx>(blockSize) + 1);
+            if(gridSize > maxGridSize)
+            {
                 gridSize = maxGridSize;
             }
             TIdx workDivGridSize = gridSize;
@@ -63,7 +82,7 @@ namespace vikunja {
             blocksPerGrid[xIndex] = workDivGridSize;
             threadsPerBlock[xIndex] = workDivBlockSize;
 
-            WorkDiv multiBlockWorkDiv{ blocksPerGrid, threadsPerBlock, elementsPerThread};
+            WorkDiv multiBlockWorkDiv{blocksPerGrid, threadsPerBlock, elementsPerThread};
             detail::BlockThreadTransformKernel<blockSize, MemAccessPolicy> kernel;
             alpaka::kernel::exec<TAcc>(queue, multiBlockWorkDiv, kernel, source, destination, n, func);
         }
@@ -88,9 +107,28 @@ namespace vikunja {
          * @param destination
          * @param func
          */
-        template<typename TAcc, typename WorkDivPolicy = vikunja::workdiv::BlockBasedPolicy<TAcc>, typename MemAccessPolicy = vikunja::mem::iterator::MemAccessPolicy<TAcc>, typename TFunc, typename TInputIterator, typename TInputIteratorSecond, typename TOutputIterator, typename TDevAcc, typename TQueue, typename TIdx >
-        auto deviceTransform(TDevAcc &devAcc, TQueue &queue,  TIdx const &n, TInputIterator const &source, TInputIteratorSecond const &sourceSecond, TOutputIterator const &destination, TFunc const &func) -> void {
-            if(n == 0) {
+        template<
+            typename TAcc,
+            typename WorkDivPolicy = vikunja::workdiv::BlockBasedPolicy<TAcc>,
+            typename MemAccessPolicy = vikunja::mem::iterator::MemAccessPolicy<TAcc>,
+            typename TFunc,
+            typename TInputIterator,
+            typename TInputIteratorSecond,
+            typename TOutputIterator,
+            typename TDevAcc,
+            typename TQueue,
+            typename TIdx>
+        auto deviceTransform(
+            TDevAcc& devAcc,
+            TQueue& queue,
+            TIdx const& n,
+            TInputIterator const& source,
+            TInputIteratorSecond const& sourceSecond,
+            TOutputIterator const& destination,
+            TFunc const& func) -> void
+        {
+            if(n == 0)
+            {
                 return;
             }
             constexpr uint64_t blockSize = WorkDivPolicy::template getBlockSize<TAcc>();
@@ -98,14 +136,15 @@ namespace vikunja {
             using WorkDiv = alpaka::workdiv::WorkDivMembers<Dim, TIdx>;
             using Vec = alpaka::vec::Vec<Dim, TIdx>;
             constexpr TIdx xIndex = Dim::value - 1u;
-            if(n < blockSize) {
+            if(n < blockSize)
+            {
                 // TODO fix this?
                 // maybe not needed
             }
             TIdx gridSize = WorkDivPolicy::template getGridSize<TAcc>(devAcc);
-            TIdx maxGridSize = static_cast<TIdx>(
-                    (((n + 1) / 2) - 1) / static_cast<TIdx>(blockSize) + 1);
-            if(gridSize > maxGridSize) {
+            TIdx maxGridSize = static_cast<TIdx>((((n + 1) / 2) - 1) / static_cast<TIdx>(blockSize) + 1);
+            if(gridSize > maxGridSize)
+            {
                 gridSize = maxGridSize;
             }
             TIdx workDivGridSize = gridSize;
@@ -118,9 +157,9 @@ namespace vikunja {
             blocksPerGrid[xIndex] = workDivGridSize;
             threadsPerBlock[xIndex] = workDivBlockSize;
 
-            WorkDiv multiBlockWorkDiv{ blocksPerGrid, threadsPerBlock, elementsPerThread};
+            WorkDiv multiBlockWorkDiv{blocksPerGrid, threadsPerBlock, elementsPerThread};
             detail::BlockThreadTransformKernel<blockSize, MemAccessPolicy> kernel;
             alpaka::kernel::exec<TAcc>(queue, multiBlockWorkDiv, kernel, source, sourceSecond, destination, n, func);
         }
-    } // transform
-} // vikunja
+    } // namespace transform
+} // namespace vikunja

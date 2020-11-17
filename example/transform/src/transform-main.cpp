@@ -2,10 +2,10 @@
 #include <alpaka/alpaka.hpp>
 #include <vikunja/transform/transform.hpp>
 
-int main() {
-
+int main()
+{
     // Define the accelerator here. Must be one of the enabled accelerators.
-    using TAcc = alpaka::acc::AccCpuSerial<alpaka::dim::DimInt<3u>, std::uint64_t >;
+    using TAcc = alpaka::acc::AccCpuSerial<alpaka::dim::DimInt<3u>, std::uint64_t>;
 
     // Type of the data that will be reduced
     using TRed = uint64_t;
@@ -31,64 +31,71 @@ int main() {
     // using QueueAcc = alpaka::test::queue::DefaultQueue<alpaka::dev::Dev<TAcc>>;
     using PltfHost = alpaka::pltf::PltfCpu;
     using DevHost = alpaka::dev::Dev<PltfHost>;
-    using QueueAcc = //alpaka::queue::QueueCpuAsync;
-    typename std::conditional<std::is_same<PltfAcc, alpaka::pltf::PltfCpu>::value, alpaka::queue::QueueCpuBlocking,
-#ifdef  ALPAKA_ACC_GPU_CUDA_ENABLED
+    using QueueAcc = // alpaka::queue::QueueCpuAsync;
+        typename std::conditional<
+            std::is_same<PltfAcc, alpaka::pltf::PltfCpu>::value,
+            alpaka::queue::QueueCpuBlocking,
+#ifdef ALPAKA_ACC_GPU_CUDA_ENABLED
             alpaka::queue::QueueCudaRtBlocking
 #elif ALPAKA_ACC_GPU_HIP_ENABLED
-        alpaka::queue::QueueHipRtBlocking
+            alpaka::queue::QueueHipRtBlocking
 #else
             alpaka::queue::QueueCpuBlocking
 #endif
-    >::type;
+            >::type;
     using QueueHost = alpaka::queue::QueueCpuBlocking;
 
     // Get the host device.
-    DevHost devHost(
-            alpaka::pltf::getDevByIdx<PltfHost>(0u));
+    DevHost devHost(alpaka::pltf::getDevByIdx<PltfHost>(0u));
     // Get a queue on the host device.
-    QueueHost queueHost(
-            devHost);
+    QueueHost queueHost(devHost);
     // Select a device to execute on.
-    DevAcc devAcc(
-            alpaka::pltf::getDevByIdx<PltfAcc>(0u));
+    DevAcc devAcc(alpaka::pltf::getDevByIdx<PltfAcc>(0u));
     // Get a queue on the accelerator device.
-    QueueAcc queueAcc(
-            devAcc);
+    QueueAcc queueAcc(devAcc);
 
     // allocate memory both on host and device.
     auto deviceMem(alpaka::mem::buf::alloc<TRed, Idx>(devAcc, extent));
     auto hostMem(alpaka::mem::buf::alloc<TRed, Idx>(devHost, extent));
     // Fill memory on host with numbers from 0...n-1.
     TRed* hostNative = alpaka::mem::view::getPtrNative(hostMem);
-    for(Idx i = 0; i < n; ++i) {
-        //std::cout << i << "\n";
+    for(Idx i = 0; i < n; ++i)
+    {
+        // std::cout << i << "\n";
         hostNative[i] = static_cast<TRed>(i + 1);
     }
     // Copy to accelerator.
     alpaka::mem::view::copy(queueAcc, deviceMem, hostMem, extent);
     // Use lambda function for transformation
-    auto doubleNum = [=] ALPAKA_FN_HOST_ACC (TRed i) {
-        return 2 * i;
-    };
-    std::cout << "Testing accelerator: " << alpaka::acc::getAccName<TAcc>() << " with size: " << n <<"\n";
+    auto doubleNum = [=] ALPAKA_FN_HOST_ACC(TRed i) { return 2 * i; };
+    std::cout << "Testing accelerator: " << alpaka::acc::getAccName<TAcc>() << " with size: " << n << "\n";
 
 
     // TRANSFORM CALL:
-    // Takes the arguments: accelerator device, host device, accelerator queue, size of data, input pointer-like, output pointer-like, transform lambda.
-    // Can be in-place or out-of-place.
-    vikunja::transform::deviceTransform<TAcc>(devAcc, queueAcc, n, alpaka::mem::view::getPtrNative(deviceMem), alpaka::mem::view::getPtrNative(deviceMem), doubleNum);
+    // Takes the arguments: accelerator device, host device, accelerator queue, size of data, input pointer-like,
+    // output pointer-like, transform lambda. Can be in-place or out-of-place.
+    vikunja::transform::deviceTransform<TAcc>(
+        devAcc,
+        queueAcc,
+        n,
+        alpaka::mem::view::getPtrNative(deviceMem),
+        alpaka::mem::view::getPtrNative(deviceMem),
+        doubleNum);
 
     // copy back to host to validate
     alpaka::mem::view::copy(queueAcc, hostMem, deviceMem, extent);
     TRed resultSum = 0;
-    for(Idx i = 0; i < n; ++i) {
+    for(Idx i = 0; i < n; ++i)
+    {
         resultSum += hostNative[i];
     }
     TRed expectedResult = (n * (n + 1));
-    if(expectedResult == resultSum) {
+    if(expectedResult == resultSum)
+    {
         std::cout << "Transform was successful!\n";
-    } else {
+    }
+    else
+    {
         std::cout << "Transform was not successful!\n";
     }
 

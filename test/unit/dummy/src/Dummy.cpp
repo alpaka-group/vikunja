@@ -1,6 +1,7 @@
 #include <catch2/catch.hpp>
 
-int two() {
+int two()
+{
     return 2;
 }
 
