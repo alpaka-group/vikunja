@@ -2,17 +2,19 @@
 
 #include <alpaka/alpaka.hpp>
 
-namespace vikunja {
-    namespace mem {
-        namespace iterator {
-
+namespace vikunja
+{
+    namespace mem
+    {
+        namespace iterator
+        {
             // TODO: this class is from Jonas Schenke
 
             //! An iterator base class.
             //!
             //! \tparam T The type.
             //! \tparam TIterator The iterator type (standard is T*)
-            template <typename TIterator>
+            template<typename TIterator>
             class BaseIterator
             {
             protected:
@@ -27,10 +29,11 @@ namespace vikunja {
                 //! \param data A pointer to the data.
                 //! \param index The index.
                 //! \param maximum The first index outside of the iterator memory.
-                ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE BaseIterator(TIterator const &data,
-                                                             uint64_t index,
-                                                             uint64_t maximum)
-                        : mData(data), mIndex(index), mMaximum(maximum)
+                ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE
+                BaseIterator(TIterator const& data, uint64_t index, uint64_t maximum)
+                    : mData(data)
+                    , mIndex(index)
+                    , mMaximum(maximum)
                 {
                 }
 
@@ -38,7 +41,7 @@ namespace vikunja {
                 //! Constructor.
                 //!
                 //! \param other The other iterator object.
-                ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE BaseIterator(const BaseIterator &other) = default;
+                ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE BaseIterator(const BaseIterator& other) = default;
 
                 //-----------------------------------------------------------------------------
                 //! Compare operator.
@@ -46,11 +49,10 @@ namespace vikunja {
                 //! \param other The other object.
                 //!
                 //! Returns true if objects are equal and false otherwise.
-                ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto
-                operator==(const BaseIterator &other) const -> bool
+                ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto operator==(const BaseIterator& other) const -> bool
                 {
-                    return (this->mData == other.mData) && (this->mIndex == other.mIndex) &&
-                           (this->mMaximum == other.mMaximum);
+                    return (this->mData == other.mData) && (this->mIndex == other.mIndex)
+                        && (this->mMaximum == other.mMaximum);
                 }
 
                 //-----------------------------------------------------------------------------
@@ -59,8 +61,7 @@ namespace vikunja {
                 //! \param other The other object.
                 //!
                 //! Returns false if objects are equal and true otherwise.
-                ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto
-                operator!=(const BaseIterator &other) const -> bool
+                ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto operator!=(const BaseIterator& other) const -> bool
                 {
                     return !operator==(other);
                 }
@@ -72,8 +73,7 @@ namespace vikunja {
                 //!
                 //! Returns false if the other object is equal or smaller and true
                 //! otherwise.
-                ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto
-                operator<(const BaseIterator &other) const -> bool
+                ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto operator<(const BaseIterator& other) const -> bool
                 {
                     return mIndex < other.mIndex;
                 }
@@ -84,8 +84,7 @@ namespace vikunja {
                 //! \param other The other object.
                 //!
                 //! Returns false if the other object is equal or bigger and true otherwise.
-                ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto
-                operator>(const BaseIterator &other) const -> bool
+                ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto operator>(const BaseIterator& other) const -> bool
                 {
                     return mIndex > other.mIndex;
                 }
@@ -96,8 +95,7 @@ namespace vikunja {
                 //! \param other The other object.
                 //!
                 //! Returns true if the other object is equal or bigger and false otherwise.
-                ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto
-                operator<=(const BaseIterator &other) const -> bool
+                ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto operator<=(const BaseIterator& other) const -> bool
                 {
                     return mIndex <= other.mIndex;
                 }
@@ -109,8 +107,7 @@ namespace vikunja {
                 //!
                 //! Returns true if the other object is equal or smaller and false
                 //! otherwise.
-                ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto
-                operator>=(const BaseIterator &other) const -> bool
+                ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto operator>=(const BaseIterator& other) const -> bool
                 {
                     return mIndex >= other.mIndex;
                 }
@@ -119,11 +116,11 @@ namespace vikunja {
                 //! Returns the current element.
                 //!
                 //! Returns a reference to the current index.
-                ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto operator*() -> decltype(*(mData + mIndex)) &
+                ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto operator*() -> decltype(*(mData + mIndex))&
                 {
                     return *(mData + mIndex);
                 }
             };
-        }
-    }
-}
+        } // namespace iterator
+    } // namespace mem
+} // namespace vikunja

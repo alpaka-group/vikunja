@@ -19,3 +19,10 @@ Supported alpaka versions
 
 ## Examples
 Two small examples can be found in the folder `example/`.
+
+## Format the code
+
+The code is formatted with `clang-format-11`.
+
+* Format a single file with: `clang-format -i --style=file <sourcefile>`
+* If you want to format the entire code base execute the following command from alpaka’s top-level directory: `find example include test -name '*.hpp' -o -name '*.cpp' | xargs clang-format -i --style=file`
