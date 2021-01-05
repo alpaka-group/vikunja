@@ -1,7 +1,9 @@
 #include <vikunja/test/AlpakaSetup.hpp>
 #include <vikunja/reduce/detail/BlockThreadReduceKernel.hpp>
 #include <alpaka/alpaka.hpp>
-#include <alpaka/example/ExampleDefaultAcc.hpp>
+//#include <alpaka/example/ExampleDefaultAcc.hpp>
+// backport from alpaka 0.6.0
+#include <vikunja/test/ExampleDefaultAcc.hpp>
 #include <catch2/catch.hpp>
 #include <cstdlib>
 #include <iostream>
