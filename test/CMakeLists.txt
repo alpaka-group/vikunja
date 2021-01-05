@@ -15,13 +15,13 @@ target_include_directories(CatchMain SYSTEM PUBLIC
 
 # Link other tests against this library to avoid repeated compilation of Catch2.
 add_library(vikunjaTestLib dummy.cpp)
-target_include_directories(vikunjaTestLib SYSTEM PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/../include)
-target_include_directories(vikunjaTestLib SYSTEM PUBLIC ${alpaka_INCLUDE_DIR})
-target_include_directories(vikunjaTestLib SYSTEM PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_include_directories(vikunjaTestLib SYSTEM PUBLIC ${alpaka_INCLUDE_DIR}/../test/common/include/)
-target_link_libraries(vikunjaTestLib PUBLIC "alpaka" "CatchMain")
+target_include_directories(vikunjaTestLib
+  SYSTEM PUBLIC
+  ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(vikunjaTestLib
+  SYSTEM PUBLIC
+  ${alpaka_INCLUDE_DIR}/../test/common/include/)
+target_link_libraries(vikunjaTestLib PUBLIC vikunja::vikunja CatchMain)
 
 list(APPEND _VIKUNJA_TEST_OPTIONS "--use-colour yes")
 add_subdirectory("unit/")
