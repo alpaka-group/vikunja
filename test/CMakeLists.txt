@@ -18,7 +18,7 @@ add_library(vikunjaTestLib dummy.cpp)
 target_include_directories(vikunjaTestLib
   PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_link_libraries(vikunjaTestLib PUBLIC vikunja::vikunja CatchMain)
+target_link_libraries(vikunjaTestLib PUBLIC vikunja::internalvikunja CatchMain)
 
 list(APPEND _VIKUNJA_TEST_OPTIONS "--use-colour yes")
 add_subdirectory("unit/")

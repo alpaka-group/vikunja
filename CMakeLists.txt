@@ -36,11 +36,23 @@ target_include_directories(${PROJECT_NAME}
   INTERFACE
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
-target_link_libraries(${PROJECT_NAME}
-  INTERFACE
-  alpaka::alpaka)
 target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_14)
-add_library(vikunja::vikunja ALIAS ${PROJECT_NAME})
+add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+
+#The target vikunja::internalvikunja is for internal use only, such as the tests or examples.
+# For external projects that use vikunja, the target vikunja::vikunja should be used.
+
+# The internal target links alpaka to make it easier to use vikunja, but the target cannot be
+# exported because all alpaka properties would be saved at install time and changing
+# the properties in external projects would not be possible.
+# For example, only the accelerators that are enabled when vikunja is installed are available
+# for external projects. Changing them in the external project is not possible.
+add_library(internal${PROJECT_NAME} INTERFACE)
+target_link_libraries(internal${PROJECT_NAME}
+  INTERFACE
+  vikunja::vikunja
+  alpaka::alpaka)
+add_library(${PROJECT_NAME}::internal${PROJECT_NAME} ALIAS internal${PROJECT_NAME})
 
 if(vikunja_ENABLE_EXTRA_WARING)
   if(MSVC)
@@ -67,7 +79,7 @@ if(${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})
   # adding alpaka to the install could be a workaround
   # without, the target alpaka::alpaka is not available
   # does not install the alapaka library itself
-  install(TARGETS ${PROJECT_NAME} alpaka
+  install(TARGETS ${PROJECT_NAME}
     EXPORT "${PROJECT_NAME}Targets"
     )
 
