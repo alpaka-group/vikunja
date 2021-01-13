@@ -89,9 +89,9 @@ namespace vikunja
                 //            return static_cast<TRed>(0);
             }
             constexpr uint64_t blockSize = WorkDivPolicy::template getBlockSize<TAcc>();
-            using Dim = alpaka::dim::Dim<TAcc>;
-            using WorkDiv = alpaka::workdiv::WorkDivMembers<Dim, TIdx>;
-            using Vec = alpaka::vec::Vec<Dim, TIdx>;
+            using Dim = alpaka::Dim<TAcc>;
+            using WorkDiv = alpaka::WorkDivMembers<Dim, TIdx>;
+            using Vec = alpaka::Vec<Dim, TIdx>;
             constexpr TIdx xIndex = Dim::value - 1u;
 
             Vec elementsPerThread(Vec::all(static_cast<TIdx>(1u)));
@@ -99,31 +99,31 @@ namespace vikunja
             Vec blocksPerGrid(Vec::all(static_cast<TIdx>(1u)));
 
             Vec const resultBufferExtent(Vec::all(static_cast<TIdx>(1u)));
-            auto resultBuffer(alpaka::mem::buf::alloc<TRed, TIdx>(devAcc, resultBufferExtent));
+            auto resultBuffer(alpaka::allocBuf<TRed, TIdx>(devAcc, resultBufferExtent));
 
             // in case n < blockSize, the block reductions only work
             // if the MemAccessPolicy maps the correct values.
             if(n < blockSize)
             {
-                auto resultBuffer(alpaka::mem::buf::alloc<TRed, TIdx>(devAcc, resultBufferExtent));
+                auto resultBuffer(alpaka::allocBuf<TRed, TIdx>(devAcc, resultBufferExtent));
                 WorkDiv dummyWorkDiv{blocksPerGrid, threadsPerBlock, elementsPerThread};
                 detail::SmallProblemReduceKernel kernel;
-                alpaka::kernel::exec<TAcc>(
+                alpaka::exec<TAcc>(
                     queue,
                     dummyWorkDiv,
                     kernel,
                     buffer,
-                    alpaka::mem::view::getPtrNative(resultBuffer),
+                    alpaka::getPtrNative(resultBuffer),
                     n,
                     transformFunc,
                     func);
-                auto resultView(alpaka::mem::buf::alloc<TRed, TIdx>(devHost, resultBufferExtent));
+                auto resultView(alpaka::allocBuf<TRed, TIdx>(devHost, resultBufferExtent));
                 // TRed result;
-                // alpaka::mem::view::ViewPlainPtr<TDevHost, TRed, Dim, TIdx> resultView{&result, devHost,
+                // alpaka::ViewPlainPtr<TDevHost, TRed, Dim, TIdx> resultView{&result, devHost,
                 // static_cast<TIdx>(1u)};
-                alpaka::mem::view::copy(queue, resultView, resultBuffer, resultBufferExtent);
-                alpaka::wait::wait(queue);
-                auto result = alpaka::mem::view::getPtrNative(resultView);
+                alpaka::memcpy(queue, resultView, resultBuffer, resultBufferExtent);
+                alpaka::wait(queue);
+                auto result = alpaka::getPtrNative(resultView);
                 return result[0];
             }
 
@@ -153,36 +153,36 @@ namespace vikunja
             WorkDiv multiBlockWorkDiv{blocksPerGrid, threadsPerBlock, elementsPerThread};
             WorkDiv singleBlockWorkDiv{singleBlocksPerGrid, singleThreadsPerBlock, singleElementsPerThread};
 
-            auto secondPhaseBuffer(alpaka::mem::buf::alloc<TRed, TIdx>(devAcc, sharedMemExtent));
+            auto secondPhaseBuffer(alpaka::allocBuf<TRed, TIdx>(devAcc, sharedMemExtent));
 
             detail::BlockThreadReduceKernel<blockSize, MemAccessPolicy, TRed> multiBlockKernel, singleBlockKernel;
             // execute kernels
-            alpaka::kernel::exec<TAcc>(
+            alpaka::exec<TAcc>(
                 queue,
                 multiBlockWorkDiv,
                 multiBlockKernel,
                 buffer,
-                alpaka::mem::view::getPtrNative(secondPhaseBuffer),
+                alpaka::getPtrNative(secondPhaseBuffer),
                 n,
                 transformFunc,
                 func);
-            alpaka::kernel::exec<TAcc>(
+            alpaka::exec<TAcc>(
                 queue,
                 singleBlockWorkDiv,
                 singleBlockKernel,
-                alpaka::mem::view::getPtrNative(secondPhaseBuffer),
-                alpaka::mem::view::getPtrNative(secondPhaseBuffer),
+                alpaka::getPtrNative(secondPhaseBuffer),
+                alpaka::getPtrNative(secondPhaseBuffer),
                 gridSize,
                 detail::Identity<TRed>(),
                 func);
 
-            auto resultView(alpaka::mem::buf::alloc<TRed, TIdx>(devHost, resultBufferExtent));
-            alpaka::mem::view::copy(queue, resultView, secondPhaseBuffer, resultBufferExtent);
+            auto resultView(alpaka::allocBuf<TRed, TIdx>(devHost, resultBufferExtent));
+            alpaka::memcpy(queue, resultView, secondPhaseBuffer, resultBufferExtent);
 
             // wait for result, otherwise the async CPU queue causes a segfault
-            alpaka::wait::wait(queue);
+            alpaka::wait(queue);
 
-            auto result = alpaka::mem::view::getPtrNative(resultView);
+            auto result = alpaka::getPtrNative(resultView);
             return result[0];
         }
 

@@ -14,13 +14,13 @@ namespace vikunja
              */
             struct BlockBasedSequentialPolicy
             {
-                template<typename TAcc, typename TIdx = alpaka::idx::Idx<TAcc>>
+                template<typename TAcc, typename TIdx = alpaka::Idx<TAcc>>
                 static constexpr TIdx getBlockSize() noexcept
                 {
                     return 1;
                 }
 
-                template<typename TAcc, typename TDevAcc, typename TIdx = alpaka::idx::Idx<TAcc>>
+                template<typename TAcc, typename TDevAcc, typename TIdx = alpaka::Idx<TAcc>>
                 static constexpr TIdx getGridSize(TDevAcc const& devAcc __attribute__((unused))) noexcept
                 {
                     return 1;
@@ -31,13 +31,13 @@ namespace vikunja
              */
             struct BlockBasedGridBlockPolicy
             {
-                template<typename TAcc, typename TIdx = alpaka::idx::Idx<TAcc>>
+                template<typename TAcc, typename TIdx = alpaka::Idx<TAcc>>
                 static constexpr TIdx getBlockSize()
                 {
                     return 1;
                 }
 
-                template<typename TAcc, typename TDevAcc, typename TIdx = alpaka::idx::Idx<TAcc>>
+                template<typename TAcc, typename TDevAcc, typename TIdx = alpaka::Idx<TAcc>>
                 static TIdx getGridSize(TDevAcc const& devAcc __attribute__((unused)))
                 {
                     static TIdx threadCount(std::thread::hardware_concurrency());
@@ -49,14 +49,14 @@ namespace vikunja
             // happens, but nevermind. for accelerators that parallelize on the block-thread level
             struct BlockBasedBlockThreadPolicy
             {
-                template<typename TAcc, typename TIdx = alpaka::idx::Idx<TAcc>>
+                template<typename TAcc, typename TIdx = alpaka::Idx<TAcc>>
                 static constexpr TIdx getBlockSize() noexcept
                 {
                     // TODO: figure out if this really needs to be a constexpr
                     // probably yes.
                     return 16;
                 }
-                template<typename TAcc, typename TDevAcc, typename TIdx = alpaka::idx::Idx<TAcc>>
+                template<typename TAcc, typename TDevAcc, typename TIdx = alpaka::Idx<TAcc>>
                 static constexpr TIdx getGridSize(TDevAcc const& devAcc __attribute__((unused))) noexcept
                 {
                     return 1;
@@ -67,7 +67,7 @@ namespace vikunja
              */
             struct BlockBasedCudaPolicy
             {
-                template<typename TAcc, typename TIdx = alpaka::idx::Idx<TAcc>>
+                template<typename TAcc, typename TIdx = alpaka::Idx<TAcc>>
                 static constexpr TIdx getBlockSize() noexcept
                 {
                     // René Widera suggests this as a standard default.
@@ -77,11 +77,11 @@ namespace vikunja
                 // within the same executed binary. This is a rare edge case, as most Multi-GPU except for test nodes
                 // are homogeneous, but it should be mentioned here. Still, it is not critical as this should only
                 // affect the performance, not the functionality of the code.
-                template<typename TAcc, typename TDevAcc, typename TIdx = alpaka::idx::Idx<TAcc>>
+                template<typename TAcc, typename TDevAcc, typename TIdx = alpaka::Idx<TAcc>>
                 static TIdx getGridSize(TDevAcc const& devAcc)
                 {
                     static TIdx maxGridSize(
-                        static_cast<TIdx>(alpaka::acc::getAccDevProps<TAcc>(devAcc).m_multiProcessorCount * 8));
+                        static_cast<TIdx>(alpaka::getAccDevProps<TAcc>(devAcc).m_multiProcessorCount * 8));
                     // Jonas Schenke calculated this for CUDA
                     return maxGridSize;
                 }
@@ -99,35 +99,35 @@ namespace vikunja
             };
 #ifdef ALPAKA_ACC_CPU_B_OMP2_T_SEQ_ENABLED
             template<typename... TArgs>
-            struct GetBlockBasedPolicy<alpaka::acc::AccCpuOmp2Blocks<TArgs...>>
+            struct GetBlockBasedPolicy<alpaka::AccCpuOmp2Blocks<TArgs...>>
             {
                 using type = policies::BlockBasedGridBlockPolicy;
             };
 #endif
 #ifdef ALPAKA_ACC_CPU_B_SEQ_T_OMP2_ENABLED
             template<typename... TArgs>
-            struct GetBlockBasedPolicy<alpaka::acc::AccCpuOmp2Threads<TArgs...>>
+            struct GetBlockBasedPolicy<alpaka::AccCpuOmp2Threads<TArgs...>>
             {
                 using type = policies::BlockBasedBlockThreadPolicy;
             };
 #endif
 #ifdef ALPAKA_ACC_CPU_B_SEQ_T_THREADS_ENABLED
             template<typename... TArgs>
-            struct GetBlockBasedPolicy<alpaka::acc::AccCpuThreads<TArgs...>>
+            struct GetBlockBasedPolicy<alpaka::AccCpuThreads<TArgs...>>
             {
                 using type = policies::BlockBasedBlockThreadPolicy;
             };
 #endif
 #ifdef ALPAKA_ACC_GPU_CUDA_ENABLED
             template<typename... TArgs>
-            struct GetBlockBasedPolicy<alpaka::acc::AccGpuCudaRt<TArgs...>>
+            struct GetBlockBasedPolicy<alpaka::AccGpuCudaRt<TArgs...>>
             {
                 using type = policies::BlockBasedCudaPolicy;
             };
 #endif
 #ifdef ALPAKA_ACC_GPU_HIP_ENABLED
             template<typename... TArgs>
-            struct GetBlockBasedPolicy<alpaka::acc::AccGpuHipRt<TArgs...>>
+            struct GetBlockBasedPolicy<alpaka::AccGpuHipRt<TArgs...>>
             {
                 using type = policies::BlockBasedCudaPolicy;
             };

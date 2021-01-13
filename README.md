@@ -13,10 +13,7 @@ Directories:
 
 ## Requirements
 
-[Alpaka](https://github.com/alpaka-group/alpaka)
-Tested versions:
-  * 0.5
-  * dev (1d921dc0640af57c052e6fda78310561ba950e54)
+[Alpaka 0.6.0](https://github.com/alpaka-group/alpaka)
 
 ## Install Vikunja
 

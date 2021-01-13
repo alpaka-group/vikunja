@@ -70,28 +70,28 @@ struct TestPolicyBasedBlockIterator
     template<typename MemAccessPolicy>
     void operator()()
     {
-        using Idx = alpaka::idx::Idx<TAcc>;
-        using Dim = alpaka::dim::Dim<TAcc>;
+        using Idx = alpaka::Idx<TAcc>;
+        using Dim = alpaka::Dim<TAcc>;
 
         constexpr Idx n = 65;
         constexpr Idx blocksPerGrid = 2;
         constexpr Idx threadsPerBlock = 1;
         constexpr Idx elementsPerThread = n / 2 + 1;
 
-        using DevAcc = alpaka::dev::Dev<TAcc>;
-        using PltfAcc = alpaka::pltf::Pltf<DevAcc>;
-        using QueueAcc = alpaka::queue::QueueCpuBlocking;
-        // alpaka::test::queue::DefaultQueue<alpaka::dev::Dev<TAcc>>;
-        using PltfHost = alpaka::pltf::PltfCpu;
-        using DevHost = alpaka::dev::Dev<PltfHost>;
-        using QueueHost = alpaka::queue::QueueCpuBlocking;
-        using WorkDiv = alpaka::workdiv::WorkDivMembers<Dim, Idx>;
+        using DevAcc = alpaka::Dev<TAcc>;
+        using PltfAcc = alpaka::Pltf<DevAcc>;
+        using QueueAcc = alpaka::QueueCpuBlocking;
+        // alpaka::test::queue::DefaultQueue<alpaka::Dev<TAcc>>;
+        using PltfHost = alpaka::PltfCpu;
+        using DevHost = alpaka::Dev<PltfHost>;
+        using QueueHost = alpaka::QueueCpuBlocking;
+        using WorkDiv = alpaka::WorkDivMembers<Dim, Idx>;
         // Get the host device.
-        DevHost devHost(alpaka::pltf::getDevByIdx<PltfHost>(0u));
+        DevHost devHost(alpaka::getDevByIdx<PltfHost>(0u));
         // Get a queue on the host device.
         QueueHost queueHost(devHost);
         // Select a device to execute on.
-        DevAcc devAcc(alpaka::pltf::getDevByIdx<PltfAcc>(0u));
+        DevAcc devAcc(alpaka::getDevByIdx<PltfAcc>(0u));
         // Get a queue on the accelerator device.
         QueueAcc queueAcc(devAcc);
         WorkDiv workdiv{blocksPerGrid, threadsPerBlock, elementsPerThread};

@@ -5,17 +5,17 @@
 int main()
 {
     // Define the accelerator here. Must be one of the enabled accelerators.
-    using TAcc = alpaka::acc::AccCpuSerial<alpaka::dim::DimInt<3u>, std::uint64_t>;
+    using TAcc = alpaka::AccCpuSerial<alpaka::DimInt<3u>, std::uint64_t>;
 
     // Type of the data that will be reduced
     using TRed = uint64_t;
 
     // Alpaka index type
-    using Idx = alpaka::idx::Idx<TAcc>;
+    using Idx = alpaka::Idx<TAcc>;
     // Alpaka dimension type
-    using Dim = alpaka::dim::Dim<TAcc>;
+    using Dim = alpaka::Dim<TAcc>;
     // Type of the extent vector
-    using Vec = alpaka::vec::Vec<Dim, Idx>;
+    using Vec = alpaka::Vec<Dim, Idx>;
     // Find the index of the CUDA blockIdx.x component. Alpaka somehow reverses
     // these, i.e. the x component of cuda is always the last value in the vector
     constexpr Idx xIndex = Dim::value - 1u;
@@ -26,39 +26,39 @@ int main()
     extent[xIndex] = n;
 
     // define device, platform, and queue types.
-    using DevAcc = alpaka::dev::Dev<TAcc>;
-    using PltfAcc = alpaka::pltf::Pltf<DevAcc>;
-    // using QueueAcc = alpaka::test::queue::DefaultQueue<alpaka::dev::Dev<TAcc>>;
-    using PltfHost = alpaka::pltf::PltfCpu;
-    using DevHost = alpaka::dev::Dev<PltfHost>;
-    using QueueAcc = alpaka::queue::Queue<TAcc, alpaka::queue::Blocking>;
-    using QueueHost = alpaka::queue::QueueCpuBlocking;
+    using DevAcc = alpaka::Dev<TAcc>;
+    using PltfAcc = alpaka::Pltf<DevAcc>;
+    // using QueueAcc = alpaka::test::queue::DefaultQueue<alpaka::Dev<TAcc>>;
+    using PltfHost = alpaka::PltfCpu;
+    using DevHost = alpaka::Dev<PltfHost>;
+    using QueueAcc = alpaka::Queue<TAcc, alpaka::Blocking>;
+    using QueueHost = alpaka::QueueCpuBlocking;
 
     // Get the host device.
-    DevHost devHost(alpaka::pltf::getDevByIdx<PltfHost>(0u));
+    DevHost devHost(alpaka::getDevByIdx<PltfHost>(0u));
     // Get a queue on the host device.
     QueueHost queueHost(devHost);
     // Select a device to execute on.
-    DevAcc devAcc(alpaka::pltf::getDevByIdx<PltfAcc>(0u));
+    DevAcc devAcc(alpaka::getDevByIdx<PltfAcc>(0u));
     // Get a queue on the accelerator device.
     QueueAcc queueAcc(devAcc);
 
     // allocate memory both on host and device.
-    auto deviceMem(alpaka::mem::buf::alloc<TRed, Idx>(devAcc, extent));
-    auto hostMem(alpaka::mem::buf::alloc<TRed, Idx>(devHost, extent));
+    auto deviceMem(alpaka::allocBuf<TRed, Idx>(devAcc, extent));
+    auto hostMem(alpaka::allocBuf<TRed, Idx>(devHost, extent));
     // Fill memory on host with numbers from 0...n-1.
-    TRed* hostNative = alpaka::mem::view::getPtrNative(hostMem);
+    TRed* hostNative = alpaka::getPtrNative(hostMem);
     for(Idx i = 0; i < n; ++i)
     {
         // std::cout << i << "\n";
         hostNative[i] = static_cast<TRed>(i + 1);
     }
     // Copy to accelerator.
-    alpaka::mem::view::copy(queueAcc, deviceMem, hostMem, extent);
+    alpaka::memcpy(queueAcc, deviceMem, hostMem, extent);
     // Use Lambda function for reduction
     auto sum = [=] ALPAKA_FN_HOST_ACC(TRed i, TRed j) { return i + j; };
     auto doubleNum = [=] ALPAKA_FN_HOST_ACC(TRed i) { return 2 * i; };
-    std::cout << "Testing accelerator: " << alpaka::acc::getAccName<TAcc>() << " with size: " << n << "\n";
+    std::cout << "Testing accelerator: " << alpaka::getAccName<TAcc>() << " with size: " << n << "\n";
 
     // REDUCE CALL:
     // Takes the arguments: accelerator device, host device, accelerator queue, size of data, pointer-like to memory,
@@ -68,7 +68,7 @@ int main()
         devHost,
         queueAcc,
         n,
-        alpaka::mem::view::getPtrNative(deviceMem),
+        alpaka::getPtrNative(deviceMem),
         sum);
 
     // check reduce result
@@ -83,7 +83,7 @@ int main()
         devHost,
         queueAcc,
         n,
-        alpaka::mem::view::getPtrNative(deviceMem),
+        alpaka::getPtrNative(deviceMem),
         doubleNum,
         sum);
 

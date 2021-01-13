@@ -169,8 +169,8 @@ namespace vikunja
                         TIdx const& problemSize __attribute__((unused)),
                         TIdx const& blockSize __attribute__((unused))) -> TIdx const
                     {
-                        constexpr TIdx xIndex = alpaka::dim::Dim<TAcc>::value - 1u;
-                        return alpaka::idx::getIdx<alpaka::Grid, alpaka::Threads>(acc)[xIndex];
+                        constexpr TIdx xIndex = alpaka::Dim<TAcc>::value - 1u;
+                        return alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc)[xIndex];
                     }
 
                     template<typename TAcc, typename TIdx>
@@ -188,8 +188,8 @@ namespace vikunja
                         TIdx const& problemSize __attribute__((unused)),
                         TIdx const& blockSize) -> TIdx const
                     {
-                        constexpr TIdx xIndex = alpaka::dim::Dim<TAcc>::value - 1u;
-                        auto gridDimension = alpaka::workdiv::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[xIndex];
+                        constexpr TIdx xIndex = alpaka::Dim<TAcc>::value - 1u;
+                        auto gridDimension = alpaka::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[xIndex];
                         return gridDimension * blockSize;
                     }
 
@@ -199,8 +199,8 @@ namespace vikunja
                         TIdx const& problemSize,
                         TIdx const& blockSize __attribute__((unused))) -> bool const
                     {
-                        constexpr TIdx xIndex = alpaka::dim::Dim<TAcc>::value - 1u;
-                        auto threadIndex = (alpaka::idx::getIdx<alpaka::Block, alpaka::Threads>(acc)[xIndex]);
+                        constexpr TIdx xIndex = alpaka::Dim<TAcc>::value - 1u;
+                        auto threadIndex = (alpaka::getIdx<alpaka::Block, alpaka::Threads>(acc)[xIndex]);
                         return threadIndex < problemSize;
                     }
 
@@ -223,9 +223,9 @@ namespace vikunja
                         TIdx const& problemSize,
                         TIdx const& blockSize) -> TIdx const
                     {
-                        constexpr TIdx xIndex = alpaka::dim::Dim<TAcc>::value - 1u;
-                        auto gridDimension = alpaka::workdiv::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[xIndex];
-                        auto indexInBlock = alpaka::idx::getIdx<alpaka::Grid, alpaka::Threads>(acc)[xIndex];
+                        constexpr TIdx xIndex = alpaka::Dim<TAcc>::value - 1u;
+                        auto gridDimension = alpaka::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[xIndex];
+                        auto indexInBlock = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc)[xIndex];
                         auto gridSize = gridDimension * blockSize;
                         // TODO: catch overflow
                         return (problemSize * indexInBlock) / gridSize;
@@ -237,9 +237,9 @@ namespace vikunja
                         TIdx const& problemSize,
                         TIdx const& blockSize) -> TIdx const
                     {
-                        constexpr TIdx xIndex = alpaka::dim::Dim<TAcc>::value - 1u;
-                        auto gridDimension = alpaka::workdiv::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[xIndex];
-                        auto indexInBlock = alpaka::idx::getIdx<alpaka::Grid, alpaka::Threads>(acc)[xIndex];
+                        constexpr TIdx xIndex = alpaka::Dim<TAcc>::value - 1u;
+                        auto gridDimension = alpaka::getWorkDiv<alpaka::Grid, alpaka::Blocks>(acc)[xIndex];
+                        auto indexInBlock = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc)[xIndex];
                         auto gridSize = gridDimension * blockSize;
                         // TODO: catch overflow
                         return (problemSize * indexInBlock + problemSize) / gridSize;
@@ -288,7 +288,7 @@ namespace vikunja
                  * On cpu, default memory access is linear.
                  */
                 template<>
-                struct GetMemAccessPolicyByPltf<alpaka::pltf::PltfCpu>
+                struct GetMemAccessPolicyByPltf<alpaka::PltfCpu>
                 {
                     using type = policies::LinearMemAccessPolicy;
                 };
@@ -298,7 +298,7 @@ namespace vikunja
                  * On cuda, default memory access is grid striding.
                  */
                 template<>
-                struct GetMemAccessPolicyByPltf<alpaka::pltf::PltfUniformCudaHipRt>
+                struct GetMemAccessPolicyByPltf<alpaka::PltfUniformCudaHipRt>
                 {
                     using type = policies::GridStridingMemAccessPolicy;
                 };
@@ -311,7 +311,7 @@ namespace vikunja
              */
             template<typename TAcc>
             using MemAccessPolicy =
-                typename traits::GetMemAccessPolicyByPltf<alpaka::pltf::Pltf<alpaka::dev::Dev<TAcc>>>::type;
+                typename traits::GetMemAccessPolicyByPltf<alpaka::Pltf<alpaka::Dev<TAcc>>>::type;
         } // namespace iterator
     } // namespace mem
 } // namespace vikunja

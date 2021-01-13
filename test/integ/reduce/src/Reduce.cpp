@@ -1,9 +1,7 @@
 #include <vikunja/test/AlpakaSetup.hpp>
 #include <vikunja/reduce/detail/BlockThreadReduceKernel.hpp>
 #include <alpaka/alpaka.hpp>
-//#include <alpaka/example/ExampleDefaultAcc.hpp>
-// backport from alpaka 0.6.0
-#include <vikunja/test/ExampleDefaultAcc.hpp>
+#include <alpaka/example/ExampleDefaultAcc.hpp>
 #include <catch2/catch.hpp>
 #include <cstdlib>
 #include <iostream>
@@ -34,52 +32,52 @@ public:
     {
         using TRed = uint64_t;
 
-        using Idx = alpaka::idx::Idx<TAcc>;
-        using Dim = alpaka::dim::Dim<TAcc>;
+        using Idx = alpaka::Idx<TAcc>;
+        using Dim = alpaka::Dim<TAcc>;
         const Idx n = static_cast<Idx>(memSize);
         // constexpr Idx blocksPerGrid = 8;
         // constexpr Idx threadsPerBlock = 1;
         // const Idx elementsPerThread = n / blocksPerGrid / threadsPerBlock + 1;
 
-        using Vec = alpaka::vec::Vec<Dim, Idx>;
+        using Vec = alpaka::Vec<Dim, Idx>;
         constexpr Idx xIndex = Dim::value - 1u;
 
         Vec extent(Vec::all(static_cast<Idx>(1)));
         extent[xIndex] = n;
 
 
-        using DevAcc = alpaka::dev::Dev<TAcc>;
-        using PltfAcc = alpaka::pltf::Pltf<DevAcc>;
+        using DevAcc = alpaka::Dev<TAcc>;
+        using PltfAcc = alpaka::Pltf<DevAcc>;
         // Async queue makes things slower on CPU?
-        // using QueueAcc = alpaka::test::queue::DefaultQueue<alpaka::dev::Dev<TAcc>>;
-        using PltfHost = alpaka::pltf::PltfCpu;
-        using DevHost = alpaka::dev::Dev<PltfHost>;
+        // using QueueAcc = alpaka::test::queue::DefaultQueue<alpaka::Dev<TAcc>>;
+        using PltfHost = alpaka::PltfCpu;
+        using DevHost = alpaka::Dev<PltfHost>;
 
-        using QueueAcc = alpaka::queue::Queue<DevAcc, alpaka::queue::Blocking>;
+        using QueueAcc = alpaka::Queue<DevAcc, alpaka::Blocking>;
 
-        using QueueHost = alpaka::queue::QueueCpuBlocking;
+        using QueueHost = alpaka::QueueCpuBlocking;
 
         // Get the host device.
-        DevHost devHost(alpaka::pltf::getDevByIdx<PltfHost>(0u));
+        DevHost devHost(alpaka::getDevByIdx<PltfHost>(0u));
         // Get a queue on the host device.
         QueueHost queueHost(devHost);
         // Select a device to execute on.
-        DevAcc devAcc(alpaka::pltf::getDevByIdx<PltfAcc>(0u));
+        DevAcc devAcc(alpaka::getDevByIdx<PltfAcc>(0u));
         // Get a queue on the accelerator device.
         QueueAcc queueAcc(devAcc);
 
-        auto deviceMem(alpaka::mem::buf::alloc<TRed, Idx>(devAcc, extent));
-        auto hostMem(alpaka::mem::buf::alloc<TRed, Idx>(devHost, extent));
-        TRed* hostNative = alpaka::mem::view::getPtrNative(hostMem);
+        auto deviceMem(alpaka::allocBuf<TRed, Idx>(devAcc, extent));
+        auto hostMem(alpaka::allocBuf<TRed, Idx>(devHost, extent));
+        TRed* hostNative = alpaka::getPtrNative(hostMem);
         for(Idx i = 0; i < n; ++i)
         {
             // std::cout << i << "\n";
             hostNative[i] = static_cast<TRed>(i + 1);
         }
-        alpaka::mem::view::copy(queueAcc, deviceMem, hostMem, extent);
+        alpaka::memcpy(queueAcc, deviceMem, hostMem, extent);
         auto sum = [=] ALPAKA_FN_HOST_ACC(TRed i, TRed j) { return i + j; };
         auto doubleNum = [=] ALPAKA_FN_HOST_ACC(TRed i) { return 2 * i; };
-        std::cout << "Testing accelerator: " << alpaka::acc::getAccName<TAcc>() << " with size: " << n << "\n";
+        std::cout << "Testing accelerator: " << alpaka::getAccName<TAcc>() << " with size: " << n << "\n";
 
         auto start = std::chrono::high_resolution_clock::now();
         Idx reduceResult = vikunja::reduce::deviceReduce<TAcc>(
@@ -87,12 +85,12 @@ public:
             devHost,
             queueAcc,
             n,
-            alpaka::mem::view::getPtrNative(deviceMem),
+            alpaka::getPtrNative(deviceMem),
             sum);
         auto end = std::chrono::high_resolution_clock::now();
         auto expectedResult = (n * (n + 1) / 2);
         REQUIRE(expectedResult == reduceResult);
-        std::cout << "Runtime of " << alpaka::acc::getAccName<TAcc>() << ": "
+        std::cout << "Runtime of " << alpaka::getAccName<TAcc>() << ": "
                   << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << " microseconds\n";
         using MemAccess = vikunja::mem::iterator::MemAccessPolicy<TAcc>;
         std::cout << "MemAccessPolicy: " << MemAccess::getName() << "\n";
@@ -103,7 +101,7 @@ public:
             devHost,
             queueAcc,
             n,
-            alpaka::mem::view::getPtrNative(deviceMem),
+            alpaka::getPtrNative(deviceMem),
             doubleNum,
             sum);
         REQUIRE(expectedTransformReduce == transformReduceResult);
@@ -112,7 +110,7 @@ public:
 
 TEST_CASE("Test reduce", "[reduce]")
 {
-    using TestAccs = alpaka::example::ExampleDefaultAcc<alpaka::dim::DimInt<3u>, std::uint64_t>;
+    using TestAccs = alpaka::ExampleDefaultAcc<alpaka::DimInt<3u>, std::uint64_t>;
     // std::cout << std::thread::hardware_concurrency() << "\n";
     SECTION("deviceReduce")
     {
