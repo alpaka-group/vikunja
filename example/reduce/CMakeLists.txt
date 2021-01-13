@@ -1,5 +1,4 @@
 cmake_minimum_required(VERSION 3.10)
 set(_TARGET_NAME "example_reduce")
 alpaka_add_executable(${_TARGET_NAME} src/reduce-main.cpp)
-target_link_libraries(${_TARGET_NAME} PUBLIC "alpaka")
-target_include_directories(${_TARGET_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../../include)
+target_link_libraries(${_TARGET_NAME} PUBLIC vikunja::internalvikunja)
