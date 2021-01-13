@@ -21,13 +21,13 @@ if(NOT DEFINED ALPAKA_ACC_CPU_B_SEQ_T_SEQ_ENABLE AND (vikunja_BUILD_EXAMPLES OR 
   option(ALPAKA_ACC_CPU_B_SEQ_T_SEQ_ENABLE "enable alpaka serial accelerator" ON)
 endif()
 
-list(APPEND CMAKE_MODULE_PATH "${ALPAKA_ROOT}")
-find_package(alpaka 0.5.0 REQUIRED)
+find_package(alpaka 0.5.0 REQUIRED HINTS $ENV{ALPAKA_ROOT})
 
 if(ALPAKA_ACC_GPU_CUDA_ENABLE)
     # activate support for host/device lambdas in cuda, currently (as of CUDA 10) still an experimental feature,
     # but it seems to work.
-    set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS};--expt-extended-lambda")
+    # PARENT_SCOPE is necessary, if the project is imported via add_subdirectory()
+    set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS};--expt-extended-lambda" PARENT_SCOPE)
 endif()
 
 
@@ -47,12 +47,20 @@ add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 # the properties in external projects would not be possible.
 # For example, only the accelerators that are enabled when vikunja is installed are available
 # for external projects. Changing them in the external project is not possible.
-add_library(internal${PROJECT_NAME} INTERFACE)
-target_link_libraries(internal${PROJECT_NAME}
-  INTERFACE
-  vikunja::vikunja
-  alpaka::alpaka)
-add_library(${PROJECT_NAME}::internal${PROJECT_NAME} ALIAS internal${PROJECT_NAME})
+if(${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})
+  add_library(internal${PROJECT_NAME} INTERFACE)
+  target_link_libraries(internal${PROJECT_NAME}
+    INTERFACE
+    vikunja::vikunja
+    alpaka::alpaka)
+  add_library(${PROJECT_NAME}::internal${PROJECT_NAME} ALIAS internal${PROJECT_NAME})
+else()
+  # if the project is imported via add_subdirectory() in another project
+  # the linkage of alpaka have to be done here
+  target_link_libraries(${PROJECT_NAME}
+    INTERFACE
+    alpaka::alpaka)
+endif()
 
 if(vikunja_ENABLE_EXTRA_WARING)
   if(MSVC)

@@ -41,6 +41,27 @@ cmake .. -Dvikunja_BUILD_EXAMPLES=ON
 ```
 Two small examples can be found in the folder `example/`.
 
+# Using Vikunja in a Project
+
+You need to import vikunja in the `CMakeLists.txt` of your Project to use it.
+
+```
+cmake_minimum_required(VERSION 3.15)
+
+set(_TARGET_NAME example)
+project(${_TARGET_NAME})
+
+find_package(vikunja REQUIRED)
+
+alpaka_add_executable(${_TARGET_NAME} main.cpp)
+target_link_libraries(${_TARGET_NAME}
+  PUBLIC
+  vikunja::vikunja
+)
+```
+
+Vikunja supports `find_package(vikunja)` and `add_subdirectory(/path/to/vikunja)`. Alpaka is a dependency during the configure time of your project. If it is not installed in a default location, you can use the cmake argument `-Dalpaka_DIR=/path/to/alpakaInstall/lib/cmake/alpaka` or the environment variable `ALPAKA_ROOT=/path/to/alpakaInstall/` to find it.
+
 # Documentation
 
 An API documentation can be generated with [doxygen](https://www.doxygen.nl/index.html). Install doxygen and run

@@ -21,3 +21,7 @@
 
 # original backup files
 *.orig
+
+# igonre build and install folder
+/build*
+/install*
