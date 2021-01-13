@@ -31,18 +31,7 @@ int main()
     // using QueueAcc = alpaka::test::queue::DefaultQueue<alpaka::dev::Dev<TAcc>>;
     using PltfHost = alpaka::pltf::PltfCpu;
     using DevHost = alpaka::dev::Dev<PltfHost>;
-    using QueueAcc = // alpaka::queue::QueueCpuAsync;
-        typename std::conditional<
-            std::is_same<PltfAcc, alpaka::pltf::PltfCpu>::value,
-            alpaka::queue::QueueCpuBlocking,
-#ifdef ALPAKA_ACC_GPU_CUDA_ENABLED
-            alpaka::queue::QueueCudaRtBlocking
-#elif ALPAKA_ACC_GPU_HIP_ENABLED
-            alpaka::queue::QueueHipRtBlocking
-#else
-            alpaka::queue::QueueCpuBlocking
-#endif
-            >::type;
+    using QueueAcc = alpaka::queue::Queue<TAcc, alpaka::queue::Blocking>;
     using QueueHost = alpaka::queue::QueueCpuBlocking;
 
     // Get the host device.
