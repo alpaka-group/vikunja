@@ -1,9 +1,7 @@
 #include <vikunja/test/AlpakaSetup.hpp>
 #include <vikunja/transform/transform.hpp>
 #include <alpaka/alpaka.hpp>
-//#include <alpaka/example/ExampleDefaultAcc.hpp>
-// backport from alpaka 0.6.0
-#include <vikunja/test/ExampleDefaultAcc.hpp>
+#include <alpaka/example/ExampleDefaultAcc.hpp>
 #include <catch2/catch.hpp>
 #include <cstdlib>
 #include <iostream>
@@ -29,14 +27,14 @@ template<typename TAcc>
 struct TestAlpakaEnv
 {
 public:
-    using Idx = alpaka::idx::Idx<TAcc>;
-    using Dim = alpaka::dim::Dim<TAcc>;
-    using Vec = alpaka::vec::Vec<Dim, Idx>;
-    using DevAcc = alpaka::dev::Dev<TAcc>;
-    using PltfAcc = alpaka::pltf::Pltf<DevAcc>;
-    using PltfHost = alpaka::pltf::PltfCpu;
-    using DevHost = alpaka::dev::Dev<PltfHost>;
-    using QueueAcc = alpaka::queue::Queue<DevAcc, alpaka::queue::Blocking>;
+    using Idx = alpaka::Idx<TAcc>;
+    using Dim = alpaka::Dim<TAcc>;
+    using Vec = alpaka::Vec<Dim, Idx>;
+    using DevAcc = alpaka::Dev<TAcc>;
+    using PltfAcc = alpaka::Pltf<DevAcc>;
+    using PltfHost = alpaka::PltfCpu;
+    using DevHost = alpaka::Dev<PltfHost>;
+    using QueueAcc = alpaka::Queue<DevAcc, alpaka::Blocking>;
 
     static constexpr Idx xIndex = Dim::value - 1u;
 
@@ -45,8 +43,8 @@ public:
     QueueAcc queue;
 
     TestAlpakaEnv()
-        : acc(alpaka::pltf::getDevByIdx<PltfAcc>(0u))
-        , host(alpaka::pltf::getDevByIdx<PltfHost>(0u))
+        : acc(alpaka::getDevByIdx<PltfAcc>(0u))
+        , host(alpaka::getDevByIdx<PltfHost>(0u))
         , queue(acc)
     {
     }
@@ -61,12 +59,12 @@ public:
     template<typename TValue>
     auto allocHost(Vec const& extent)
     {
-        return alpaka::mem::buf::alloc<TValue, Idx>(host, extent);
+        return alpaka::allocBuf<TValue, Idx>(host, extent);
     }
     template<typename TValue>
     auto allocAcc(Vec const& extent)
     {
-        return alpaka::mem::buf::alloc<TValue, Idx>(acc, extent);
+        return alpaka::allocBuf<TValue, Idx>(acc, extent);
     }
 
     template<typename TLambda>
@@ -75,13 +73,13 @@ public:
         using TValue = decltype(lambda(static_cast<Idx>(0u)));
         auto deviceMem(allocAcc<TValue>(extent));
         auto hostMem(allocHost<TValue>(extent));
-        auto hostPtr = alpaka::mem::view::getPtrNative(hostMem);
+        auto hostPtr = alpaka::getPtrNative(hostMem);
         const auto n = extent[xIndex];
         for(Idx i = 0; i < n; ++i)
         {
             hostPtr[i] = lambda(i);
         }
-        alpaka::mem::view::copy(queue, deviceMem, hostMem, extent);
+        alpaka::memcpy(queue, deviceMem, hostMem, extent);
         return deviceMem;
     }
 };
@@ -102,31 +100,31 @@ public:
     {
         using TRed = uint64_t;
 
-        /*using Idx = alpaka::idx::Idx<TAcc>;
-        using Dim = alpaka::dim::Dim<TAcc>;
+        /*using Idx = alpaka::Idx<TAcc>;
+        using Dim = alpaka::Dim<TAcc>;
         const Idx n = static_cast<Idx>(memSize);
         constexpr Idx blocksPerGrid = 8;
         constexpr Idx threadsPerBlock = 1;
         const Idx elementsPerThread = n / blocksPerGrid / threadsPerBlock + 1;
 
-        using Vec = alpaka::vec::Vec<Dim, Idx>;
+        using Vec = alpaka::Vec<Dim, Idx>;
         constexpr Idx xIndex = Dim::value - 1u;
 
         Vec extent(Vec::all(static_cast<Idx>(1)));
         extent[xIndex] = n;
 
-        using DevAcc = alpaka::dev::Dev<TAcc>;
-        using PltfAcc = alpaka::pltf::Pltf<DevAcc>;
+        using DevAcc = alpaka::Dev<TAcc>;
+        using PltfAcc = alpaka::Pltf<DevAcc>;
         // Async queue makes things slower on CPU?
-        // using QueueAcc = alpaka::test::queue::DefaultQueue<alpaka::dev::Dev<TAcc>>;
-        using PltfHost = alpaka::pltf::PltfCpu;
-        using DevHost = alpaka::dev::Dev<PltfHost>;
-        using QueueAcc = //alpaka::queue::QueueCpuAsync;
-        typename std::conditional<std::is_same<PltfAcc, alpaka::pltf::PltfCpu>::value, alpaka::queue::QueueCpuBlocking,
+        // using QueueAcc = alpaka::test::queue::DefaultQueue<alpaka::Dev<TAcc>>;
+        using PltfHost = alpaka::PltfCpu;
+        using DevHost = alpaka::Dev<PltfHost>;
+        using QueueAcc = //alpaka::QueueCpuAsync;
+        typename std::conditional<std::is_same<PltfAcc, alpaka::PltfCpu>::value, alpaka::QueueCpuBlocking,
 #ifdef  ALPAKA_ACC_GPU_CUDA_ENABLED
-                alpaka::queue::QueueCudaRtBlocking
+                alpaka::QueueCudaRtBlocking
 #else
-                alpaka::queue::QueueCpuBlocking
+                alpaka::QueueCpuBlocking
 #endif
         >::type;*/
         TestAlpakaEnv<TAcc> testAlpakaEnv;
@@ -141,7 +139,7 @@ public:
         auto deviceMem(testAlpakaEnv.fillDeviceBuffer(extent, incrementOne));
         auto hostMem(testAlpakaEnv.template allocHost<TRed>(extent));
 
-        std::cout << "Testing accelerator: " << alpaka::acc::getAccName<TAcc>() << " with size: " << n << "\n";
+        std::cout << "Testing accelerator: " << alpaka::getAccName<TAcc>() << " with size: " << n << "\n";
 
         auto start = std::chrono::high_resolution_clock::now();
         // insert new call here
@@ -149,26 +147,26 @@ public:
             devAcc,
             queueAcc,
             n,
-            alpaka::mem::view::getPtrNative(deviceMem),
-            alpaka::mem::view::getPtrNative(deviceMem),
+            alpaka::getPtrNative(deviceMem),
+            alpaka::getPtrNative(deviceMem),
             incrementOne);
         auto end = std::chrono::high_resolution_clock::now();
-        alpaka::mem::view::copy(queueAcc, hostMem, deviceMem, extent);
-        auto nativePointer = alpaka::mem::view::getPtrNative(hostMem);
+        alpaka::memcpy(queueAcc, hostMem, deviceMem, extent);
+        auto nativePointer = alpaka::getPtrNative(hostMem);
         bool isValid = true;
         for(Idx i = 0; i < n; ++i)
         {
             isValid = isValid && nativePointer[i] == (i + 2);
         }
         REQUIRE(isValid);
-        std::cout << "Runtime of " << alpaka::acc::getAccName<TAcc>() << ": "
+        std::cout << "Runtime of " << alpaka::getAccName<TAcc>() << ": "
                   << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << " microseconds\n";
     }
 };
 
 TEST_CASE("Test transform", "[transform]")
 {
-    using TestAccs = alpaka::example::ExampleDefaultAcc<alpaka::dim::DimInt<3u>, std::uint64_t>;
+    using TestAccs = alpaka::ExampleDefaultAcc<alpaka::DimInt<3u>, std::uint64_t>;
     // std::cout << std::thread::hardware_concurrency() << "\n";
     SECTION("deviceTransform")
     {

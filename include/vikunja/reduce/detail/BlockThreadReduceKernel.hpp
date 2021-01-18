@@ -72,19 +72,19 @@ namespace vikunja
                 {
                     // use shared memory in this block for the reduce.
                     auto& sdata(
-                        alpaka::block::shared::st::allocVar<sharedStaticArray<TRed, TBlockSize>, __COUNTER__>(acc));
+                        alpaka::declareSharedVar<sharedStaticArray<TRed, TBlockSize>, __COUNTER__>(acc));
 
                     // alpaka reverses the order of the cuda x/y/z parametors:
                     // If 3d acc is used, 0 is equivalent to z, 1 to y, 2 to x.
-                    constexpr TIdx xIndex = alpaka::dim::Dim<TAcc>::value - 1u;
+                    constexpr TIdx xIndex = alpaka::Dim<TAcc>::value - 1u;
 
                     // CUDA equivalents:
                     // blockIdx.x
-                    auto blockIndex = (alpaka::idx::getIdx<alpaka::Grid, alpaka::Blocks>(acc)[xIndex]);
+                    auto blockIndex = (alpaka::getIdx<alpaka::Grid, alpaka::Blocks>(acc)[xIndex]);
                     // threadIdx.x
-                    auto threadIndex = (alpaka::idx::getIdx<alpaka::Block, alpaka::Threads>(acc)[xIndex]);
+                    auto threadIndex = (alpaka::getIdx<alpaka::Block, alpaka::Threads>(acc)[xIndex]);
                     // blockIdx.x * TBlocksize + threadIdx.x
-                    auto indexInBlock(alpaka::idx::getIdx<alpaka::Grid, alpaka::Threads>(acc)[xIndex]);
+                    auto indexInBlock(alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc)[xIndex]);
 
                     using MemPolicy = TMemAccessPolicy;
                     // Create an iterator with the specified memory access policy that wraps the input iterator.
@@ -129,7 +129,7 @@ namespace vikunja
                         }
                     }
 
-                    alpaka::block::sync::syncBlockThreads(acc);
+                    alpaka::syncBlockThreads(acc);
 
                     // blockReduce
                     // unroll for better performance
@@ -142,7 +142,7 @@ namespace vikunja
                         {
                             sdata[threadIndex] = func(sdata[threadIndex], sdata[threadIndex + bSup]);
                         }
-                        alpaka::block::sync::syncBlockThreads(acc); // sync: block reduce loop
+                        alpaka::syncBlockThreads(acc); // sync: block reduce loop
                     }
                     if(threadIndex == 0)
                     {

@@ -21,7 +21,7 @@ if(NOT DEFINED ALPAKA_ACC_CPU_B_SEQ_T_SEQ_ENABLE AND (vikunja_BUILD_EXAMPLES OR 
   option(ALPAKA_ACC_CPU_B_SEQ_T_SEQ_ENABLE "enable alpaka serial accelerator" ON)
 endif()
 
-find_package(alpaka 0.5.0 REQUIRED HINTS $ENV{ALPAKA_ROOT})
+find_package(alpaka 0.6.0 REQUIRED HINTS $ENV{ALPAKA_ROOT})
 
 if(ALPAKA_ACC_GPU_CUDA_ENABLE)
     # activate support for host/device lambdas in cuda, currently (as of CUDA 10) still an experimental feature,

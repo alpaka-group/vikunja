@@ -57,9 +57,9 @@ namespace vikunja
                 return;
             }
             constexpr uint64_t blockSize = WorkDivPolicy::template getBlockSize<TAcc>();
-            using Dim = alpaka::dim::Dim<TAcc>;
-            using WorkDiv = alpaka::workdiv::WorkDivMembers<Dim, TIdx>;
-            using Vec = alpaka::vec::Vec<Dim, TIdx>;
+            using Dim = alpaka::Dim<TAcc>;
+            using WorkDiv = alpaka::WorkDivMembers<Dim, TIdx>;
+            using Vec = alpaka::Vec<Dim, TIdx>;
             constexpr TIdx xIndex = Dim::value - 1u;
             if(n < blockSize)
             {
@@ -84,7 +84,7 @@ namespace vikunja
 
             WorkDiv multiBlockWorkDiv{blocksPerGrid, threadsPerBlock, elementsPerThread};
             detail::BlockThreadTransformKernel<blockSize, MemAccessPolicy> kernel;
-            alpaka::kernel::exec<TAcc>(queue, multiBlockWorkDiv, kernel, source, destination, n, func);
+            alpaka::exec<TAcc>(queue, multiBlockWorkDiv, kernel, source, destination, n, func);
         }
 
         /**
@@ -132,9 +132,9 @@ namespace vikunja
                 return;
             }
             constexpr uint64_t blockSize = WorkDivPolicy::template getBlockSize<TAcc>();
-            using Dim = alpaka::dim::Dim<TAcc>;
-            using WorkDiv = alpaka::workdiv::WorkDivMembers<Dim, TIdx>;
-            using Vec = alpaka::vec::Vec<Dim, TIdx>;
+            using Dim = alpaka::Dim<TAcc>;
+            using WorkDiv = alpaka::WorkDivMembers<Dim, TIdx>;
+            using Vec = alpaka::Vec<Dim, TIdx>;
             constexpr TIdx xIndex = Dim::value - 1u;
             if(n < blockSize)
             {
@@ -159,7 +159,7 @@ namespace vikunja
 
             WorkDiv multiBlockWorkDiv{blocksPerGrid, threadsPerBlock, elementsPerThread};
             detail::BlockThreadTransformKernel<blockSize, MemAccessPolicy> kernel;
-            alpaka::kernel::exec<TAcc>(queue, multiBlockWorkDiv, kernel, source, sourceSecond, destination, n, func);
+            alpaka::exec<TAcc>(queue, multiBlockWorkDiv, kernel, source, sourceSecond, destination, n, func);
         }
     } // namespace transform
 } // namespace vikunja
