@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 project(vikunja
   VERSION      0.1.0
   DESCRIPTION  "Primitives for Alpaka"
-  HOMEPAGE_URL "https://github.com/ComputationalRadiationPhysics/vikunja"
+  HOMEPAGE_URL "https://github.com/alpaka-group/vikunja"
   LANGUAGES    CXX)
 
 set(CMAKE_CXX_STANDARD 14)

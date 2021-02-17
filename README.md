@@ -18,7 +18,7 @@ Directories:
 ## Install Vikunja
 
 ```bash
-git clone https://github.com/ComputationalRadiationPhysics/vikunja.git
+git clone https://github.com/alpaka-group/vikunja.git
 mkdir vikunja/build
 cd vikunja/build
 cmake ..
