@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "container version -> CONTAINER_VERSION"
+echo "container version -> $CONTAINER_VERSION"
 
 # the default build type is Release
 # if neccesary, you can rerun the pipeline with another build type-> https://docs.gitlab.com/ee/ci/pipelines.html#manually-executing-pipelines
@@ -14,7 +14,7 @@ fi
 # cmake config builder
 ###################################################
 
-VIKUNJA_CONST_ARGS=""
+VIKUNJA_CONST_ARGS="-DBUILD_TESTING=ON -Dvikunja_BUILD_EXAMPLES=ON"
 VIKUNJA_CONST_ARGS="${VIKUNJA_CONST_ARGS} -DCMAKE_BUILD_TYPE=${VIKUNJA_BUILD_TYPE}"
 VIKUNJA_CONST_ARGS="${VIKUNJA_CONST_ARGS} ${VIKUNJA_CMAKE_ARGS}"
 
@@ -31,6 +31,14 @@ done
 # build an run tests
 ###################################################
 
+# install alpaka
+git clone --depth 1 --branch 0.6.0 https://github.com/alpaka-group/alpaka.git
+mkdir alpaka/build && cd alpaka/build
+cmake .. -DBOOST_ROOT=/opt/boost/1.73.0
+cmake --install .
+cd ../..
+rm -rf alpaka
+
 # use one build directory for all build configurations
 mkdir build
 cd build
@@ -44,4 +52,9 @@ for CONFIG in $(seq 0 $((${#CMAKE_CONFIGS[*]} - 1))); do
     cmake --version | head -n 1
     echo "CMAKE_ARGS -> ${CMAKE_ARGS}"
     echo -e "/////////////////////////////////////////////////// \033[0m \n\n"
+
+    cmake .. $CMAKE_ARGS
+    cmake --build . -j
+    ctest
+    rm -r *
 done
