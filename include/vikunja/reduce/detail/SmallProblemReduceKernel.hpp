@@ -28,10 +28,10 @@ namespace vikunja
                     TTransformFunc const& transformFunc,
                     TFunc const& func) const
                 {
-                    auto tSum = transformFunc(*(source));
+                    auto tSum = transformFunc(acc, *(source));
                     for(TIdx i(1); i < n; ++i)
                     {
-                        tSum = func(tSum, transformFunc(*(source + i)));
+                        tSum = func(acc, tSum, transformFunc(acc, *(source + i)));
                     }
                     *destination = tSum;
                 }

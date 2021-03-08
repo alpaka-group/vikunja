@@ -75,8 +75,8 @@ public:
             hostNative[i] = static_cast<TRed>(i + 1);
         }
         alpaka::memcpy(queueAcc, deviceMem, hostMem, extent);
-        auto sum = [=] ALPAKA_FN_HOST_ACC(TRed i, TRed j) { return i + j; };
-        auto doubleNum = [=] ALPAKA_FN_HOST_ACC(TRed i) { return 2 * i; };
+        auto sum = [=] ALPAKA_FN_HOST_ACC(TAcc const&, TRed i, TRed j) { return i + j; };
+        auto doubleNum = [=] ALPAKA_FN_HOST_ACC(TAcc const&, TRed i) { return 2 * i; };
         std::cout << "Testing accelerator: " << alpaka::getAccName<TAcc>() << " with size: " << n << "\n";
 
         auto start = std::chrono::high_resolution_clock::now();

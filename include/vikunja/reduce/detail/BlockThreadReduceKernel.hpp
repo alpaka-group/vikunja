@@ -101,21 +101,26 @@ namespace vikunja
                     if(startIndex < n)
                     {
                         // no neutral element is used, so initialize with value from first element.
-                        auto tSum = transformFunc(*iter);
+                        auto tSum = transformFunc(acc, *iter);
                         ++iter;
                         // Manual unrolling. I dont know if this is really necessary, but
                         while(iter + 3 < iter.end())
                         {
                             tSum = func(
+                                acc,
                                 func(
-                                    func(func(tSum, transformFunc(*iter)), transformFunc(*(iter + 1))),
-                                    transformFunc(*(iter + 2))),
-                                transformFunc(*(iter + 3)));
+                                    acc,
+                                    func(
+                                        acc,
+                                        func(acc, tSum, transformFunc(acc, *iter)),
+                                        transformFunc(acc, *(iter + 1))),
+                                    transformFunc(acc, *(iter + 2))),
+                                transformFunc(acc, *(iter + 3)));
                             iter += 4;
                         }
                         while(iter < iter.end())
                         {
-                            tSum = func(tSum, transformFunc(*iter));
+                            tSum = func(acc, tSum, transformFunc(acc, *iter));
                             ++iter;
                         }
                         // This condition actually relies on the memory access pattern.
@@ -140,7 +145,7 @@ namespace vikunja
                             (indexInBlock + bSup) < n; // if element in second half has ben initialized before
                         if(condition)
                         {
-                            sdata[threadIndex] = func(sdata[threadIndex], sdata[threadIndex + bSup]);
+                            sdata[threadIndex] = func(acc, sdata[threadIndex], sdata[threadIndex + bSup]);
                         }
                         alpaka::syncBlockThreads(acc); // sync: block reduce loop
                     }

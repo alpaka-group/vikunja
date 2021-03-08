@@ -37,7 +37,7 @@ namespace vikunja
 
                     while(inputIterator < inputIterator.end())
                     {
-                        *outputIterator = func(*inputIterator);
+                        *outputIterator = func(acc, *inputIterator);
                         ++inputIterator;
                         ++outputIterator;
                     }
@@ -67,7 +67,7 @@ namespace vikunja
 
                     while(inputIterator < inputIterator.end())
                     {
-                        *outputIterator = func(*inputIterator, *inputIteratorSecond);
+                        *outputIterator = func(acc, *inputIterator, *inputIteratorSecond);
                         ++inputIterator;
                         ++inputIteratorSecond;
                         ++outputIterator;

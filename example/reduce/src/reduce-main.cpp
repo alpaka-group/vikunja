@@ -56,8 +56,8 @@ int main()
     // Copy to accelerator.
     alpaka::memcpy(queueAcc, deviceMem, hostMem, extent);
     // Use Lambda function for reduction
-    auto sum = [=] ALPAKA_FN_HOST_ACC(TRed i, TRed j) { return i + j; };
-    auto doubleNum = [=] ALPAKA_FN_HOST_ACC(TRed i) { return 2 * i; };
+    auto sum = [=] ALPAKA_FN_HOST_ACC(TAcc const&, TRed i, TRed j) { return i + j; };
+    auto doubleNum = [=] ALPAKA_FN_HOST_ACC(TAcc const&, TRed i) { return 2 * i; };
     std::cout << "Testing accelerator: " << alpaka::getAccName<TAcc>() << " with size: " << n << "\n";
 
     // REDUCE CALL:
