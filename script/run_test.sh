@@ -60,7 +60,7 @@ for ALPAKA_VERSION in ${VIKUNJA_ALPAKA_VERSIONS}; do
 
 	cmake .. $CMAKE_ARGS
 	cmake --build . -j
-	ctest
+	ctest --output-on-failure
 	rm -r *
     done
 

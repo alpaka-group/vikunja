@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.18)
 project(vikunja
   VERSION      0.1.0
   DESCRIPTION  "Primitives for Alpaka"
@@ -15,6 +15,13 @@ option(vikunja_BUILD_DOXYGEN "Build the doxygen documentation" OFF)
 option(vikunja_ENABLE_EXTRA_WARING "Enable extra warnings" ON)
 option(VIKUNJA_REDUCE_COMPARING_BENCHMARKS_ENABLE "Should the reduce integration test run some comparison benchmarks?" OFF)
 option(VIKUNJA_TRANSFORM_COMPARING_BENCHMARKS_ENABLE "Should the transform integration test run some comparison benchmarks?" OFF)
+
+# activate support for host/device lambdas in cuda
+# needs to be set before alpaka is included
+# is ignored for Alpaka versions less than 0.7.0
+if(ALPAKA_ACC_GPU_CUDA_ENABLE)
+  set(ALPAKA_CUDA_EXPT_EXTENDED_LAMBDA ON)
+endif()
 
 # the sequential accelerator is required for the tests and examples
 if(NOT DEFINED ALPAKA_ACC_CPU_B_SEQ_T_SEQ_ENABLE AND (vikunja_BUILD_EXAMPLES OR BUILD_TESTING))

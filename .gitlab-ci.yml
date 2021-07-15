@@ -42,9 +42,11 @@ clang:
 #     VIKUNJA_BOOST_VERSIONS: "1.65.1 1.75.0"
 #   extends: .base_cuda_clang
 
-hip42:
-  image: registry.gitlab.com/hzdr/crp/alpaka-group-container/alpaka-ci-rocm4.2:1.4
-  variables:
-    CMAKE_MODULE_PATH: "/opt/rocm-4.2.0/hip/cmake"
-    VIKUNJA_BOOST_VERSIONS: "1.65.1 1.75.0"
-  extends: .base_hip
+# removed HIP support for the moment
+# CI errors are not reproduce able
+#hip42:
+#  image: registry.gitlab.com/hzdr/crp/alpaka-group-container/alpaka-ci-rocm4.2:1.4
+#  variables:
+#    CMAKE_MODULE_PATH: "/opt/rocm-4.2.0/hip/cmake"
+#    VIKUNJA_BOOST_VERSIONS: "1.65.1 1.75.0"
+#  extends: .base_hip
