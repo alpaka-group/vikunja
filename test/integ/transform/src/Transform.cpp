@@ -17,7 +17,8 @@
 #endif
 struct incOne
 {
-    ALPAKA_FN_HOST_ACC std::uint64_t operator()(const std::uint64_t& val)
+    template<typename TAcc>
+    ALPAKA_FN_HOST_ACC std::uint64_t operator()(TAcc const&, const std::uint64_t& val)
     {
         return val + 1;
     }
@@ -135,8 +136,8 @@ public:
         auto& queueAcc = testAlpakaEnv.queue;
         auto extent = testAlpakaEnv.getSingleDimensionVec(memSize);
 
-        auto incrementOne = [=] ALPAKA_FN_HOST_ACC(Idx i) { return i + 1; };
-        auto deviceMem(testAlpakaEnv.fillDeviceBuffer(extent, incrementOne));
+        auto incrementOne = [=] ALPAKA_FN_HOST_ACC(TAcc const&, Idx i) { return i + 1; };
+        auto deviceMem(testAlpakaEnv.fillDeviceBuffer(extent, [=](Idx i) { return i + 1; }));
         auto hostMem(testAlpakaEnv.template allocHost<TRed>(extent));
 
         std::cout << "Testing accelerator: " << alpaka::getAccName<TAcc>() << " with size: " << n << "\n";
@@ -166,6 +167,7 @@ public:
 
 TEST_CASE("Test transform", "[transform]")
 {
+    std::cout << "Test transform" << std::endl;
     using TestAccs = alpaka::ExampleDefaultAcc<alpaka::DimInt<3u>, std::uint64_t>;
     // std::cout << std::thread::hardware_concurrency() << "\n";
     SECTION("deviceTransform")
@@ -222,5 +224,64 @@ TEST_CASE("Test transform", "[transform]")
 #    endif
 
 #endif
+    }
+}
+
+template<typename TAcc>
+void testTemplateDoubleInput(const uint64_t memSize)
+{
+    using TRed = uint64_t;
+
+    TestAlpakaEnv<TAcc> testAlpakaEnv;
+    using Idx = typename TestAlpakaEnv<TAcc>::Idx;
+    const Idx n = memSize;
+
+    auto& devAcc = testAlpakaEnv.acc;
+    auto& queueAcc = testAlpakaEnv.queue;
+    auto extent = testAlpakaEnv.getSingleDimensionVec(memSize);
+
+    auto deviceMemInput1(testAlpakaEnv.fillDeviceBuffer(extent, [=](Idx i) { return i + 1; }));
+    auto deviceMemInput2(testAlpakaEnv.fillDeviceBuffer(extent, [=](Idx i) { return i * 2; }));
+    auto deviceMemOutput(testAlpakaEnv.fillDeviceBuffer(extent, [=](Idx) { return static_cast<Idx>(0); }));
+    auto hostMem(testAlpakaEnv.template allocHost<TRed>(extent));
+
+    std::cout << "Testing accelerator: " << alpaka::getAccName<TAcc>() << " with size: " << n << "\n";
+
+    auto transfromFunc = [=] ALPAKA_FN_HOST_ACC(TAcc const&, Idx i1, Idx i2) { return i2 - i1; };
+
+    auto start = std::chrono::high_resolution_clock::now();
+    vikunja::transform::deviceTransform<TAcc>(
+        devAcc,
+        queueAcc,
+        n,
+        alpaka::getPtrNative(deviceMemInput1),
+        alpaka::getPtrNative(deviceMemInput2),
+        alpaka::getPtrNative(deviceMemOutput),
+        transfromFunc);
+    auto end = std::chrono::high_resolution_clock::now();
+
+    alpaka::memcpy(queueAcc, hostMem, deviceMemOutput, extent);
+
+    auto nativePointer = alpaka::getPtrNative(hostMem);
+    bool isValid = true;
+    for(Idx i = 0; i < n; ++i)
+    {
+        isValid = isValid && nativePointer[i] == ((i * 2) - (i + 1));
+    }
+
+    REQUIRE(isValid);
+    std::cout << "Runtime of " << alpaka::getAccName<TAcc>() << ": "
+              << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << " microseconds\n";
+}
+
+TEST_CASE("Test transform two input iterators", "[transform]")
+{
+    std::cout << "Test transform two input iterators" << std::endl;
+    using TestAccs = alpaka::ExampleDefaultAcc<alpaka::DimInt<3u>, std::uint64_t>;
+    std::vector<uint64_t> memorySizes{1, 10, 16, 777, (1 << 10) + 1, 1 << 15, 1 << 25, 1 << 27};
+
+    for(auto& memSize : memorySizes)
+    {
+        testTemplateDoubleInput<TestAccs>(memSize);
     }
 }

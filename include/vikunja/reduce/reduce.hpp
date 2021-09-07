@@ -27,7 +27,8 @@ namespace vikunja
                  * @param arg Any argument.
                  * @return The parameter arg.
                  */
-                constexpr ALPAKA_FN_HOST_ACC T operator()(T const& arg) const
+                template<typename TAcc>
+                constexpr ALPAKA_FN_HOST_ACC T operator()(TAcc const&, T const& arg) const
                 {
                     return arg;
                 }
@@ -77,10 +78,17 @@ namespace vikunja
             TIdx const& n,
             TInputIterator const& buffer,
             TTransformFunc const& transformFunc,
-            TFunc const& func) -> decltype(func(transformFunc(*buffer), transformFunc(*buffer)))
+            TFunc const& func)
+            -> decltype(func(
+                std::declval<TAcc>(),
+                transformFunc(std::declval<TAcc>(), *buffer),
+                transformFunc(std::declval<TAcc>(), *buffer)))
         {
             // TODO: more elegant way to obtain return type + avoid that double declaration
-            using TRed = decltype(func(transformFunc(*buffer), transformFunc(*buffer)));
+            using TRed = decltype(func(
+                std::declval<TAcc>(),
+                transformFunc(std::declval<TAcc>(), *buffer),
+                transformFunc(std::declval<TAcc>(), *buffer)));
             // ok, now we have to think about what to do now
             // TODO: think of proper solution for this.
             // TODO: This actually needs discussion: As no default value is provided, the result is undefined.
@@ -223,9 +231,9 @@ namespace vikunja
             TQueue& queue,
             TIdx const& n,
             TInputIterator const& buffer,
-            TFunc const& func) -> decltype(func(*buffer, *buffer))
+            TFunc const& func) -> decltype(func(std::declval<TAcc>(), *buffer, *buffer))
         {
-            using TRed = decltype(func(*buffer, *buffer));
+            using TRed = decltype(func(std::declval<TAcc>(), *buffer, *buffer));
             return deviceTransformReduce<
                 TAcc,
                 WorkDivPolicy,
