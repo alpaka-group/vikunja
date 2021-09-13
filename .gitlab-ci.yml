@@ -9,7 +9,7 @@ include:
   - local: '/script/compiler_base.yml'
 
 variables:
-  VIKUNJA_ALPAKA_VERSIONS: "0.6.0 0.6.1 0.7.0-rc1"
+  VIKUNJA_ALPAKA_VERSIONS: "0.6.0 0.6.1 0.7.0"
 
 cuda102:
   image: registry.gitlab.com/hzdr/crp/alpaka-group-container/alpaka-ci-cuda102-gcc:1.4
