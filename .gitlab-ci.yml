@@ -72,3 +72,33 @@ clang:
 #    CMAKE_MODULE_PATH: "/opt/rocm-4.2.0/hip/cmake"
 #    VIKUNJA_BOOST_VERSIONS: "1.65.1 1.75.0"
 #  extends: .base_hip
+
+integration_add_subdirectory:
+  image: registry.gitlab.com/hzdr/crp/alpaka-group-container/alpaka-ci-gcc:1.4
+  stage: compile-and-run
+  variables:
+    VIKUNJA_BOOST_VERSIONS: 1.74.0
+    VIKUNJA_GCC_VERSION: 9
+  script:
+    - export CC=gcc-$VIKUNJA_GCC_VERSION
+    - export CXX=g++-$VIKUNJA_GCC_VERSION
+    - export CUPLA_TRANSFORM_DIR=$CI_PROJECT_DIR/cupla_transform
+    - source $CI_PROJECT_DIR/script/integration_test/prepare_add_subdirectory.sh
+    - source $CI_PROJECT_DIR/script/integration_test/run.sh
+  tags:
+    - x86_64
+
+integration_find_package:
+  image: registry.gitlab.com/hzdr/crp/alpaka-group-container/alpaka-ci-gcc:1.4
+  stage: compile-and-run
+  variables:
+    VIKUNJA_BOOST_VERSIONS: 1.74.0
+    VIKUNJA_GCC_VERSION: 9
+  script:
+    - export CC=gcc-$VIKUNJA_GCC_VERSION
+    - export CXX=g++-$VIKUNJA_GCC_VERSION
+    - export CUPLA_TRANSFORM_DIR=$CI_PROJECT_DIR/cupla_transform
+    - source $CI_PROJECT_DIR/script/integration_test/prepare_find_package.sh
+    - source $CI_PROJECT_DIR/script/integration_test/run.sh
+  tags:
+    - x86_64
