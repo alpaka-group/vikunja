@@ -63,13 +63,8 @@ int main()
     // REDUCE CALL:
     // Takes the arguments: accelerator device, host device, accelerator queue, size of data, pointer-like to memory,
     // reduce lambda.
-    Idx reduceResult = vikunja::reduce::deviceReduce<TAcc>(
-        devAcc,
-        devHost,
-        queueAcc,
-        n,
-        alpaka::getPtrNative(deviceMem),
-        sum);
+    Idx reduceResult
+        = vikunja::reduce::deviceReduce<TAcc>(devAcc, devHost, queueAcc, n, alpaka::getPtrNative(deviceMem), sum);
 
     // check reduce result
     auto expectedResult = (n * (n + 1) / 2);

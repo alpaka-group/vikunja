@@ -71,8 +71,7 @@ namespace vikunja
                     TFunc const& func) const
                 {
                     // use shared memory in this block for the reduce.
-                    auto& sdata(
-                        alpaka::declareSharedVar<sharedStaticArray<TRed, TBlockSize>, __COUNTER__>(acc));
+                    auto& sdata(alpaka::declareSharedVar<sharedStaticArray<TRed, TBlockSize>, __COUNTER__>(acc));
 
                     // alpaka reverses the order of the cuda x/y/z parametors:
                     // If 3d acc is used, 0 is equivalent to z, 1 to y, 2 to x.

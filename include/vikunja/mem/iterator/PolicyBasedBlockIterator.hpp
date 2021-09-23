@@ -310,8 +310,7 @@ namespace vikunja
              * Shortcut to derive memory access policy from accelerator.
              */
             template<typename TAcc>
-            using MemAccessPolicy =
-                typename traits::GetMemAccessPolicyByPltf<alpaka::Pltf<alpaka::Dev<TAcc>>>::type;
+            using MemAccessPolicy = typename traits::GetMemAccessPolicyByPltf<alpaka::Pltf<alpaka::Dev<TAcc>>>::type;
         } // namespace iterator
     } // namespace mem
 } // namespace vikunja
