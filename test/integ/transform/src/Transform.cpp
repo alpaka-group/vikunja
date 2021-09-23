@@ -43,10 +43,7 @@ public:
     DevHost host;
     QueueAcc queue;
 
-    TestAlpakaEnv()
-        : acc(alpaka::getDevByIdx<PltfAcc>(0u))
-        , host(alpaka::getDevByIdx<PltfHost>(0u))
-        , queue(acc)
+    TestAlpakaEnv() : acc(alpaka::getDevByIdx<PltfAcc>(0u)), host(alpaka::getDevByIdx<PltfHost>(0u)), queue(acc)
     {
     }
 
