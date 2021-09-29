@@ -1,3 +1,11 @@
+# Copyright 2021 Simeon Ehrig
+#
+# This file is part of vikunja.
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 cmake_minimum_required(VERSION 3.18)
 project(vikunja
   VERSION      0.1.0
@@ -18,8 +26,10 @@ option(VIKUNJA_TRANSFORM_COMPARING_BENCHMARKS_ENABLE "Should the transform integ
 
 # activate support for host/device lambdas in cuda
 # needs to be set before alpaka is included
-# is ignored for Alpaka versions less than 0.7.0
 if(ALPAKA_ACC_GPU_CUDA_ENABLE)
+  # DEPRECATED: used until alpaka 0.6.x
+  set(ALPAKA_CUDA_NVCC_EXPT_EXTENDED_LAMBDA ON)
+  # used with alpaka 0.7.0 and below
   set(ALPAKA_CUDA_EXPT_EXTENDED_LAMBDA ON)
 endif()
 
@@ -31,11 +41,12 @@ endif()
 set(_VIKUNJA_MIN_ALPAKA_VERSION 0.6.0)
 set(_VIKUNJA_UNSUPPORTED_ALPAKA_VERSION 0.8.0)
 
-find_package(alpaka ${_VIKUNJA_MIN_ALPAKA_VERSION} REQUIRED HINTS $ENV{ALPAKA_ROOT})
-
-if(alpaka_VERSION VERSION_GREATER_EQUAL _VIKUNJA_UNSUPPORTED_ALPAKA_VERSION)
+if(NOT TARGET alpaka::alpaka)
+  find_package(alpaka ${_VIKUNJA_MIN_ALPAKA_VERSION} REQUIRED HINTS $ENV{ALPAKA_ROOT})
+  if(alpaka_VERSION VERSION_GREATER_EQUAL _VIKUNJA_UNSUPPORTED_ALPAKA_VERSION)
     message(WARNING "Unsupported alpaka version ${alpaka_VERSION}. "
         "Supported versions [${_VIKUNJA_MIN_ALPAKA_VERSION},${_VIKUNJA_UNSUPPORTED_ALPAKA_VERSION}).")
+  endif()
 endif()
 
 if(ALPAKA_ACC_GPU_CUDA_ENABLE)
