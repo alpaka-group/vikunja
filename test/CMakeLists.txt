@@ -8,7 +8,7 @@
 
 cmake_minimum_required(VERSION 3.18)
 
-if(vikunja_SYSTEM_CATCH2)
+if(VIKUNJA_SYSTEM_CATCH2)
   find_package(Catch2 REQUIRED)
 else()
   message(STATUS "Downloading dependency Catch2.")
