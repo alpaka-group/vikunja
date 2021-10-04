@@ -1,24 +1,39 @@
+# Copyright 2019-2021 Hauke Mewes, Simeon Ehrig
+#
+# This file is part of vikunja.
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 cmake_minimum_required(VERSION 3.18)
 
-add_library(CatchMain CatchMain.cpp)
+if(vikunja_SYSTEM_CATCH2)
+  find_package(Catch2 REQUIRED)
+else()
+  message(STATUS "Downloading dependency Catch2.")
+  FetchContent_Declare(
+    Catch2
+    GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+    GIT_TAG        v2.13.1
+    )
+  FetchContent_MakeAvailable(Catch2)
+endif()
 
-set_target_properties(CatchMain PROPERTIES
-        FOLDER "test"
-        CXX_STANDARD 11
-        CXX_EXTENSIONS OFF
-        CXX_STANDARD_REQUIRED ON
-        POSITION_INDEPENDENT_CODE ON
-        WINDOWS_EXPORT_ALL_SYMBOLS ON)
-target_compile_definitions(CatchMain PUBLIC "CATCH_CONFIG_FAST_COMPILE")
-target_include_directories(CatchMain SYSTEM PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/../thirdParty/catch2/include)
-
-# Link other tests against this library to avoid repeated compilation of Catch2.
-add_library(vikunjaTestLib dummy.cpp)
-target_include_directories(vikunjaTestLib
+add_library(vikunjaTestSetup)
+target_sources(vikunjaTestSetup
+  PRIVATE
+  ${CMAKE_CURRENT_SOURCE_DIR}/CatchMain.cpp
+  )
+target_include_directories(vikunjaTestSetup
   PUBLIC
-  ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_link_libraries(vikunjaTestLib PUBLIC vikunja::internalvikunja CatchMain)
+  ${CMAKE_CURRENT_SOURCE_DIR}/include
+  )
+target_link_libraries(vikunjaTestSetup
+  PUBLIC
+  Catch2::Catch2
+  )
+add_library(vikunja::testSetup ALIAS vikunjaTestSetup)
 
 list(APPEND _VIKUNJA_TEST_OPTIONS "--use-colour yes")
 add_subdirectory("unit/")
