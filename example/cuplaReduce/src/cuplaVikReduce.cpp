@@ -19,9 +19,9 @@ int reduce(std::vector<int> const&& input)
     cuplaError_t err = cuplaSuccess;
     auto const size = sizeof(int) * input.size();
 
-    cupla::AccHost const& devHost(cupla::manager::Device<cupla::AccHost>::get().current());
-    cupla::AccDev const& devAcc(cupla::manager::Device<cupla::AccDev>::get().current());
-    cupla::AccStream& devQueue(cupla::manager::Stream<cupla::AccDev, cupla::AccStream>::get().stream(0));
+    cupla::AccHost const devHost(cupla::manager::Device<cupla::AccHost>::get().current());
+    cupla::AccDev const devAcc(cupla::manager::Device<cupla::AccDev>::get().current());
+    cupla::AccStream devQueue(cupla::manager::Stream<cupla::AccDev, cupla::AccStream>::get().stream(0));
 
     int* devMem = nullptr;
 
