@@ -25,6 +25,7 @@ option(VIKUNJA_REDUCE_COMPARING_BENCHMARKS_ENABLE "Should the reduce integration
 option(VIKUNJA_TRANSFORM_COMPARING_BENCHMARKS_ENABLE "Should the transform integration test run some comparison benchmarks?" OFF)
 option(BUILD_TESTING "Build the testing tree." OFF)
 cmake_dependent_option(VIKUNJA_SYSTEM_CATCH2 "Use your local installation of Catch2 v3" ON BUILD_TESTING OFF)
+cmake_dependent_option(VIKUNJA_ENABLE_CXX_TEST "Builds test that checks if the C++ standard is set correctly" OFF BUILD_TESTING OFF)
 
 # activate support for host/device lambdas in cuda
 # needs to be set before alpaka is included
