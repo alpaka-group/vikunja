@@ -16,13 +16,16 @@ project(vikunja
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED 14)
 
-include(CTest)
+include(CMakeDependentOption)
+include(FetchContent)
 
 option(vikunja_BUILD_EXAMPLES "Build the examples" OFF)
 option(vikunja_BUILD_DOXYGEN "Build the doxygen documentation" OFF)
 option(vikunja_ENABLE_EXTRA_WARING "Enable extra warnings" ON)
 option(VIKUNJA_REDUCE_COMPARING_BENCHMARKS_ENABLE "Should the reduce integration test run some comparison benchmarks?" OFF)
 option(VIKUNJA_TRANSFORM_COMPARING_BENCHMARKS_ENABLE "Should the transform integration test run some comparison benchmarks?" OFF)
+option(BUILD_TESTING "Build the testing tree." OFF)
+cmake_dependent_option(vikunja_SYSTEM_CATCH2 "Use your local installation of Catch2 v3" ON BUILD_TESTING OFF)
 
 # activate support for host/device lambdas in cuda
 # needs to be set before alpaka is included
@@ -148,6 +151,7 @@ if(${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})
   #########################################
 
   if(BUILD_TESTING)
+    include(CTest)
     enable_testing()
     add_subdirectory("test/")
   endif()
