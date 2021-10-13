@@ -13,19 +13,18 @@ project(vikunja
   HOMEPAGE_URL "https://github.com/alpaka-group/vikunja"
   LANGUAGES    CXX)
 
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_STANDARD_REQUIRED 14)
+set(ALPAKA_CXX_STANDARD "14" CACHE STRING "C++ standard version")
 
 include(CMakeDependentOption)
 include(FetchContent)
 
-option(vikunja_BUILD_EXAMPLES "Build the examples" OFF)
-option(vikunja_BUILD_DOXYGEN "Build the doxygen documentation" OFF)
-option(vikunja_ENABLE_EXTRA_WARING "Enable extra warnings" ON)
+option(VIKUNJA_BUILD_EXAMPLES "Build the examples" OFF)
+option(VIKUNJA_BUILD_DOXYGEN "Build the doxygen documentation" OFF)
+option(VIKUNJA_ENABLE_EXTRA_WARNINGS "Enable extra warnings" OFF)
 option(VIKUNJA_REDUCE_COMPARING_BENCHMARKS_ENABLE "Should the reduce integration test run some comparison benchmarks?" OFF)
 option(VIKUNJA_TRANSFORM_COMPARING_BENCHMARKS_ENABLE "Should the transform integration test run some comparison benchmarks?" OFF)
 option(BUILD_TESTING "Build the testing tree." OFF)
-cmake_dependent_option(vikunja_SYSTEM_CATCH2 "Use your local installation of Catch2 v3" ON BUILD_TESTING OFF)
+cmake_dependent_option(VIKUNJA_SYSTEM_CATCH2 "Use your local installation of Catch2 v3" ON BUILD_TESTING OFF)
 
 # activate support for host/device lambdas in cuda
 # needs to be set before alpaka is included
@@ -37,7 +36,7 @@ if(ALPAKA_ACC_GPU_CUDA_ENABLE)
 endif()
 
 # the sequential accelerator is required for the tests and examples
-if(NOT DEFINED ALPAKA_ACC_CPU_B_SEQ_T_SEQ_ENABLE AND (vikunja_BUILD_EXAMPLES OR BUILD_TESTING))
+if(NOT DEFINED ALPAKA_ACC_CPU_B_SEQ_T_SEQ_ENABLE AND (VIKUNJA_BUILD_EXAMPLES OR BUILD_TESTING))
   option(ALPAKA_ACC_CPU_B_SEQ_T_SEQ_ENABLE "enable alpaka serial accelerator" ON)
 endif()
 
@@ -52,20 +51,11 @@ if(NOT TARGET alpaka::alpaka)
   endif()
 endif()
 
-if(ALPAKA_ACC_GPU_CUDA_ENABLE)
-    # activate support for host/device lambdas in cuda, currently (as of CUDA 10) still an experimental feature,
-    # but it seems to work.
-    # PARENT_SCOPE is necessary, if the project is imported via add_subdirectory()
-    set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS};--expt-extended-lambda" PARENT_SCOPE)
-endif()
-
-
 add_library(${PROJECT_NAME} INTERFACE)
 target_include_directories(${PROJECT_NAME}
   INTERFACE
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
-target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_14)
 add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 #The target vikunja::internalvikunja is for internal use only, such as the tests or examples.
@@ -91,7 +81,7 @@ else()
     alpaka::alpaka)
 endif()
 
-if(vikunja_ENABLE_EXTRA_WARING)
+if(VIKUNJA_ENABLE_EXTRA_WARNINGS)
   if(MSVC)
     target_compile_options(${PROJECT_NAME} INTERFACE "/W4")
   else()
@@ -141,7 +131,7 @@ if(${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})
   #########################################
 
   # Use doxygen for api doc when available.
-  if(vikunja_BUILD_DOXYGEN)
+  if(VIKUNJA_BUILD_DOXYGEN)
     find_package(Doxygen REQUIRED)
     doxygen_add_docs(doc include/)
   endif()
@@ -160,7 +150,7 @@ if(${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})
   ################ Examples ###############
   #########################################
 
-  if(vikunja_BUILD_EXAMPLES)
+  if(VIKUNJA_BUILD_EXAMPLES)
     add_subdirectory("example/")
   endif()
 endif()

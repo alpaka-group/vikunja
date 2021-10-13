@@ -87,6 +87,7 @@ integration_add_subdirectory:
     - source $CI_PROJECT_DIR/script/integration_test/run.sh
   tags:
     - x86_64
+    - cpuonly
 
 integration_find_package:
   image: registry.gitlab.com/hzdr/crp/alpaka-group-container/alpaka-ci-gcc:1.4
@@ -102,3 +103,4 @@ integration_find_package:
     - source $CI_PROJECT_DIR/script/integration_test/run.sh
   tags:
     - x86_64
+    - cpuonly
