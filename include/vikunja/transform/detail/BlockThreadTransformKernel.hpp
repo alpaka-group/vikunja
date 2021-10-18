@@ -22,8 +22,9 @@ namespace vikunja
              * This provides transform kernels for both the single-input and the double-input transform operation.
              * @tparam TBlockSize The block size of the kernel.
              * @tparam TMemAccessPolicy The memory access policy of the kernel.
+             * @tparam TOperator The vikunja::operators type of the transform function.
              */
-            template<uint64_t TBlockSize, typename TMemAccessPolicy>
+            template<uint64_t TBlockSize, typename TMemAccessPolicy, typename TOperator>
             struct BlockThreadTransformKernel
             {
                 template<
@@ -46,7 +47,7 @@ namespace vikunja
 
                     while(inputIterator < inputIterator.end())
                     {
-                        *outputIterator = func(acc, *inputIterator);
+                        *outputIterator = TOperator::run(acc, func, *inputIterator);
                         ++inputIterator;
                         ++outputIterator;
                     }
@@ -76,7 +77,7 @@ namespace vikunja
 
                     while(inputIterator < inputIterator.end())
                     {
-                        *outputIterator = func(acc, *inputIterator, *inputIteratorSecond);
+                        *outputIterator = TOperator::run(acc, func, *inputIterator, *inputIteratorSecond);
                         ++inputIterator;
                         ++inputIteratorSecond;
                         ++outputIterator;

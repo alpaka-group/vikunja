@@ -15,6 +15,7 @@
 #include <vikunja/workdiv/BlockBasedWorkDiv.hpp>
 #include <vikunja/reduce/detail/SmallProblemReduceKernel.hpp>
 #include <vikunja/reduce/detail/BlockThreadReduceKernel.hpp>
+#include <vikunja/operators/operators.hpp>
 #include <iostream>
 
 namespace vikunja
@@ -36,8 +37,7 @@ namespace vikunja
                  * @param arg Any argument.
                  * @return The parameter arg.
                  */
-                template<typename TAcc>
-                constexpr ALPAKA_FN_HOST_ACC T operator()(TAcc const&, T const& arg) const
+                constexpr ALPAKA_FN_HOST_ACC T operator()(T const& arg) const
                 {
                     return arg;
                 }
@@ -54,19 +54,22 @@ namespace vikunja
          * @tparam MemAccessPolicy The memory access policy. Defaults to a templated value depending on the
          * accelerator. For the API of this, see mem/iterator/PolicyBasedBlockIterator
          * @tparam TTransformFunc Type of the transform operator.
-         * @tparam TFunc Type of the reduce operator.
+         * @tparam TReduceFunc Type of the reduce operator.
          * @tparam TInputIterator Type of the input iterator. Should be a pointer-like type.
          * @tparam TDevAcc The type of the alpaka accelerator.
          * @tparam TDevHost The type of the alpaka host.
          * @tparam TQueue The type of the alpaka queue.
          * @tparam TIdx The index type to use.
+         * @tparam TTransformOperator The vikunja::operators type of the transform function.
+         * @tparam TReduceOperator The vikunja::operators type of the reduce function.
+         * @tparam TRed The return value of the function.
          * @param devAcc The alpaka accelerator.
          * @param devHost The alpaka host.
          * @param queue The alpaka queue.
          * @param n The number of input elements. Must be of type TIdx.
          * @param buffer The input iterator. Should be a pointer-like object.
          * @param transformFunc The transform operator.
-         * @param func The reduce operator.
+         * @param reduceFunc The reduce operator.
          * @return Value of the combined transform/reduce operation.
          */
         template<
@@ -74,12 +77,17 @@ namespace vikunja
             typename WorkDivPolicy = vikunja::workdiv::BlockBasedPolicy<TAcc>,
             typename MemAccessPolicy = vikunja::mem::iterator::MemAccessPolicy<TAcc>,
             typename TTransformFunc,
-            typename TFunc,
+            typename TReduceFunc,
             typename TInputIterator,
             typename TDevAcc,
             typename TDevHost,
             typename TQueue,
-            typename TIdx>
+            typename TIdx,
+            typename TTransformOperator
+            = vikunja::operators::UnaryOp<TAcc, TTransformFunc, typename std::remove_pointer<TInputIterator>::type>,
+            typename TReduceOperator = vikunja::operators::
+                BinaryOp<TAcc, TReduceFunc, typename TTransformOperator::TRed, typename TTransformOperator::TRed>,
+            typename TRed = typename TReduceOperator::TRed>
         auto deviceTransformReduce(
             TDevAcc& devAcc,
             TDevHost& devHost,
@@ -87,17 +95,8 @@ namespace vikunja
             TIdx const& n,
             TInputIterator const& buffer,
             TTransformFunc const& transformFunc,
-            TFunc const& func)
-            -> decltype(func(
-                std::declval<TAcc>(),
-                transformFunc(std::declval<TAcc>(), *buffer),
-                transformFunc(std::declval<TAcc>(), *buffer)))
+            TReduceFunc const& reduceFunc) -> TRed
         {
-            // TODO: more elegant way to obtain return type + avoid that double declaration
-            using TRed = decltype(func(
-                std::declval<TAcc>(),
-                transformFunc(std::declval<TAcc>(), *buffer),
-                transformFunc(std::declval<TAcc>(), *buffer)));
             // ok, now we have to think about what to do now
             // TODO: think of proper solution for this.
             // TODO: This actually needs discussion: As no default value is provided, the result is undefined.
@@ -124,7 +123,7 @@ namespace vikunja
             {
                 auto resultBuffer(alpaka::allocBuf<TRed, TIdx>(devAcc, resultBufferExtent));
                 WorkDiv dummyWorkDiv{blocksPerGrid, threadsPerBlock, elementsPerThread};
-                detail::SmallProblemReduceKernel kernel;
+                detail::SmallProblemReduceKernel<TTransformOperator, TReduceOperator> kernel;
                 alpaka::exec<TAcc>(
                     queue,
                     dummyWorkDiv,
@@ -133,7 +132,7 @@ namespace vikunja
                     alpaka::getPtrNative(resultBuffer),
                     n,
                     transformFunc,
-                    func);
+                    reduceFunc);
                 auto resultView(alpaka::allocBuf<TRed, TIdx>(devHost, resultBufferExtent));
                 // TRed result;
                 // alpaka::ViewPlainPtr<TDevHost, TRed, Dim, TIdx> resultView{&result, devHost,
@@ -172,7 +171,14 @@ namespace vikunja
 
             auto secondPhaseBuffer(alpaka::allocBuf<TRed, TIdx>(devAcc, sharedMemExtent));
 
-            detail::BlockThreadReduceKernel<blockSize, MemAccessPolicy, TRed> multiBlockKernel, singleBlockKernel;
+            detail::BlockThreadReduceKernel<blockSize, MemAccessPolicy, TRed, TTransformOperator, TReduceOperator>
+                multiBlockKernel;
+
+            using TIdentityTransformOperator = vikunja::operators::
+                UnaryOp<TAcc, detail::Identity<TRed>, typename std::remove_pointer<TInputIterator>::type>;
+            detail::
+                BlockThreadReduceKernel<blockSize, MemAccessPolicy, TRed, TIdentityTransformOperator, TReduceOperator>
+                    singleBlockKernel;
             // execute kernels
             alpaka::exec<TAcc>(
                 queue,
@@ -182,7 +188,7 @@ namespace vikunja
                 alpaka::getPtrNative(secondPhaseBuffer),
                 n,
                 transformFunc,
-                func);
+                reduceFunc);
             alpaka::exec<TAcc>(
                 queue,
                 singleBlockWorkDiv,
@@ -191,7 +197,7 @@ namespace vikunja
                 alpaka::getPtrNative(secondPhaseBuffer),
                 gridSize,
                 detail::Identity<TRed>(),
-                func);
+                reduceFunc);
 
             auto resultView(alpaka::allocBuf<TRed, TIdx>(devHost, resultBufferExtent));
             alpaka::memcpy(queue, resultView, secondPhaseBuffer, resultBufferExtent);
@@ -216,6 +222,8 @@ namespace vikunja
          * @tparam TDevHost
          * @tparam TQueue
          * @tparam TIdx
+         * @tparam TReduceOperator The vikunja::operators type of the reduce function.
+         * @tparam TRed The return value of the function.
          * @param devAcc
          * @param devHost
          * @param queue
@@ -233,16 +241,21 @@ namespace vikunja
             typename TDevAcc,
             typename TDevHost,
             typename TQueue,
-            typename TIdx>
+            typename TIdx,
+            typename TOperator = vikunja::operators::BinaryOp<
+                TAcc,
+                TFunc,
+                typename std::remove_pointer<TInputIterator>::type,
+                typename std::remove_pointer<TInputIterator>::type>,
+            typename TRed = typename TOperator::TRed>
         auto deviceReduce(
             TDevAcc& devAcc,
             TDevHost& devHost,
             TQueue& queue,
             TIdx const& n,
             TInputIterator const& buffer,
-            TFunc const& func) -> decltype(func(std::declval<TAcc>(), *buffer, *buffer))
+            TFunc const& func) -> TRed
         {
-            using TRed = decltype(func(std::declval<TAcc>(), *buffer, *buffer));
             return deviceTransformReduce<
                 TAcc,
                 WorkDivPolicy,
