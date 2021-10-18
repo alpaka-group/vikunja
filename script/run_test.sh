@@ -2,6 +2,10 @@
 
 echo "container version -> $CONTAINER_VERSION"
 
+: ${VIKUNJA_CXX?"VIKUNJA_CXX must be specified"}
+: ${VIKUNJA_BOOST_VERSIONS?"VIKUNJA_BOOST_VERSIONS must be specified"}
+: ${ALPAKA_ACCS?"ALPAKA_ACCS must be specified"}
+
 # the default build type is Release
 # if neccesary, you can rerun the pipeline with another build type-> https://docs.gitlab.com/ee/ci/pipelines.html#manually-executing-pipelines
 # to change the build type, you must set the environment variable VIKUNJA_BUILD_TYPE
@@ -14,15 +18,30 @@ fi
 # cmake config builder
 ###################################################
 
-VIKUNJA_CONST_ARGS="-DBUILD_TESTING=ON -DVIKUNJA_SYSTEM_CATCH2=OFF -DVIKUNJA_BUILD_EXAMPLES=ON"
-VIKUNJA_CONST_ARGS="${VIKUNJA_CONST_ARGS} -DCMAKE_BUILD_TYPE=${VIKUNJA_BUILD_TYPE}"
-VIKUNJA_CONST_ARGS="${VIKUNJA_CONST_ARGS} ${VIKUNJA_CMAKE_ARGS}"
+VIKUNJA_CONST_ARGS="-DBUILD_TESTING=ON -DVIKUNJA_SYSTEM_CATCH2=OFF -DVIKUNJA_BUILD_EXAMPLES=ON -DCMAKE_BUILD_TYPE=${VIKUNJA_BUILD_TYPE}"
+
+VIKUNJA_CMAKE_ARGS="${VIKUNJA_CMAKE_ARGS} ${VIKUNJA_CONST_ARGS}"
+
+# if ALPAKA_CXX_STANDARD is defined in the job add it to the CMake arguments
+if [[ -v ALPAKA_CXX_STANDARD ]] ; then
+    VIKUNJA_CMAKE_ARGS="${VIKUNJA_CMAKE_ARGS} -DALPAKA_CXX_STANDARD=${ALPAKA_CXX_STANDARD} ";
+fi
+
+if [[ -v VIKUNJA_CXX_TEST ]] ; then
+    VIKUNJA_CMAKE_ARGS="${VIKUNJA_CMAKE_ARGS} -DVIKUNJA_ENABLE_CXX_TEST=ON ";
+fi
 
 CMAKE_CONFIGS=()
 for CXX_VERSION in $VIKUNJA_CXX; do
     for BOOST_VERSION in ${VIKUNJA_BOOST_VERSIONS}; do
 	for ACC in ${ALPAKA_ACCS}; do
-	    CMAKE_CONFIGS+=("${VIKUNJA_CONST_ARGS} -DCMAKE_CXX_COMPILER=${CXX_VERSION} -DBOOST_ROOT=/opt/boost/${BOOST_VERSION} -D${ACC}=ON")
+	    CONFIG_STRING="${VIKUNJA_CMAKE_ARGS} -DCMAKE_CXX_COMPILER=${CXX_VERSION} -DBOOST_ROOT=/opt/boost/${BOOST_VERSION} -D${ACC}=ON"
+
+	    if [ "$ACC" = "ALPAKA_ACC_GPU_CUDA_ENABLE" ]; then
+		CONFIG_STRING="${CONFIG_STRING} -DCMAKE_CUDA_COMPILER=nvcc -DCMAKE_CUDA_HOST_COMPILER=${CXX_VERSION}"
+	    fi
+
+	    CMAKE_CONFIGS+=("${CONFIG_STRING}")
 	done
     done
 done
@@ -61,6 +80,14 @@ for ALPAKA_VERSION in ${VIKUNJA_ALPAKA_VERSIONS}; do
 	cmake .. $CMAKE_ARGS
 	cmake --build . -j
 	ctest --output-on-failure
+
+	# if ALPAKA_CXX_STANDARD is set manually, run this without ctest
+	# to eliminate errors in CMake
+	if [[ -v VIKUNJA_CXX_TEST ]] ; then
+	    echo -e "test/unit/cxx/test_cxx --cxx ${ALPAKA_CXX_STANDARD}"
+	    test/unit/cxx/test_cxx --cxx ${ALPAKA_CXX_STANDARD}
+	fi
+
 	rm -r *
     done
 

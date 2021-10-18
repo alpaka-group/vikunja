@@ -27,7 +27,6 @@
 .base_cuda:
   stage: compile-and-run
   variables:
-    VIKUNJA_CXX: g++
     ALPAKA_ACCS: "ALPAKA_ACC_GPU_CUDA_ENABLE"
   before_script:
     - nvidia-smi
