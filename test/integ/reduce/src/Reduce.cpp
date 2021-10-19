@@ -1,4 +1,4 @@
-/* Copyright 2019-2021 Hauke Mewes, Simeon Ehrig
+/* Copyright 2021 Hauke Mewes, Simeon Ehrig
  *
  * This file is part of vikunja.
  *
