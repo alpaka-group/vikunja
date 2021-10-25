@@ -67,6 +67,22 @@ TData ALPAKA_FN_HOST_ACC uFunc6(TAcc const& acc, TData a)
     return acc.iMax(TMax, a);
 }
 
+struct UStruct1
+{
+    int operator()(int const a) const
+    {
+        return 2 * a;
+    }
+};
+
+template<typename TAcc, typename TData, typename TRet>
+struct UStruct2
+{
+    TRet ALPAKA_FN_HOST_ACC operator()(TAcc const& acc, TData const a) const
+    {
+        return static_cast<TRet>(acc.iMax(static_cast<int>(a * 0.3), a));
+    }
+};
 
 TEST_CASE("UnaryOp", "[operators]")
 {
@@ -92,6 +108,11 @@ TEST_CASE("UnaryOp", "[operators]")
     REQUIRE(unaryRunner<DummyAcc>(dummyAcc, uLambda4, 3.f) == 4);
     REQUIRE(unaryRunner<DummyAcc>(dummyAcc, uLambda5, 3.f) == 4.5f);
     REQUIRE(unaryRunner<DummyAcc>(dummyAcc, uLambda6, -3) == -3);
+
+    UStruct1 uStruct1;
+    UStruct2<DummyAcc, double, int> uStruct2;
+    REQUIRE(unaryRunner<DummyAcc>(dummyAcc, uStruct1, 1) == 2);
+    REQUIRE(unaryRunner<DummyAcc>(dummyAcc, uStruct2, 6.8) == 6);
 }
 
 
@@ -144,6 +165,24 @@ ALPAKA_FN_HOST_ACC TRed bFunc6(TAcc const& acc, TData1 a, TData2 b)
 }
 
 
+struct BStruct1
+{
+    int operator()(float const a, double const b) const
+    {
+        return static_cast<int>(static_cast<double>(a) * b);
+    }
+};
+
+template<typename TAcc, typename TData1, typename TData2, typename TRet>
+struct BStruct2
+{
+    TRet ALPAKA_FN_HOST_ACC operator()(TAcc const& acc, TData1 const a, TData2 const b) const
+    {
+        return static_cast<TRet>(acc.iMin(static_cast<int>(a), static_cast<int>(b)));
+    }
+};
+
+
 TEST_CASE("BinaryOp", "[operators]")
 {
     DummyAcc dummyAcc;
@@ -164,4 +203,9 @@ TEST_CASE("BinaryOp", "[operators]")
     REQUIRE(binaryRunner<DummyAcc>(dummyAcc, bLambda1, 3.0, 2.0) == 3);
     REQUIRE(binaryRunner<DummyAcc>(dummyAcc, bLambda2, 3.0, 5) == 1);
     REQUIRE(binaryRunner<DummyAcc>(dummyAcc, bLambda3, 1.2f, 3.2) == 3);
+
+    BStruct1 bStruct1;
+    BStruct2<DummyAcc, int, float, double> bStruct2;
+    REQUIRE(binaryRunner<DummyAcc>(dummyAcc, bStruct1, 1.3f, 4.7) == 6);
+    REQUIRE(binaryRunner<DummyAcc>(dummyAcc, bStruct2, 3, 1.2) == 1.0);
 }

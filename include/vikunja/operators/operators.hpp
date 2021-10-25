@@ -59,6 +59,9 @@ namespace vikunja
         {
         };
 
+        template<typename TFunc, typename TData>
+        using enable_if_UnaryOp_without_TAcc
+            = std::enable_if_t<vikunjaStd::is_invocable<decltype(std::declval<TFunc>()), TData>::value>;
 
         /**
          * Operator trait for unary functors.
@@ -68,12 +71,12 @@ namespace vikunja
          * tparam TData Type of the functor data argument.
          */
         template<typename TAcc, typename TFunc, typename TData>
-        struct UnaryOp<TAcc, TFunc, TData, std::enable_if_t<vikunjaStd::is_invocable<TFunc&, TData>::value>>
+        struct UnaryOp<TAcc, TFunc, TData, enable_if_UnaryOp_without_TAcc<TFunc, TData>>
         {
             /**
              * return type of the functor.
              */
-            using TRed = typename std::result_of<TFunc(TData)>::type;
+            using TRed = typename std::result_of<decltype(std::declval<TFunc>())(TData)>::type;
 
             /**
              * Execute the functor with a data argument. acc object is not injected.
@@ -86,6 +89,10 @@ namespace vikunja
             }
         };
 
+        template<typename TFunc, typename TAcc, typename TData>
+        using enable_if_UnaryOp_with_TAcc
+            = std::enable_if_t<vikunjaStd::is_invocable<decltype(std::declval<TFunc>()), TAcc, TData>::value>;
+
         /**
          * Operator trait for unary functors.
          * Accepts: func(TData input) and func(TAcc acc, TData input)
@@ -94,12 +101,12 @@ namespace vikunja
          * tparam TData Type of the functor data argument.
          */
         template<typename TAcc, typename TFunc, typename TData>
-        struct UnaryOp<TAcc, TFunc, TData, std::enable_if_t<vikunjaStd::is_invocable<TFunc&, TAcc, TData>::value>>
+        struct UnaryOp<TAcc, TFunc, TData, enable_if_UnaryOp_with_TAcc<TFunc, TAcc, TData>>
         {
             /**
              * return type of the functor.
              */
-            using TRed = typename std::result_of<TFunc(TAcc, TData)>::type;
+            using TRed = typename std::result_of<decltype(std::declval<TFunc>())(TAcc, TData)>::type;
 
             /**
              * Execute the functor with a data argument. acc object is injected.
@@ -112,6 +119,7 @@ namespace vikunja
                 return f(acc, arg);
             }
         };
+
 
         /**
          * Operator trait for binary functors.
@@ -126,6 +134,9 @@ namespace vikunja
         {
         };
 
+        template<typename TFunc, typename TData1, typename TData2>
+        using enable_if_BinaryOp_without_TAcc
+            = std::enable_if_t<vikunjaStd::is_invocable<decltype(std::declval<TFunc>()), TData1, TData2>::value>;
 
         /**
          * Operator trait for binary functors.
@@ -136,17 +147,12 @@ namespace vikunja
          * tparam TData2 Type of the second functor data argument.
          */
         template<typename TAcc, typename TFunc, typename TData1, typename TData2>
-        struct BinaryOp<
-            TAcc,
-            TFunc,
-            TData1,
-            TData2,
-            std::enable_if_t<vikunjaStd::is_invocable<TFunc&, TData1, TData2>::value>>
+        struct BinaryOp<TAcc, TFunc, TData1, TData2, enable_if_BinaryOp_without_TAcc<TFunc, TData1, TData2>>
         {
             /**
              * return type of the functor.
              */
-            using TRed = typename std::result_of<TFunc(TData1, TData2)>::type;
+            using TRed = typename std::result_of<decltype(std::declval<TFunc>())(TData1, TData2)>::type;
 
 
             /**
@@ -161,6 +167,10 @@ namespace vikunja
             }
         };
 
+        template<typename TFunc, typename TAcc, typename TData1, typename TData2>
+        using enable_if_BinaryOp_with_TAcc
+            = std::enable_if_t<vikunjaStd::is_invocable<decltype(std::declval<TFunc>()), TAcc, TData1, TData2>::value>;
+
         /**
          * Operator trait for binary functors.
          * Accepts: func(TData1 input1, TData2 input2) and func(TAcc acc, TData1 input1, TData2 input2)
@@ -170,17 +180,12 @@ namespace vikunja
          * tparam TData2 Type of the second functor data argument.
          */
         template<typename TAcc, typename TFunc, typename TData1, typename TData2>
-        struct BinaryOp<
-            TAcc,
-            TFunc,
-            TData1,
-            TData2,
-            std::enable_if_t<vikunjaStd::is_invocable<TFunc&, TAcc, TData1, TData2>::value>>
+        struct BinaryOp<TAcc, TFunc, TData1, TData2, enable_if_BinaryOp_with_TAcc<TFunc, TAcc, TData1, TData2>>
         {
             /**
              * return type of the functor.
              */
-            using TRed = typename std::result_of<TFunc(TAcc, TData1, TData2)>::type;
+            using TRed = typename std::result_of<decltype(std::declval<TFunc>())(TAcc, TData1, TData2)>::type;
 
             /**
              * Execute the functor with two data argument. acc object is injected.
