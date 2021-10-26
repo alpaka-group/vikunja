@@ -55,8 +55,7 @@ namespace vikunja
             typename TDevAcc,
             typename TQueue,
             typename TIdx,
-            typename TOperator
-            = vikunja::operators::UnaryOp<TAcc, TFunc, typename std::remove_pointer<TInputIterator>::type>>
+            typename TOperator = vikunja::operators::UnaryOp<TAcc, TFunc, std::remove_pointer_t<TInputIterator>>>
         auto deviceTransform(
             TDevAcc& devAcc,
             TQueue& queue,
@@ -135,8 +134,8 @@ namespace vikunja
             typename TOperator = vikunja::operators::BinaryOp<
                 TAcc,
                 TFunc,
-                typename std::remove_pointer<TInputIterator>::type,
-                typename std::remove_pointer<TInputIteratorSecond>::type>>
+                std::remove_pointer_t<TInputIterator>,
+                std::remove_pointer_t<TInputIteratorSecond>>>
         auto deviceTransform(
             TDevAcc& devAcc,
             TQueue& queue,

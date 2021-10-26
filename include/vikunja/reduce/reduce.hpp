@@ -84,7 +84,7 @@ namespace vikunja
             typename TQueue,
             typename TIdx,
             typename TTransformOperator
-            = vikunja::operators::UnaryOp<TAcc, TTransformFunc, typename std::remove_pointer<TInputIterator>::type>,
+            = vikunja::operators::UnaryOp<TAcc, TTransformFunc, std::remove_pointer_t<TInputIterator>>,
             typename TReduceOperator = vikunja::operators::
                 BinaryOp<TAcc, TReduceFunc, typename TTransformOperator::TRed, typename TTransformOperator::TRed>,
             typename TRed = typename TReduceOperator::TRed>
@@ -174,8 +174,8 @@ namespace vikunja
             detail::BlockThreadReduceKernel<blockSize, MemAccessPolicy, TRed, TTransformOperator, TReduceOperator>
                 multiBlockKernel;
 
-            using TIdentityTransformOperator = vikunja::operators::
-                UnaryOp<TAcc, detail::Identity<TRed>, typename std::remove_pointer<TInputIterator>::type>;
+            using TIdentityTransformOperator
+                = vikunja::operators::UnaryOp<TAcc, detail::Identity<TRed>, std::remove_pointer_t<TInputIterator>>;
             detail::
                 BlockThreadReduceKernel<blockSize, MemAccessPolicy, TRed, TIdentityTransformOperator, TReduceOperator>
                     singleBlockKernel;
@@ -242,11 +242,8 @@ namespace vikunja
             typename TDevHost,
             typename TQueue,
             typename TIdx,
-            typename TOperator = vikunja::operators::BinaryOp<
-                TAcc,
-                TFunc,
-                typename std::remove_pointer<TInputIterator>::type,
-                typename std::remove_pointer<TInputIterator>::type>,
+            typename TOperator = vikunja::operators::
+                BinaryOp<TAcc, TFunc, std::remove_pointer_t<TInputIterator>, std::remove_pointer_t<TInputIterator>>,
             typename TRed = typename TOperator::TRed>
         auto deviceReduce(
             TDevAcc& devAcc,

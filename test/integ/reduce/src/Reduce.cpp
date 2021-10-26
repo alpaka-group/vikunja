@@ -9,29 +9,16 @@
 
 #include <alpaka/alpaka.hpp>
 #include <alpaka/example/ExampleDefaultAcc.hpp>
+#include <vikunja/test/utile.hpp>
 #include <vikunja/reduce/reduce.hpp>
 #include <catch2/catch.hpp>
 #include <numeric>
 #include <limits>
 #include <random>
 #include <algorithm>
-#include <sstream>
+#include <vector>
 
 #include "reduce_setup.hpp"
-
-template<typename TDim, typename TData>
-inline std::string print_info(TData const size)
-{
-    std::stringstream strs;
-
-    using Acc = alpaka::ExampleDefaultAcc<TDim, std::uint64_t>;
-    strs << "Testing accelerator: " << alpaka::getAccName<Acc>() << " with size: " << size << "\n";
-
-    using MemAccess = vikunja::mem::iterator::MemAccessPolicy<Acc>;
-    strs << "MemAccessPolicy: " << MemAccess::getName() << "\n";
-
-    return strs.str();
-}
 
 namespace vikunja
 {
@@ -106,24 +93,6 @@ namespace vikunja
 
 
 template<typename TData>
-ALPAKA_FN_HOST_ACC TData sum(TData const i, TData const j)
-{
-    return i + j;
-}
-
-template<typename TData>
-ALPAKA_FN_HOST_ACC TData doubleNum(TData const i)
-{
-    return 2 * i;
-}
-
-template<typename TAcc, typename TData>
-ALPAKA_FN_HOST_ACC TData min(TAcc const& acc, TData const i, TData const j)
-{
-    return alpaka::math::min(acc, i, j);
-};
-
-template<typename TData>
 struct Sum
 {
     ALPAKA_FN_HOST_ACC TData operator()(TData const i, TData const j) const
@@ -142,6 +111,16 @@ struct DoubleNum
 };
 
 template<typename TAcc, typename TData>
+struct Min
+{
+    ALPAKA_FN_HOST_ACC TData operator()(TAcc const& acc, TData const i, TData const j) const
+    {
+        return alpaka::math::min(acc, i, j);
+    }
+};
+
+
+template<typename TAcc, typename TData>
 struct Max
 {
     ALPAKA_FN_HOST_ACC TData operator()(TAcc const& acc, TData const i, TData const j) const
@@ -150,34 +129,6 @@ struct Max
     }
 };
 
-
-TEMPLATE_TEST_CASE(
-    "Test reduce function",
-    "[reduce][function][noAcc]",
-    (alpaka::DimInt<1u>),
-    (alpaka::DimInt<2u>),
-    (alpaka::DimInt<3u>) )
-{
-    using Dim = TestType;
-    using Data = std::uint64_t;
-
-    auto size = GENERATE(1, 10, 777, 1 << 10);
-
-    INFO((print_info<Dim, Data>(size)));
-
-    vikunja::test::reduce::TestSetupReduce<Dim, alpaka::ExampleDefaultAcc, Data> setup(size);
-
-    // setup initial values
-    Data* const host_mem_ptr = setup.get_host_mem_ptr();
-    std::iota(host_mem_ptr, host_mem_ptr + size, 1);
-
-    setup.run(sum<Data>);
-
-    Data const n = static_cast<Data>(size);
-    Data expectedResult = (n * (n + 1) / 2);
-
-    REQUIRE(setup.get_result() == expectedResult);
-}
 
 TEMPLATE_TEST_CASE(
     "Test reduce lambda",
@@ -191,7 +142,7 @@ TEMPLATE_TEST_CASE(
 
     auto size = GENERATE(1, 10, 777, 1 << 10);
 
-    INFO((print_info<Dim, Data>(size)));
+    INFO((vikunja::test::print_acc_info<Dim, Data>(size)));
 
     vikunja::test::reduce::TestSetupReduce<Dim, alpaka::ExampleDefaultAcc, Data> setup(size);
 
@@ -220,7 +171,7 @@ TEMPLATE_TEST_CASE(
 
     auto size = GENERATE(1, 10, 777, 1 << 10);
 
-    INFO((print_info<Dim, Data>(size)));
+    INFO((vikunja::test::print_acc_info<Dim, Data>(size)));
 
     vikunja::test::reduce::TestSetupReduce<Dim, alpaka::ExampleDefaultAcc, Data> setup(size);
 
@@ -250,7 +201,7 @@ TEMPLATE_TEST_CASE(
 
     auto size = GENERATE(1, 10, 777, 1 << 10);
 
-    INFO((print_info<Dim, Data>(size)));
+    INFO((vikunja::test::print_acc_info<Dim, Data>(size)));
 
     vikunja::test::reduce::TestSetupReduce<Dim, alpaka::ExampleDefaultAcc, Data> setup(size);
 
@@ -286,7 +237,7 @@ TEMPLATE_TEST_CASE(
 
     auto size = GENERATE(1, 10, 777, 1 << 10);
 
-    INFO((print_info<Dim, Data>(size)));
+    INFO((vikunja::test::print_acc_info<Dim, Data>(size)));
 
     vikunja::test::reduce::TestSetupReduce<Dim, alpaka::ExampleDefaultAcc, Data> setup(size);
 
@@ -309,35 +260,6 @@ TEMPLATE_TEST_CASE(
 }
 
 TEMPLATE_TEST_CASE(
-    "Test reduceTransform function",
-    "[reduceTransform][function][noAcc]",
-    (alpaka::DimInt<1u>),
-    (alpaka::DimInt<2u>),
-    (alpaka::DimInt<3u>) )
-{
-    using Dim = TestType;
-    using Data = std::uint64_t;
-
-    auto size = GENERATE(1, 10, 777, 1 << 10);
-
-    INFO((print_info<Dim, Data>(size)));
-
-    vikunja::test::reduce::TestSetupReduceTransform<Dim, alpaka::ExampleDefaultAcc, Data> setup(size);
-
-    // setup initial values
-    Data* const host_mem_ptr = setup.get_host_mem_ptr();
-    std::iota(host_mem_ptr, host_mem_ptr + size, 1);
-
-    setup.run(sum<Data>, doubleNum<Data>);
-
-    Data const n = static_cast<Data>(size);
-    Data expectedResult = 2 * (n * (n + 1) / 2);
-
-    REQUIRE(setup.get_result() == expectedResult);
-}
-
-
-TEMPLATE_TEST_CASE(
     "Test reduceTransform lambda",
     "[reduceTransform][lambda][noAcc]",
     (alpaka::DimInt<1u>),
@@ -349,7 +271,7 @@ TEMPLATE_TEST_CASE(
 
     auto size = GENERATE(1, 10, 777, 1 << 10);
 
-    INFO((print_info<Dim, Data>(size)));
+    INFO((vikunja::test::print_acc_info<Dim, Data>(size)));
 
     vikunja::test::reduce::TestSetupReduceTransform<Dim, alpaka::ExampleDefaultAcc, Data> setup(size);
 
@@ -369,7 +291,38 @@ TEMPLATE_TEST_CASE(
 }
 
 TEMPLATE_TEST_CASE(
-    "Test reduceTransform mixed lambda and function with acc object",
+    "Test reduceTransform mix function and operator",
+    "[reduceTransform][mixFunc][noAcc]",
+    (alpaka::DimInt<1u>),
+    (alpaka::DimInt<2u>),
+    (alpaka::DimInt<3u>) )
+{
+    using Dim = TestType;
+    using Data = std::uint64_t;
+
+    auto size = GENERATE(1, 10, 777, 1 << 10);
+
+    INFO((vikunja::test::print_acc_info<Dim, Data>(size)));
+
+    vikunja::test::reduce::TestSetupReduceTransform<Dim, alpaka::ExampleDefaultAcc, Data> setup(size);
+
+    // setup initial values
+    Data* const host_mem_ptr = setup.get_host_mem_ptr();
+    std::iota(host_mem_ptr, host_mem_ptr + size, 1);
+
+    auto reduce = [] ALPAKA_FN_HOST_ACC(Data const i, Data const j) -> Data { return i + j; };
+    DoubleNum<Data> transform;
+
+    setup.run(reduce, transform);
+
+    Data const n = static_cast<Data>(size);
+    Data expectedResult = 2 * (n * (n + 1) / 2);
+
+    REQUIRE(setup.get_result() == expectedResult);
+}
+
+TEMPLATE_TEST_CASE(
+    "Test reduceTransform mixed lambda and operator with acc object",
     "[reduceTransform][mixFunc][acc]",
     (alpaka::DimInt<1u>),
     (alpaka::DimInt<2u>),
@@ -380,7 +333,7 @@ TEMPLATE_TEST_CASE(
 
     auto size = GENERATE(1, 10, 777, 1 << 10);
 
-    INFO((print_info<Dim, Data>(size)));
+    INFO((vikunja::test::print_acc_info<Dim, Data>(size)));
 
     vikunja::test::reduce::TestSetupReduceTransform<Dim, alpaka::ExampleDefaultAcc, Data> setup(size);
 
@@ -394,13 +347,14 @@ TEMPLATE_TEST_CASE(
         return distribution(generator);
     });
 
+    Min<alpaka::ExampleDefaultAcc<Dim, std::uint64_t>, Data> reduce;
     auto transform
         = [] ALPAKA_FN_HOST_ACC(alpaka::ExampleDefaultAcc<Dim, std::uint64_t> const& acc, Data const i) -> Data {
         // TODO: check why double is not working
         return static_cast<Data>(alpaka::math::sqrt(acc, static_cast<float>(i)));
     };
 
-    setup.run(min<alpaka::ExampleDefaultAcc<Dim, std::uint64_t>, Data>, transform);
+    setup.run(reduce, transform);
 
     std::vector<Data> tmp;
     tmp.resize(size);
@@ -408,36 +362,6 @@ TEMPLATE_TEST_CASE(
         return static_cast<Data>(std::sqrt(static_cast<float>(i)));
     });
     Data expectedResult = *std::min_element(tmp.begin(), tmp.end());
-
-    REQUIRE(setup.get_result() == expectedResult);
-}
-
-TEMPLATE_TEST_CASE(
-    "Test reduceTransform mix function operator",
-    "[reduceTransform][mixFunc][noAcc]",
-    (alpaka::DimInt<1u>),
-    (alpaka::DimInt<2u>),
-    (alpaka::DimInt<3u>) )
-{
-    using Dim = TestType;
-    using Data = std::uint64_t;
-
-    auto size = GENERATE(1, 10, 777, 1 << 10);
-
-    INFO((print_info<Dim, Data>(size)));
-
-    vikunja::test::reduce::TestSetupReduceTransform<Dim, alpaka::ExampleDefaultAcc, Data> setup(size);
-
-    // setup initial values
-    Data* const host_mem_ptr = setup.get_host_mem_ptr();
-    std::iota(host_mem_ptr, host_mem_ptr + size, 1);
-
-    DoubleNum<Data> transform;
-
-    setup.run(sum<Data>, transform);
-
-    Data const n = static_cast<Data>(size);
-    Data expectedResult = 2 * (n * (n + 1) / 2);
 
     REQUIRE(setup.get_result() == expectedResult);
 }
