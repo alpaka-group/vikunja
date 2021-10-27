@@ -7,8 +7,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-// original source: https://newbedev.com/count-the-number-of-arguments-in-a-lambda
-
 #pragma once
 
 #include <type_traits>
@@ -22,7 +20,7 @@ namespace vikunjaStd
 #ifdef __cpp_lib_is_invocable
     using std::is_invocable;
 #else
-    // define std::is_invocable for c++14 an below
+    // define std::is_invocable for c++14 and below
     template<typename F, typename... Args>
     struct is_invocable
         : std::is_constructible<
@@ -38,12 +36,11 @@ namespace vikunja
 {
     /**
      * The vikunja::operators namespace contains type traits for the functors that are passed to the vikunja functions.
-     The type traits have two tasks.
+     The type traits have two tasks:
      * 1. Limit the number of data arguments of the functors for a given function, e.g. vikunja::transform allows only
      functors with one data argument.
      * 2. Provide a functor interface with an optional alpaka TAcc object. For example, a unary operator has an
      interface with one argument (single data argument) or two arguments (TAcc argument and data argument)
-
      */
     namespace operators
     {
@@ -55,9 +52,7 @@ namespace vikunja
          * tparam TData Type of the functor data argument.
          */
         template<typename TAcc, typename TFunc, typename TData, typename TSfinae = void>
-        struct UnaryOp
-        {
-        };
+        struct UnaryOp;
 
         template<typename TFunc, typename TData>
         using enable_if_UnaryOp_without_TAcc
@@ -83,7 +78,7 @@ namespace vikunja
              * param f functor
              * param arg argument, which is passed to the functor
              */
-            ALPAKA_FN_HOST_ACC inline static TRed run(TAcc const&, TFunc f, TData arg)
+            ALPAKA_FN_HOST_ACC inline static TRed run(TAcc const&, TFunc f, TData const arg)
             {
                 return f(arg);
             }
@@ -114,7 +109,7 @@ namespace vikunja
              * param f functor
              * param arg argument, which is passed to the functor
              */
-            ALPAKA_FN_HOST_ACC inline static TRed run(TAcc const& acc, TFunc f, TData arg)
+            ALPAKA_FN_HOST_ACC inline static TRed run(TAcc const& acc, TFunc f, TData const arg)
             {
                 return f(acc, arg);
             }
@@ -130,9 +125,7 @@ namespace vikunja
          * tparam TData2 Type of the second functor data argument.
          */
         template<typename TAcc, typename TFunc, typename TData1, typename TData2, typename TSfinae = void>
-        struct BinaryOp
-        {
-        };
+        struct BinaryOp;
 
         template<typename TFunc, typename TData1, typename TData2>
         using enable_if_BinaryOp_without_TAcc
@@ -161,7 +154,7 @@ namespace vikunja
              * param arg1 first argument, which is passed to the functor
              * param arg2 second argument, which is passed to the functor
              */
-            ALPAKA_FN_HOST_ACC inline static TRed run(TAcc const&, TFunc f, TData1 arg1, TData2 arg2)
+            ALPAKA_FN_HOST_ACC inline static TRed run(TAcc const&, TFunc f, TData1 const arg1, TData2 const arg2)
             {
                 return f(arg1, arg2);
             }
@@ -194,7 +187,7 @@ namespace vikunja
              * param arg1 first argument, which is passed to the functor
              * param arg2 second argument, which is passed to the functor
              */
-            ALPAKA_FN_HOST_ACC inline static TRed run(TAcc const& acc, TFunc f, TData1 arg1, TData2 arg2)
+            ALPAKA_FN_HOST_ACC inline static TRed run(TAcc const& acc, TFunc f, TData1 const arg1, TData2 const arg2)
             {
                 return f(acc, arg1, arg2);
             }

@@ -39,7 +39,7 @@ int reduce(std::vector<int> const&& input)
         return -1;
     }
 
-    auto const sum = [] ALPAKA_FN_HOST_ACC(cupla::Acc const&, int const& i, int const& j) { return i + j; };
+    auto const sum = [] ALPAKA_FN_HOST_ACC(cupla::Acc const&, int const i, int const j) { return i + j; };
 
     int const result = vikunja::reduce::deviceReduce<cupla::Acc>(
         devAcc,

@@ -30,9 +30,9 @@ namespace vikunja
                 : public vikunja::test::TestAlpakaSetup<TDim, TIdx, alpaka::AccCpuSerial, TAcc, alpaka::Blocking>
             {
             protected:
-                using P = vikunja::test::TestAlpakaSetup<TDim, TIdx, alpaka::AccCpuSerial, TAcc, alpaka::Blocking>;
-                using Host = typename P::Host;
-                using Acc = typename P::Acc;
+                using Base = vikunja::test::TestAlpakaSetup<TDim, TIdx, alpaka::AccCpuSerial, TAcc, alpaka::Blocking>;
+                using Host = typename Base::Host;
+                using Acc = typename Base::Acc;
 
                 using Vec = alpaka::Vec<TDim, TIdx>;
                 using BufHost = alpaka::Buf<Host, TData, TDim, TIdx>;
@@ -58,8 +58,8 @@ namespace vikunja
                 TestSetupBase(uint64_t const memSize)
                     : m_size(memSize)
                     , m_extent(calculate_extends(memSize))
-                    , m_host_mem(alpaka::allocBuf<TData, TIdx>(P::devHost, m_extent))
-                    , m_device_mem(alpaka::allocBuf<TData, TIdx>(P::devAcc, m_extent))
+                    , m_host_mem(alpaka::allocBuf<TData, TIdx>(Base::devHost, m_extent))
+                    , m_device_mem(alpaka::allocBuf<TData, TIdx>(Base::devAcc, m_extent))
                 {
                 }
 
@@ -73,7 +73,6 @@ namespace vikunja
                     return m_result;
                 }
             };
-
 
         } // namespace reduce
     } // namespace test

@@ -9,7 +9,7 @@
 
 #include <alpaka/alpaka.hpp>
 #include <alpaka/example/ExampleDefaultAcc.hpp>
-#include <vikunja/test/utile.hpp>
+#include <vikunja/test/utility.hpp>
 #include <vikunja/reduce/reduce.hpp>
 #include <catch2/catch.hpp>
 #include <numeric>
@@ -35,23 +35,21 @@ namespace vikunja
             class TestSetupReduce : public TestSetupBase<TDim, TAcc, TData, TIdx>
             {
             public:
-                TestSetupReduce(uint64_t const memSize) : TestSetupBase<TDim, TAcc, TData, TIdx>(memSize)
-                {
-                }
+                using TestSetupBase<TDim, TAcc, TData, TIdx>::TestSetupBase;
 
-                using P = typename vikunja::test::reduce::TestSetupBase<TDim, TAcc, TData, TIdx>;
+                using Base = typename vikunja::test::reduce::TestSetupBase<TDim, TAcc, TData, TIdx>;
 
                 template<typename TReduceFunctor>
                 void run(TReduceFunctor reduceFunctor)
                 {
-                    alpaka::memcpy(P::P::queueAcc, P::m_device_mem, P::m_host_mem, P::m_extent);
+                    alpaka::memcpy(Base::Base::queueAcc, Base::m_device_mem, Base::m_host_mem, Base::m_extent);
 
-                    P::m_result = vikunja::reduce::deviceReduce<typename P::Acc>(
-                        P::devAcc,
-                        P::devHost,
-                        P::P::queueAcc,
-                        P::m_size,
-                        alpaka::getPtrNative(P::m_device_mem),
+                    Base::m_result = vikunja::reduce::deviceReduce<typename Base::Acc>(
+                        Base::devAcc,
+                        Base::devHost,
+                        Base::Base::queueAcc,
+                        Base::m_size,
+                        alpaka::getPtrNative(Base::m_device_mem),
                         reduceFunctor);
                 };
             };
@@ -65,23 +63,21 @@ namespace vikunja
             class TestSetupReduceTransform : public TestSetupBase<TDim, TAcc, TData, TIdx>
             {
             public:
-                TestSetupReduceTransform(uint64_t const memSize) : TestSetupBase<TDim, TAcc, TData, TIdx>(memSize)
-                {
-                }
+                using TestSetupBase<TDim, TAcc, TData, TIdx>::TestSetupBase;
 
-                using P = typename vikunja::test::reduce::TestSetupBase<TDim, TAcc, TData, TIdx>;
+                using Base = typename vikunja::test::reduce::TestSetupBase<TDim, TAcc, TData, TIdx>;
 
                 template<typename TReduceFunctor, typename TTransformFunctor>
                 void run(TReduceFunctor reduceFunctor, TTransformFunctor transformFunctor)
                 {
-                    alpaka::memcpy(P::P::queueAcc, P::m_device_mem, P::m_host_mem, P::m_extent);
+                    alpaka::memcpy(Base::Base::queueAcc, Base::m_device_mem, Base::m_host_mem, Base::m_extent);
 
-                    P::m_result = vikunja::reduce::deviceTransformReduce<typename P::Acc>(
-                        P::devAcc,
-                        P::devHost,
-                        P::P::queueAcc,
-                        P::m_size,
-                        alpaka::getPtrNative(P::m_device_mem),
+                    Base::m_result = vikunja::reduce::deviceTransformReduce<typename Base::Acc>(
+                        Base::devAcc,
+                        Base::devHost,
+                        Base::Base::queueAcc,
+                        Base::m_size,
+                        alpaka::getPtrNative(Base::m_device_mem),
                         transformFunctor,
                         reduceFunctor);
                 };
@@ -150,7 +146,7 @@ TEMPLATE_TEST_CASE(
     Data* const host_mem_ptr = setup.get_host_mem_ptr();
     std::iota(host_mem_ptr, host_mem_ptr + size, 1);
 
-    auto reduce = [] ALPAKA_FN_HOST_ACC(Data i, Data j) { return i + j; };
+    auto reduce = [] ALPAKA_FN_HOST_ACC(Data const i, Data const j) { return i + j; };
     setup.run(reduce);
 
     Data const n = static_cast<Data>(size);
@@ -215,9 +211,10 @@ TEMPLATE_TEST_CASE(
         return distribution(generator);
     });
 
-    auto reduce = [] ALPAKA_FN_HOST_ACC(alpaka::ExampleDefaultAcc<Dim, std::uint64_t> const& acc, Data i, Data j) {
-        return alpaka::math::max(acc, i, j);
-    };
+    auto reduce
+        = [] ALPAKA_FN_HOST_ACC(alpaka::ExampleDefaultAcc<Dim, std::uint64_t> const& acc, Data const i, Data const j) {
+              return alpaka::math::max(acc, i, j);
+          };
     setup.run(reduce);
 
     Data expectedResult = *std::max_element(host_mem_ptr, host_mem_ptr + size);
@@ -279,8 +276,8 @@ TEMPLATE_TEST_CASE(
     Data* const host_mem_ptr = setup.get_host_mem_ptr();
     std::iota(host_mem_ptr, host_mem_ptr + size, 1);
 
-    auto reduce = [] ALPAKA_FN_HOST_ACC(Data i, Data j) { return i + j; };
-    auto transform = [=] ALPAKA_FN_HOST_ACC(Data i) { return 2 * i; };
+    auto reduce = [] ALPAKA_FN_HOST_ACC(Data const i, Data const j) { return i + j; };
+    auto transform = [] ALPAKA_FN_HOST_ACC(Data const i) { return 2 * i; };
 
     setup.run(reduce, transform);
 

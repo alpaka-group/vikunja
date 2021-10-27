@@ -9,7 +9,7 @@
 
 #include <alpaka/alpaka.hpp>
 #include <alpaka/example/ExampleDefaultAcc.hpp>
-#include <vikunja/test/utile.hpp>
+#include <vikunja/test/utility.hpp>
 #include <vikunja/transform/transform.hpp>
 #include <catch2/catch.hpp>
 #include <numeric>
@@ -35,26 +35,32 @@ namespace vikunja
             class TestSetupTransform : public TestSetupBase<TDim, TAcc, TData, TIdx>
             {
             public:
-                TestSetupTransform(uint64_t const memSize) : TestSetupBase<TDim, TAcc, TData, TIdx>(memSize)
-                {
-                }
+                using TestSetupBase<TDim, TAcc, TData, TIdx>::TestSetupBase;
 
-                using P = typename vikunja::test::transform::TestSetupBase<TDim, TAcc, TData, TIdx>;
+                using Base = typename vikunja::test::transform::TestSetupBase<TDim, TAcc, TData, TIdx>;
 
                 template<typename TReduceFunctor>
                 void run(TReduceFunctor reduceFunctor)
                 {
-                    alpaka::memcpy(P::P::queueAcc, P::m_device_input1_mem, P::m_host_input1_mem, P::m_extent);
+                    alpaka::memcpy(
+                        Base::Base::queueAcc,
+                        Base::m_device_input1_mem,
+                        Base::m_host_input1_mem,
+                        Base::m_extent);
 
-                    vikunja::transform::deviceTransform<typename P::Acc>(
-                        P::devAcc,
-                        P::P::queueAcc,
-                        P::m_size,
-                        alpaka::getPtrNative(P::m_device_input1_mem),
-                        alpaka::getPtrNative(P::m_device_output_mem),
+                    vikunja::transform::deviceTransform<typename Base::Acc>(
+                        Base::devAcc,
+                        Base::Base::queueAcc,
+                        Base::m_size,
+                        alpaka::getPtrNative(Base::m_device_input1_mem),
+                        alpaka::getPtrNative(Base::m_device_output_mem),
                         reduceFunctor);
 
-                    alpaka::memcpy(P::P::queueAcc, P::m_host_output_mem, P::m_device_output_mem, P::m_extent);
+                    alpaka::memcpy(
+                        Base::Base::queueAcc,
+                        Base::m_host_output_mem,
+                        Base::m_device_output_mem,
+                        Base::m_extent);
                 };
             };
 
@@ -67,9 +73,9 @@ namespace vikunja
             class TestSetupTransformDoubleInput : public TestSetupBase<TDim, TAcc, TData, TIdx>
             {
             private:
-                using P = typename vikunja::test::transform::TestSetupBase<TDim, TAcc, TData, TIdx>;
-                using BufHost = typename P::BufHost;
-                using BufDev = typename P::BufDev;
+                using Base = typename vikunja::test::transform::TestSetupBase<TDim, TAcc, TData, TIdx>;
+                using BufHost = typename Base::BufHost;
+                using BufDev = typename Base::BufDev;
 
                 BufHost m_host_input2_mem;
                 BufDev m_device_input2_mem;
@@ -77,8 +83,8 @@ namespace vikunja
             public:
                 TestSetupTransformDoubleInput(uint64_t const memSize)
                     : TestSetupBase<TDim, TAcc, TData, TIdx>(memSize)
-                    , m_host_input2_mem(alpaka::allocBuf<TData, TIdx>(P::P::devHost, P::m_extent))
-                    , m_device_input2_mem(alpaka::allocBuf<TData, TIdx>(P::P::devAcc, P::m_extent))
+                    , m_host_input2_mem(alpaka::allocBuf<TData, TIdx>(Base::Base::devHost, Base::m_extent))
+                    , m_device_input2_mem(alpaka::allocBuf<TData, TIdx>(Base::Base::devAcc, Base::m_extent))
                 {
                 }
 
@@ -91,19 +97,27 @@ namespace vikunja
                 template<typename TReduceFunctor>
                 void run(TReduceFunctor reduceFunctor)
                 {
-                    alpaka::memcpy(P::P::queueAcc, P::m_device_input1_mem, P::m_host_input1_mem, P::m_extent);
-                    alpaka::memcpy(P::P::queueAcc, m_device_input2_mem, m_host_input2_mem, P::m_extent);
+                    alpaka::memcpy(
+                        Base::Base::queueAcc,
+                        Base::m_device_input1_mem,
+                        Base::m_host_input1_mem,
+                        Base::m_extent);
+                    alpaka::memcpy(Base::Base::queueAcc, m_device_input2_mem, m_host_input2_mem, Base::m_extent);
 
-                    vikunja::transform::deviceTransform<typename P::Acc>(
-                        P::devAcc,
-                        P::P::queueAcc,
-                        P::m_size,
-                        alpaka::getPtrNative(P::m_device_input1_mem),
+                    vikunja::transform::deviceTransform<typename Base::Acc>(
+                        Base::devAcc,
+                        Base::Base::queueAcc,
+                        Base::m_size,
+                        alpaka::getPtrNative(Base::m_device_input1_mem),
                         alpaka::getPtrNative(m_device_input2_mem),
-                        alpaka::getPtrNative(P::m_device_output_mem),
+                        alpaka::getPtrNative(Base::m_device_output_mem),
                         reduceFunctor);
 
-                    alpaka::memcpy(P::P::queueAcc, P::m_host_output_mem, P::m_device_output_mem, P::m_extent);
+                    alpaka::memcpy(
+                        Base::Base::queueAcc,
+                        Base::m_host_output_mem,
+                        Base::m_device_output_mem,
+                        Base::m_extent);
                 };
             };
 
@@ -115,7 +129,7 @@ namespace vikunja
 template<typename TData>
 struct IncOne
 {
-    ALPAKA_FN_HOST_ACC TData operator()(const TData val)
+    ALPAKA_FN_HOST_ACC TData operator()(TData const val) const
     {
         return val + 1;
     }
@@ -133,7 +147,7 @@ struct Max
 template<typename TData>
 struct MathOperator
 {
-    ALPAKA_FN_HOST_ACC TData operator()(const TData i, const TData j)
+    ALPAKA_FN_HOST_ACC TData operator()(TData const i, TData const j) const
     {
         return ((i * 2) - (i + 1)) + ((j * 2) - (j + 1));
     }
