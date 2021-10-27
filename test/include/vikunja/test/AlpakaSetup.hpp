@@ -29,23 +29,25 @@ namespace vikunja
             using Dim = TDim;
             using Idx = TIdx;
             using WorkDiv = alpaka::WorkDivMembers<Dim, Idx>;
+
             using Host = THost<Dim, Idx>;
+            using PltfHost = alpaka::Pltf<Host>;
+            using DevHost = alpaka::Dev<PltfHost>;
+
             using Acc = TAcc<Dim, Idx>;
-            using DevHost = alpaka::Dev<Host>;
-            using DevAcc = alpaka::Dev<Acc>;
-            using PltfHost = alpaka::Pltf<DevHost>;
-            using PltfAcc = alpaka::Pltf<DevAcc>;
-            using Queue = TQueue;
-            using Event = alpaka::Event<Queue>;
+            using PltfAcc = alpaka::Pltf<Acc>;
+            using DevAcc = alpaka::Dev<PltfAcc>;
+
+            using QueueAcc = alpaka::Queue<DevAcc, TQueue>;
 
             DevAcc devAcc;
             DevHost devHost;
-            Queue queue;
+            QueueAcc queueAcc;
 
             TestAlpakaSetup()
                 : devAcc{alpaka::getDevByIdx<PltfAcc>(0u)}
                 , devHost{alpaka::getDevByIdx<PltfHost>(0u)}
-                , queue{devAcc}
+                , queueAcc{devAcc}
             {
             }
         };

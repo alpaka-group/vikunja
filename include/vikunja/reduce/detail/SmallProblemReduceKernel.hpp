@@ -19,7 +19,10 @@ namespace vikunja
         {
             /**
              * This is a sequential reduce kernel that is used for small problem sizes.
+             * @tparam TTransformOperator The vikunja::operators type of the transform function.
+             * @tparam TReduceOperator The vikunja::operators type of the reduce function.
              */
+            template<typename TTransformOperator, typename TReduceOperator>
             struct SmallProblemReduceKernel
             {
                 template<
@@ -28,19 +31,23 @@ namespace vikunja
                     typename TInputIterator,
                     typename TOutputIterator,
                     typename TTransformFunc,
-                    typename TFunc>
+                    typename TReduceFunc>
                 ALPAKA_FN_ACC void operator()(
                     TAcc const& acc __attribute__((unused)),
                     TInputIterator const& source,
                     TOutputIterator const& destination,
                     TIdx const& n,
                     TTransformFunc const& transformFunc,
-                    TFunc const& func) const
+                    TReduceFunc const& reduceFunc) const
                 {
-                    auto tSum = transformFunc(acc, *(source));
+                    auto tSum = TTransformOperator::run(acc, transformFunc, *(source));
                     for(TIdx i(1); i < n; ++i)
                     {
-                        tSum = func(acc, tSum, transformFunc(acc, *(source + i)));
+                        tSum = TReduceOperator::run(
+                            acc,
+                            reduceFunc,
+                            tSum,
+                            TTransformOperator::run(acc, transformFunc, *(source + i)));
                     }
                     *destination = tSum;
                 }

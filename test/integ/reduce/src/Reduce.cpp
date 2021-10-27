@@ -7,172 +7,358 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <vikunja/test/AlpakaSetup.hpp>
-#include <vikunja/reduce/detail/BlockThreadReduceKernel.hpp>
 #include <alpaka/alpaka.hpp>
 #include <alpaka/example/ExampleDefaultAcc.hpp>
-#include <catch2/catch.hpp>
-#include <cstdlib>
-#include <iostream>
+#include <vikunja/test/utility.hpp>
 #include <vikunja/reduce/reduce.hpp>
-#include <type_traits>
-#include <cstdio>
+#include <catch2/catch.hpp>
+#include <numeric>
+#include <limits>
+#include <random>
+#include <algorithm>
 #include <vector>
-#include <thread>
 
-#if defined(VIKUNJA_REDUCE_COMPARING_BENCHMARKS) && defined(ALPAKA_ACC_GPU_CUDA_ENABLED)
-#    include <thrust/device_vector.h>
-#    include <thrust/reduce.h>
-#    include <thrust/functional.h>
-#endif
+#include "reduce_setup.hpp"
 
-struct TestTemplate
+namespace vikunja
 {
-private:
-    const uint64_t memSize;
-
-public:
-    TestTemplate(uint64_t const memSize) : memSize(memSize)
+    namespace test
     {
-    }
-
-    template<typename TAcc>
-    void operator()()
-    {
-        using TRed = uint64_t;
-
-        using Idx = alpaka::Idx<TAcc>;
-        using Dim = alpaka::Dim<TAcc>;
-        const Idx n = static_cast<Idx>(memSize);
-        // constexpr Idx blocksPerGrid = 8;
-        // constexpr Idx threadsPerBlock = 1;
-        // const Idx elementsPerThread = n / blocksPerGrid / threadsPerBlock + 1;
-
-        using Vec = alpaka::Vec<Dim, Idx>;
-        constexpr Idx xIndex = Dim::value - 1u;
-
-        Vec extent(Vec::all(static_cast<Idx>(1)));
-        extent[xIndex] = n;
-
-
-        using DevAcc = alpaka::Dev<TAcc>;
-        using PltfAcc = alpaka::Pltf<DevAcc>;
-        // Async queue makes things slower on CPU?
-        // using QueueAcc = alpaka::test::queue::DefaultQueue<alpaka::Dev<TAcc>>;
-        using PltfHost = alpaka::PltfCpu;
-        using DevHost = alpaka::Dev<PltfHost>;
-
-        using QueueAcc = alpaka::Queue<DevAcc, alpaka::Blocking>;
-
-        using QueueHost = alpaka::QueueCpuBlocking;
-
-        // Get the host device.
-        DevHost devHost(alpaka::getDevByIdx<PltfHost>(0u));
-        // Get a queue on the host device.
-        QueueHost queueHost(devHost);
-        // Select a device to execute on.
-        DevAcc devAcc(alpaka::getDevByIdx<PltfAcc>(0u));
-        // Get a queue on the accelerator device.
-        QueueAcc queueAcc(devAcc);
-
-        auto deviceMem(alpaka::allocBuf<TRed, Idx>(devAcc, extent));
-        auto hostMem(alpaka::allocBuf<TRed, Idx>(devHost, extent));
-        TRed* hostNative = alpaka::getPtrNative(hostMem);
-        for(Idx i = 0; i < n; ++i)
+        namespace reduce
         {
-            // std::cout << i << "\n";
-            hostNative[i] = static_cast<TRed>(i + 1);
-        }
-        alpaka::memcpy(queueAcc, deviceMem, hostMem, extent);
-        auto sum = [=] ALPAKA_FN_HOST_ACC(TAcc const&, TRed i, TRed j) { return i + j; };
-        auto doubleNum = [=] ALPAKA_FN_HOST_ACC(TAcc const&, TRed i) { return 2 * i; };
-        std::cout << "Testing accelerator: " << alpaka::getAccName<TAcc>() << " with size: " << n << "\n";
+            template<
+                typename TDim,
+                template<typename, typename>
+                class TAcc,
+                typename TData,
+                typename TIdx = std::uint64_t>
+            class TestSetupReduce : public TestSetupBase<TDim, TAcc, TData, TIdx>
+            {
+            public:
+                using TestSetupBase<TDim, TAcc, TData, TIdx>::TestSetupBase;
 
-        auto start = std::chrono::high_resolution_clock::now();
-        Idx reduceResult
-            = vikunja::reduce::deviceReduce<TAcc>(devAcc, devHost, queueAcc, n, alpaka::getPtrNative(deviceMem), sum);
-        auto end = std::chrono::high_resolution_clock::now();
-        auto expectedResult = (n * (n + 1) / 2);
-        REQUIRE(expectedResult == reduceResult);
-        std::cout << "Runtime of " << alpaka::getAccName<TAcc>() << ": "
-                  << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << " microseconds\n";
-        using MemAccess = vikunja::mem::iterator::MemAccessPolicy<TAcc>;
-        std::cout << "MemAccessPolicy: " << MemAccess::getName() << "\n";
+                using Base = typename vikunja::test::reduce::TestSetupBase<TDim, TAcc, TData, TIdx>;
 
-        auto expectedTransformReduce = expectedResult * 2;
-        Idx transformReduceResult = vikunja::reduce::deviceTransformReduce<TAcc>(
-            devAcc,
-            devHost,
-            queueAcc,
-            n,
-            alpaka::getPtrNative(deviceMem),
-            doubleNum,
-            sum);
-        REQUIRE(expectedTransformReduce == transformReduceResult);
+                template<typename TReduceFunctor>
+                void run(TReduceFunctor reduceFunctor)
+                {
+                    alpaka::memcpy(Base::Base::queueAcc, Base::m_device_mem, Base::m_host_mem, Base::m_extent);
+
+                    Base::m_result = vikunja::reduce::deviceReduce<typename Base::Acc>(
+                        Base::devAcc,
+                        Base::devHost,
+                        Base::Base::queueAcc,
+                        Base::m_size,
+                        alpaka::getPtrNative(Base::m_device_mem),
+                        reduceFunctor);
+                };
+            };
+
+            template<
+                typename TDim,
+                template<typename, typename>
+                class TAcc,
+                typename TData,
+                typename TIdx = std::uint64_t>
+            class TestSetupReduceTransform : public TestSetupBase<TDim, TAcc, TData, TIdx>
+            {
+            public:
+                using TestSetupBase<TDim, TAcc, TData, TIdx>::TestSetupBase;
+
+                using Base = typename vikunja::test::reduce::TestSetupBase<TDim, TAcc, TData, TIdx>;
+
+                template<typename TReduceFunctor, typename TTransformFunctor>
+                void run(TReduceFunctor reduceFunctor, TTransformFunctor transformFunctor)
+                {
+                    alpaka::memcpy(Base::Base::queueAcc, Base::m_device_mem, Base::m_host_mem, Base::m_extent);
+
+                    Base::m_result = vikunja::reduce::deviceTransformReduce<typename Base::Acc>(
+                        Base::devAcc,
+                        Base::devHost,
+                        Base::Base::queueAcc,
+                        Base::m_size,
+                        alpaka::getPtrNative(Base::m_device_mem),
+                        transformFunctor,
+                        reduceFunctor);
+                };
+            };
+
+        } // namespace reduce
+    } // namespace test
+} // namespace vikunja
+
+
+template<typename TData>
+struct Sum
+{
+    ALPAKA_FN_HOST_ACC TData operator()(TData const i, TData const j) const
+    {
+        return i + j;
     }
 };
 
-TEST_CASE("Test reduce", "[reduce]")
+template<typename TData>
+struct DoubleNum
 {
-    using TestAccs = alpaka::ExampleDefaultAcc<alpaka::DimInt<3u>, std::uint64_t>;
-    // std::cout << std::thread::hardware_concurrency() << "\n";
-    SECTION("deviceReduce")
+    ALPAKA_FN_HOST_ACC TData operator()(TData const i) const
     {
-        std::vector<uint64_t> memorySizes{
-            1,
-            10,
-            777,
-            (1 << 10) + 1,
-            1 << 12,
-            1 << 14,
-            1 << 15,
-            1 << 18,
-            (1 << 18) + 1,
-            1 << 25,
-            1 << 27};
-
-        for(auto& memSize : memorySizes)
-        {
-            // alpaka currently offers no function to keep all active back-ends
-            // alpaka::meta::forEachType<TestAccs>(TestTemplate(memSize));
-            TestTemplate t(memSize);
-            t.operator()<TestAccs>();
-        }
-#ifdef VIKUNJA_REDUCE_COMPARING_BENCHMARKS
-        std::cout << "---------------------------------------------\n";
-        std::cout << "Now performing some benchmarks...\n";
-        const std::uint64_t size = memorySizes.back();
-        std::vector<uint64_t> reduce(size);
-        for(uint64_t i = 0; i < reduce.size(); ++i)
-        {
-            reduce[i] = i + 1;
-        }
-        auto start = std::chrono::high_resolution_clock::now();
-        uint64_t tSum = 0;
-        for(uint64_t i = 0; i < reduce.size(); ++i)
-        {
-            tSum += reduce[i];
-        }
-        auto end = std::chrono::high_resolution_clock::now();
-        std::cout << "Runtime of dumb: ";
-        std::cout << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << " microseconds\n";
-        std::cout << "tSum = " << tSum << "\n";
-#    ifdef ALPAKA_ACC_GPU_CUDA_ENABLED
-        // test against thrust
-        thrust::device_vector<std::uint64_t> deviceReduce(reduce);
-        start = std::chrono::high_resolution_clock::now();
-        tSum = thrust::reduce(
-            deviceReduce.begin(),
-            deviceReduce.end(),
-            static_cast<std::uint64_t>(0),
-            thrust::plus<std::uint64_t>());
-        end = std::chrono::high_resolution_clock::now();
-        std::cout << "Runtime of thrust reduce: ";
-        std::cout << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << " microseconds\n";
-        std::cout << "tSum = " << tSum << "\n";
-
-#    endif
-
-#endif
+        return 2 * i;
     }
+};
+
+template<typename TAcc, typename TData>
+struct Min
+{
+    ALPAKA_FN_HOST_ACC TData operator()(TAcc const& acc, TData const i, TData const j) const
+    {
+        return alpaka::math::min(acc, i, j);
+    }
+};
+
+
+template<typename TAcc, typename TData>
+struct Max
+{
+    ALPAKA_FN_HOST_ACC TData operator()(TAcc const& acc, TData const i, TData const j) const
+    {
+        return alpaka::math::max(acc, i, j);
+    }
+};
+
+
+TEMPLATE_TEST_CASE(
+    "Test reduce lambda",
+    "[reduce][lambda][noAcc]",
+    (alpaka::DimInt<1u>),
+    (alpaka::DimInt<2u>),
+    (alpaka::DimInt<3u>) )
+{
+    using Dim = TestType;
+    using Data = std::uint64_t;
+
+    auto size = GENERATE(1, 10, 777, 1 << 10);
+
+    INFO((vikunja::test::print_acc_info<Dim, Data>(size)));
+
+    vikunja::test::reduce::TestSetupReduce<Dim, alpaka::ExampleDefaultAcc, Data> setup(size);
+
+    // setup initial values
+    Data* const host_mem_ptr = setup.get_host_mem_ptr();
+    std::iota(host_mem_ptr, host_mem_ptr + size, 1);
+
+    auto reduce = [] ALPAKA_FN_HOST_ACC(Data const i, Data const j) { return i + j; };
+    setup.run(reduce);
+
+    Data const n = static_cast<Data>(size);
+    Data expectedResult = (n * (n + 1) / 2);
+
+    REQUIRE(setup.get_result() == expectedResult);
+}
+
+TEMPLATE_TEST_CASE(
+    "Test reduce operator",
+    "[reduce][operator][noAcc]",
+    (alpaka::DimInt<1u>),
+    (alpaka::DimInt<2u>),
+    (alpaka::DimInt<3u>) )
+{
+    using Dim = TestType;
+    using Data = std::uint64_t;
+
+    auto size = GENERATE(1, 10, 777, 1 << 10);
+
+    INFO((vikunja::test::print_acc_info<Dim, Data>(size)));
+
+    vikunja::test::reduce::TestSetupReduce<Dim, alpaka::ExampleDefaultAcc, Data> setup(size);
+
+    // setup initial values
+    Data* const host_mem_ptr = setup.get_host_mem_ptr();
+    std::iota(host_mem_ptr, host_mem_ptr + size, 1);
+
+    Sum<Data> sumOp;
+
+    setup.run(sumOp);
+
+    Data const n = static_cast<Data>(size);
+    Data expectedResult = (n * (n + 1) / 2);
+
+    REQUIRE(setup.get_result() == expectedResult);
+}
+
+TEMPLATE_TEST_CASE(
+    "Test reduce lambda with acc object",
+    "[reduce][lambda][acc]",
+    (alpaka::DimInt<1u>),
+    (alpaka::DimInt<2u>),
+    (alpaka::DimInt<3u>) )
+{
+    using Dim = TestType;
+    using Data = std::uint64_t;
+
+    auto size = GENERATE(1, 10, 777, 1 << 10);
+
+    INFO((vikunja::test::print_acc_info<Dim, Data>(size)));
+
+    vikunja::test::reduce::TestSetupReduce<Dim, alpaka::ExampleDefaultAcc, Data> setup(size);
+
+    // setup initial values
+    Data* const host_mem_ptr = setup.get_host_mem_ptr();
+    std::uniform_int_distribution<Data> distribution(
+        std::numeric_limits<Data>::min(),
+        std::numeric_limits<Data>::max());
+    std::default_random_engine generator;
+    std::generate(host_mem_ptr, host_mem_ptr + size, [&distribution, &generator]() {
+        return distribution(generator);
+    });
+
+    auto reduce
+        = [] ALPAKA_FN_HOST_ACC(alpaka::ExampleDefaultAcc<Dim, std::uint64_t> const& acc, Data const i, Data const j) {
+              return alpaka::math::max(acc, i, j);
+          };
+    setup.run(reduce);
+
+    Data expectedResult = *std::max_element(host_mem_ptr, host_mem_ptr + size);
+
+    REQUIRE(setup.get_result() == expectedResult);
+}
+
+TEMPLATE_TEST_CASE(
+    "Test reduce operator with acc object",
+    "[reduce][operator][acc]",
+    (alpaka::DimInt<1u>),
+    (alpaka::DimInt<2u>),
+    (alpaka::DimInt<3u>) )
+{
+    using Dim = TestType;
+    using Data = std::uint64_t;
+
+    auto size = GENERATE(1, 10, 777, 1 << 10);
+
+    INFO((vikunja::test::print_acc_info<Dim, Data>(size)));
+
+    vikunja::test::reduce::TestSetupReduce<Dim, alpaka::ExampleDefaultAcc, Data> setup(size);
+
+    // setup initial values
+    Data* const host_mem_ptr = setup.get_host_mem_ptr();
+    std::uniform_int_distribution<Data> distribution(
+        std::numeric_limits<Data>::min(),
+        std::numeric_limits<Data>::max());
+    std::default_random_engine generator;
+    std::generate(host_mem_ptr, host_mem_ptr + size, [&distribution, &generator]() {
+        return distribution(generator);
+    });
+
+    Max<alpaka::ExampleDefaultAcc<Dim, std::uint64_t>, Data> max;
+    setup.run(max);
+
+    Data expectedResult = *std::max_element(host_mem_ptr, host_mem_ptr + size);
+
+    REQUIRE(setup.get_result() == expectedResult);
+}
+
+TEMPLATE_TEST_CASE(
+    "Test reduceTransform lambda",
+    "[reduceTransform][lambda][noAcc]",
+    (alpaka::DimInt<1u>),
+    (alpaka::DimInt<2u>),
+    (alpaka::DimInt<3u>) )
+{
+    using Dim = TestType;
+    using Data = std::uint64_t;
+
+    auto size = GENERATE(1, 10, 777, 1 << 10);
+
+    INFO((vikunja::test::print_acc_info<Dim, Data>(size)));
+
+    vikunja::test::reduce::TestSetupReduceTransform<Dim, alpaka::ExampleDefaultAcc, Data> setup(size);
+
+    // setup initial values
+    Data* const host_mem_ptr = setup.get_host_mem_ptr();
+    std::iota(host_mem_ptr, host_mem_ptr + size, 1);
+
+    auto reduce = [] ALPAKA_FN_HOST_ACC(Data const i, Data const j) { return i + j; };
+    auto transform = [] ALPAKA_FN_HOST_ACC(Data const i) { return 2 * i; };
+
+    setup.run(reduce, transform);
+
+    Data const n = static_cast<Data>(size);
+    Data expectedResult = 2 * (n * (n + 1) / 2);
+
+    REQUIRE(setup.get_result() == expectedResult);
+}
+
+TEMPLATE_TEST_CASE(
+    "Test reduceTransform mix function and operator",
+    "[reduceTransform][mixFunc][noAcc]",
+    (alpaka::DimInt<1u>),
+    (alpaka::DimInt<2u>),
+    (alpaka::DimInt<3u>) )
+{
+    using Dim = TestType;
+    using Data = std::uint64_t;
+
+    auto size = GENERATE(1, 10, 777, 1 << 10);
+
+    INFO((vikunja::test::print_acc_info<Dim, Data>(size)));
+
+    vikunja::test::reduce::TestSetupReduceTransform<Dim, alpaka::ExampleDefaultAcc, Data> setup(size);
+
+    // setup initial values
+    Data* const host_mem_ptr = setup.get_host_mem_ptr();
+    std::iota(host_mem_ptr, host_mem_ptr + size, 1);
+
+    auto reduce = [] ALPAKA_FN_HOST_ACC(Data const i, Data const j) -> Data { return i + j; };
+    DoubleNum<Data> transform;
+
+    setup.run(reduce, transform);
+
+    Data const n = static_cast<Data>(size);
+    Data expectedResult = 2 * (n * (n + 1) / 2);
+
+    REQUIRE(setup.get_result() == expectedResult);
+}
+
+TEMPLATE_TEST_CASE(
+    "Test reduceTransform mixed lambda and operator with acc object",
+    "[reduceTransform][mixFunc][acc]",
+    (alpaka::DimInt<1u>),
+    (alpaka::DimInt<2u>),
+    (alpaka::DimInt<3u>) )
+{
+    using Dim = TestType;
+    using Data = std::uint64_t;
+
+    auto size = GENERATE(1, 10, 777, 1 << 10);
+
+    INFO((vikunja::test::print_acc_info<Dim, Data>(size)));
+
+    vikunja::test::reduce::TestSetupReduceTransform<Dim, alpaka::ExampleDefaultAcc, Data> setup(size);
+
+    // setup initial values
+    Data* const host_mem_ptr = setup.get_host_mem_ptr();
+    std::uniform_int_distribution<Data> distribution(
+        std::numeric_limits<Data>::min(),
+        std::numeric_limits<Data>::max());
+    std::default_random_engine generator;
+    std::generate(host_mem_ptr, host_mem_ptr + size, [&distribution, &generator]() {
+        return distribution(generator);
+    });
+
+    Min<alpaka::ExampleDefaultAcc<Dim, std::uint64_t>, Data> reduce;
+    auto transform
+        = [] ALPAKA_FN_HOST_ACC(alpaka::ExampleDefaultAcc<Dim, std::uint64_t> const& acc, Data const i) -> Data {
+        // TODO: check why double is not working
+        return static_cast<Data>(alpaka::math::sqrt(acc, static_cast<float>(i)));
+    };
+
+    setup.run(reduce, transform);
+
+    std::vector<Data> tmp;
+    tmp.resize(size);
+    std::transform(host_mem_ptr, host_mem_ptr + size, tmp.begin(), [](Data const i) -> Data {
+        return static_cast<Data>(std::sqrt(static_cast<float>(i)));
+    });
+    Data expectedResult = *std::min_element(tmp.begin(), tmp.end());
+
+    REQUIRE(setup.get_result() == expectedResult);
 }

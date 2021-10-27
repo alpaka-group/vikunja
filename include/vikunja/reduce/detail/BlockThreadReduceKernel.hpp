@@ -45,8 +45,15 @@ namespace vikunja
              * @tparam TBlockSize The block size of this reduce kernel.
              * @tparam TMemAccessPolicy The memory access policy of this reduce kernel.
              * @tparam TRed The type of the reduction.
+             * @tparam TTransformOperator The vikunja::operators type of the transform function.
+             * @tparam TReduceOperator The vikunja::operators type of the reduce function.
              */
-            template<uint64_t TBlockSize, typename TMemAccessPolicy, typename TRed>
+            template<
+                uint64_t TBlockSize,
+                typename TMemAccessPolicy,
+                typename TRed,
+                typename TTransformOperator,
+                typename TReduceOperator>
             struct BlockThreadReduceKernel
             {
                 /**
@@ -56,13 +63,13 @@ namespace vikunja
                  * @tparam TInputIterator The input iterator type, should be pointer-like.
                  * @tparam TOutputIterator The helper memory output iterator type, should be pointer-like.
                  * @tparam TTransformFunc The transform operator type.
-                 * @tparam TFunc The reduce operator type.
+                 * @tparam TReduceFunc The reduce operator type.
                  * @param acc The alpaka accelerator.
                  * @param source The input iterator.
                  * @param destination The helper memory output iterator.
                  * @param n The size of the input iterator.
                  * @param transformFunc The transform operator.
-                 * @param func THe reduce operator.
+                 * @param reduceFunc The reduce operator.
                  */
                 template<
                     typename TAcc,
@@ -70,14 +77,14 @@ namespace vikunja
                     typename TInputIterator,
                     typename TOutputIterator,
                     typename TTransformFunc,
-                    typename TFunc>
+                    typename TReduceFunc>
                 ALPAKA_FN_ACC void operator()(
                     TAcc const& acc,
                     TInputIterator const& source,
                     TOutputIterator const& destination,
                     TIdx const& n,
                     TTransformFunc const& transformFunc,
-                    TFunc const& func) const
+                    TReduceFunc const& reduceFunc) const
                 {
                     // use shared memory in this block for the reduce.
                     auto& sdata(alpaka::declareSharedVar<sharedStaticArray<TRed, TBlockSize>, __COUNTER__>(acc));
@@ -109,26 +116,37 @@ namespace vikunja
                     if(startIndex < n)
                     {
                         // no neutral element is used, so initialize with value from first element.
-                        auto tSum = transformFunc(acc, *iter);
+                        auto tSum = TTransformOperator::run(acc, transformFunc, *iter);
                         ++iter;
                         // Manual unrolling. I dont know if this is really necessary, but
                         while(iter + 3 < iter.end())
                         {
-                            tSum = func(
+                            tSum = TReduceOperator::run(
                                 acc,
-                                func(
+                                reduceFunc,
+                                TReduceOperator::run(
                                     acc,
-                                    func(
+                                    reduceFunc,
+                                    TReduceOperator::run(
                                         acc,
-                                        func(acc, tSum, transformFunc(acc, *iter)),
-                                        transformFunc(acc, *(iter + 1))),
-                                    transformFunc(acc, *(iter + 2))),
-                                transformFunc(acc, *(iter + 3)));
+                                        reduceFunc,
+                                        TReduceOperator::run(
+                                            acc,
+                                            reduceFunc,
+                                            tSum,
+                                            TTransformOperator::run(acc, transformFunc, *iter)),
+                                        TTransformOperator::run(acc, transformFunc, *(iter + 1))),
+                                    TTransformOperator::run(acc, transformFunc, *(iter + 2))),
+                                TTransformOperator::run(acc, transformFunc, *(iter + 3)));
                             iter += 4;
                         }
                         while(iter < iter.end())
                         {
-                            tSum = func(acc, tSum, transformFunc(acc, *iter));
+                            tSum = TReduceOperator::run(
+                                acc,
+                                reduceFunc,
+                                tSum,
+                                TTransformOperator::run(acc, transformFunc, *iter));
                             ++iter;
                         }
                         // This condition actually relies on the memory access pattern.
@@ -153,7 +171,8 @@ namespace vikunja
                             (indexInBlock + bSup) < n; // if element in second half has ben initialized before
                         if(condition)
                         {
-                            sdata[threadIndex] = func(acc, sdata[threadIndex], sdata[threadIndex + bSup]);
+                            sdata[threadIndex]
+                                = TReduceOperator::run(acc, reduceFunc, sdata[threadIndex], sdata[threadIndex + bSup]);
                         }
                         alpaka::syncBlockThreads(acc); // sync: block reduce loop
                     }

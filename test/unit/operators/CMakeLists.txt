@@ -1,4 +1,4 @@
-# Copyright 2021 Hauke Mewes, Simeon Ehrig
+# Copyright 2019-2021 Hauke Mewes, Simeon Ehrig
 #
 # This file is part of vikunja.
 #
@@ -8,20 +8,18 @@
 
 cmake_minimum_required(VERSION 3.18)
 
-set(_TARGET_NAME "test_reduce")
+set(_TARGET_NAME "test_operators")
 
 
 alpaka_add_executable(
   ${_TARGET_NAME}
-  src/Reduce.cpp
+  src/Operators.cpp
   )
-
-target_include_directories(${_TARGET_NAME} PRIVATE include)
 
 target_link_libraries(${_TARGET_NAME}
   PRIVATE
-  vikunja::testSetup
   vikunja::internalvikunja
+  vikunja::testSetup
   )
 
 add_test(NAME ${_TARGET_NAME} COMMAND ${_TARGET_NAME} ${_VIKUNJA_TEST_OPTIONS})

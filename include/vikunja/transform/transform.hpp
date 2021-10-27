@@ -12,6 +12,7 @@
 #include <vikunja/mem/iterator/PolicyBasedBlockIterator.hpp>
 #include <vikunja/workdiv/BlockBasedWorkDiv.hpp>
 #include <vikunja/transform/detail/BlockThreadTransformKernel.hpp>
+#include <vikunja/operators/operators.hpp>
 #include <alpaka/alpaka.hpp>
 #include <type_traits>
 
@@ -36,6 +37,7 @@ namespace vikunja
          * @tparam TDevAcc The type of the alpaka accelerator.
          * @tparam TQueue The type of the alpaka queue.
          * @tparam TIdx The index type to use.
+         * @tparam TOperator The vikunja::operators type of the transform function.
          * @param devAcc The alpaka accelerator.
          * @param queue The alpaka queue.
          * @param n The number of input elements. Must be of type TIdx.
@@ -52,7 +54,9 @@ namespace vikunja
             typename TOutputIterator,
             typename TDevAcc,
             typename TQueue,
-            typename TIdx>
+            typename TIdx,
+            typename TOperator
+            = vikunja::operators::UnaryOp<TAcc, TFunc, typename std::iterator_traits<TInputIterator>::value_type>>
         auto deviceTransform(
             TDevAcc& devAcc,
             TQueue& queue,
@@ -92,7 +96,7 @@ namespace vikunja
             threadsPerBlock[xIndex] = workDivBlockSize;
 
             WorkDiv multiBlockWorkDiv{blocksPerGrid, threadsPerBlock, elementsPerThread};
-            detail::BlockThreadTransformKernel<blockSize, MemAccessPolicy> kernel;
+            detail::BlockThreadTransformKernel<blockSize, MemAccessPolicy, TOperator> kernel;
             alpaka::exec<TAcc>(queue, multiBlockWorkDiv, kernel, source, destination, n, func);
         }
 
@@ -108,6 +112,7 @@ namespace vikunja
          * @tparam TDevAcc
          * @tparam TQueue
          * @tparam TIdx
+         * @tparam TOperator
          * @param devAcc
          * @param queue
          * @param n
@@ -126,7 +131,12 @@ namespace vikunja
             typename TOutputIterator,
             typename TDevAcc,
             typename TQueue,
-            typename TIdx>
+            typename TIdx,
+            typename TOperator = vikunja::operators::BinaryOp<
+                TAcc,
+                TFunc,
+                typename std::iterator_traits<TInputIterator>::value_type,
+                typename std::iterator_traits<TInputIteratorSecond>::value_type>>
         auto deviceTransform(
             TDevAcc& devAcc,
             TQueue& queue,
@@ -167,7 +177,7 @@ namespace vikunja
             threadsPerBlock[xIndex] = workDivBlockSize;
 
             WorkDiv multiBlockWorkDiv{blocksPerGrid, threadsPerBlock, elementsPerThread};
-            detail::BlockThreadTransformKernel<blockSize, MemAccessPolicy> kernel;
+            detail::BlockThreadTransformKernel<blockSize, MemAccessPolicy, TOperator> kernel;
             alpaka::exec<TAcc>(queue, multiBlockWorkDiv, kernel, source, sourceSecond, destination, n, func);
         }
     } // namespace transform

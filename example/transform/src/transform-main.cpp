@@ -65,7 +65,7 @@ int main()
     // Copy to accelerator.
     alpaka::memcpy(queueAcc, deviceMem, hostMem, extent);
     // Use lambda function for transformation
-    auto doubleNum = [=] ALPAKA_FN_HOST_ACC(TAcc const&, TRed i) { return 2 * i; };
+    auto doubleNum = [] ALPAKA_FN_HOST_ACC(TRed const& i) { return 2 * i; };
     std::cout << "Testing accelerator: " << alpaka::getAccName<TAcc>() << " with size: " << n << "\n";
 
 
