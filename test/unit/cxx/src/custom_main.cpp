@@ -8,8 +8,9 @@
  */
 
 #define CATCH_CONFIG_RUNNER
-#include <catch2/catch.hpp>
 #include "alpaka_cxx.hpp"
+
+#include <catch2/catch.hpp>
 
 int ALPAKA_CXX = 0;
 

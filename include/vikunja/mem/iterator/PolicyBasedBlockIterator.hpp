@@ -10,6 +10,7 @@
 #pragma once
 
 #include "BaseIterator.hpp"
+
 #include <alpaka/alpaka.hpp>
 
 namespace vikunja

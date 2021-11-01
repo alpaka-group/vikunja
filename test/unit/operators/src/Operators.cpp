@@ -7,9 +7,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <vikunja/operators/operators.hpp>
 #include <alpaka/alpaka.hpp>
 #include <catch2/catch.hpp>
+#include <vikunja/operators/operators.hpp>
 
 struct DummyAcc
 {
@@ -198,9 +198,8 @@ TEST_CASE("BinaryOp", "[operators]")
         = [] ALPAKA_FN_HOST_ACC(double const a, double const b) { return static_cast<unsigned int>((a * 2.5) / b); };
     auto bLambda2
         = [](auto const&, double const a, double const b) { return static_cast<unsigned int>((a * 2.5) / b); };
-    auto bLambda3 = [] ALPAKA_FN_HOST_ACC(DummyAcc const& acc, float const a, double const b) -> int {
-        return acc.iMin(static_cast<int>(a * b), 10);
-    };
+    auto bLambda3 = [] ALPAKA_FN_HOST_ACC(DummyAcc const& acc, float const a, double const b) -> int
+    { return acc.iMin(static_cast<int>(a * b), 10); };
 
     REQUIRE(binaryRunner<DummyAcc>(dummyAcc, bLambda1, 3.0, 2.0) == 3);
     REQUIRE(binaryRunner<DummyAcc>(dummyAcc, bLambda2, 3.0, 5) == 1);

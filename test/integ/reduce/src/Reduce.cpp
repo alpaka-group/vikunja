@@ -7,18 +7,18 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#include "reduce_setup.hpp"
+
+#include <algorithm>
 #include <alpaka/alpaka.hpp>
 #include <alpaka/example/ExampleDefaultAcc.hpp>
-#include <vikunja/test/utility.hpp>
-#include <vikunja/reduce/reduce.hpp>
 #include <catch2/catch.hpp>
-#include <numeric>
 #include <limits>
+#include <numeric>
 #include <random>
-#include <algorithm>
 #include <vector>
-
-#include "reduce_setup.hpp"
+#include <vikunja/reduce/reduce.hpp>
+#include <vikunja/test/utility.hpp>
 
 namespace vikunja
 {
@@ -207,14 +207,14 @@ TEMPLATE_TEST_CASE(
         std::numeric_limits<Data>::min(),
         std::numeric_limits<Data>::max());
     std::default_random_engine generator;
-    std::generate(host_mem_ptr, host_mem_ptr + size, [&distribution, &generator]() {
-        return distribution(generator);
-    });
+    std::generate(
+        host_mem_ptr,
+        host_mem_ptr + size,
+        [&distribution, &generator]() { return distribution(generator); });
 
     auto reduce
-        = [] ALPAKA_FN_HOST_ACC(alpaka::ExampleDefaultAcc<Dim, std::uint64_t> const& acc, Data const i, Data const j) {
-              return alpaka::math::max(acc, i, j);
-          };
+        = [] ALPAKA_FN_HOST_ACC(alpaka::ExampleDefaultAcc<Dim, std::uint64_t> const& acc, Data const i, Data const j)
+    { return alpaka::math::max(acc, i, j); };
     setup.run(reduce);
 
     Data expectedResult = *std::max_element(host_mem_ptr, host_mem_ptr + size);
@@ -244,9 +244,10 @@ TEMPLATE_TEST_CASE(
         std::numeric_limits<Data>::min(),
         std::numeric_limits<Data>::max());
     std::default_random_engine generator;
-    std::generate(host_mem_ptr, host_mem_ptr + size, [&distribution, &generator]() {
-        return distribution(generator);
-    });
+    std::generate(
+        host_mem_ptr,
+        host_mem_ptr + size,
+        [&distribution, &generator]() { return distribution(generator); });
 
     Max<alpaka::ExampleDefaultAcc<Dim, std::uint64_t>, Data> max;
     setup.run(max);
@@ -340,13 +341,15 @@ TEMPLATE_TEST_CASE(
         std::numeric_limits<Data>::min(),
         std::numeric_limits<Data>::max());
     std::default_random_engine generator;
-    std::generate(host_mem_ptr, host_mem_ptr + size, [&distribution, &generator]() {
-        return distribution(generator);
-    });
+    std::generate(
+        host_mem_ptr,
+        host_mem_ptr + size,
+        [&distribution, &generator]() { return distribution(generator); });
 
     Min<alpaka::ExampleDefaultAcc<Dim, std::uint64_t>, Data> reduce;
     auto transform
-        = [] ALPAKA_FN_HOST_ACC(alpaka::ExampleDefaultAcc<Dim, std::uint64_t> const& acc, Data const i) -> Data {
+        = [] ALPAKA_FN_HOST_ACC(alpaka::ExampleDefaultAcc<Dim, std::uint64_t> const& acc, Data const i) -> Data
+    {
         // TODO: check why double is not working
         return static_cast<Data>(alpaka::math::sqrt(acc, static_cast<float>(i)));
     };
@@ -355,9 +358,11 @@ TEMPLATE_TEST_CASE(
 
     std::vector<Data> tmp;
     tmp.resize(size);
-    std::transform(host_mem_ptr, host_mem_ptr + size, tmp.begin(), [](Data const i) -> Data {
-        return static_cast<Data>(std::sqrt(static_cast<float>(i)));
-    });
+    std::transform(
+        host_mem_ptr,
+        host_mem_ptr + size,
+        tmp.begin(),
+        [](Data const i) -> Data { return static_cast<Data>(std::sqrt(static_cast<float>(i))); });
     Data expectedResult = *std::min_element(tmp.begin(), tmp.end());
 
     REQUIRE(setup.get_result() == expectedResult);

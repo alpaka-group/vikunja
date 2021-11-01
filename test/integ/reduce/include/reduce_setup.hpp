@@ -9,9 +9,8 @@
 
 #pragma once
 
-#include <memory>
-
 #include <alpaka/alpaka.hpp>
+#include <memory>
 #include <vikunja/test/AlpakaSetup.hpp>
 
 namespace vikunja
