@@ -7,18 +7,18 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#include "transform_setup.hpp"
+
+#include <algorithm>
 #include <alpaka/alpaka.hpp>
 #include <alpaka/example/ExampleDefaultAcc.hpp>
+#include <catch2/catch.hpp>
+#include <limits>
+#include <numeric>
+#include <random>
+#include <vector>
 #include <vikunja/test/utility.hpp>
 #include <vikunja/transform/transform.hpp>
-#include <catch2/catch.hpp>
-#include <numeric>
-#include <limits>
-#include <random>
-#include <algorithm>
-#include <vector>
-
-#include "transform_setup.hpp"
 
 namespace vikunja
 {
@@ -244,21 +244,23 @@ TEMPLATE_TEST_CASE(
         std::numeric_limits<Data>::min(),
         std::numeric_limits<Data>::max());
     std::default_random_engine generator;
-    std::generate(host_mem_ptr, host_mem_ptr + size, [&distribution, &generator]() {
-        return distribution(generator);
-    });
+    std::generate(
+        host_mem_ptr,
+        host_mem_ptr + size,
+        [&distribution, &generator]() { return distribution(generator); });
 
-    auto transform = [] ALPAKA_FN_HOST_ACC(alpaka::ExampleDefaultAcc<Dim, std::uint64_t> const& acc, Data const i) {
-        return alpaka::math::min(acc, i, static_cast<Data>(1 << 10));
-    };
+    auto transform = [] ALPAKA_FN_HOST_ACC(alpaka::ExampleDefaultAcc<Dim, std::uint64_t> const& acc, Data const i)
+    { return alpaka::math::min(acc, i, static_cast<Data>(1 << 10)); };
 
     setup.run(transform);
 
     std::vector<Data> expected_result;
     expected_result.resize(size);
-    std::transform(host_mem_ptr, host_mem_ptr + size, expected_result.begin(), [](Data const i) {
-        return std::min(i, static_cast<Data>(1 << 10));
-    });
+    std::transform(
+        host_mem_ptr,
+        host_mem_ptr + size,
+        expected_result.begin(),
+        [](Data const i) { return std::min(i, static_cast<Data>(1 << 10)); });
 
     Data const* const result_ptr = setup.get_host_output_mem_ptr();
     std::vector<Data> result(result_ptr, result_ptr + size);
@@ -288,9 +290,10 @@ TEMPLATE_TEST_CASE(
         std::numeric_limits<Data>::min(),
         std::numeric_limits<Data>::max());
     std::default_random_engine generator;
-    std::generate(host_mem_ptr, host_mem_ptr + size, [&distribution, &generator]() {
-        return distribution(generator);
-    });
+    std::generate(
+        host_mem_ptr,
+        host_mem_ptr + size,
+        [&distribution, &generator]() { return distribution(generator); });
 
     Max<alpaka::ExampleDefaultAcc<Dim, std::uint64_t>, Data, (1 << 10)> transform;
 
@@ -298,9 +301,11 @@ TEMPLATE_TEST_CASE(
 
     std::vector<Data> expected_result;
     expected_result.resize(size);
-    std::transform(host_mem_ptr, host_mem_ptr + size, expected_result.begin(), [](Data const i) {
-        return std::max(i, static_cast<Data>(1 << 10));
-    });
+    std::transform(
+        host_mem_ptr,
+        host_mem_ptr + size,
+        expected_result.begin(),
+        [](Data const i) { return std::max(i, static_cast<Data>(1 << 10)); });
 
     Data const* const result_ptr = setup.get_host_output_mem_ptr();
     std::vector<Data> result(result_ptr, result_ptr + size);
@@ -331,12 +336,14 @@ TEMPLATE_TEST_CASE(
         std::numeric_limits<Data>::min(),
         std::numeric_limits<Data>::max() / 10);
     std::default_random_engine generator;
-    std::generate(host_mem_ptr1, host_mem_ptr1 + size, [&distribution, &generator]() {
-        return distribution(generator);
-    });
-    std::generate(host_mem_ptr2, host_mem_ptr2 + size, [&distribution, &generator]() {
-        return distribution(generator);
-    });
+    std::generate(
+        host_mem_ptr1,
+        host_mem_ptr1 + size,
+        [&distribution, &generator]() { return distribution(generator); });
+    std::generate(
+        host_mem_ptr2,
+        host_mem_ptr2 + size,
+        [&distribution, &generator]() { return distribution(generator); });
 
     MathOperator<Data> transform;
 
@@ -376,17 +383,18 @@ TEMPLATE_TEST_CASE(
         std::numeric_limits<Data>::min(),
         std::numeric_limits<Data>::max());
     std::default_random_engine generator;
-    std::generate(host_mem_ptr1, host_mem_ptr1 + size, [&distribution, &generator]() {
-        return distribution(generator);
-    });
-    std::generate(host_mem_ptr2, host_mem_ptr2 + size, [&distribution, &generator]() {
-        return distribution(generator);
-    });
+    std::generate(
+        host_mem_ptr1,
+        host_mem_ptr1 + size,
+        [&distribution, &generator]() { return distribution(generator); });
+    std::generate(
+        host_mem_ptr2,
+        host_mem_ptr2 + size,
+        [&distribution, &generator]() { return distribution(generator); });
 
     auto transform
-        = [] ALPAKA_FN_HOST_ACC(alpaka::ExampleDefaultAcc<Dim, std::uint64_t> const& acc, Data const i, Data const j) {
-              return alpaka::math::min(acc, i, j);
-          };
+        = [] ALPAKA_FN_HOST_ACC(alpaka::ExampleDefaultAcc<Dim, std::uint64_t> const& acc, Data const i, Data const j)
+    { return alpaka::math::min(acc, i, j); };
 
     setup.run(transform);
 

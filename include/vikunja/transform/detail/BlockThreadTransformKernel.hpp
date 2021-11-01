@@ -9,8 +9,8 @@
 
 #pragma once
 
-#include <vikunja/mem/iterator/PolicyBasedBlockIterator.hpp>
 #include <alpaka/alpaka.hpp>
+#include <vikunja/mem/iterator/PolicyBasedBlockIterator.hpp>
 
 namespace vikunja
 {

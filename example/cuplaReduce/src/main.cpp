@@ -7,11 +7,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <vector>
-#include <numeric>
+#include "cuplaVikReduce.hpp"
 
 #include <iostream>
-#include "cuplaVikReduce.hpp"
+#include <numeric>
+#include <vector>
 
 int main()
 {

@@ -7,11 +7,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <vikunja/mem/iterator/BaseIterator.hpp>
-#include <vikunja/mem/iterator/PolicyBasedBlockIterator.hpp>
 #include <alpaka/alpaka.hpp>
 #include <catch2/catch.hpp>
 #include <vector>
+#include <vikunja/mem/iterator/BaseIterator.hpp>
+#include <vikunja/mem/iterator/PolicyBasedBlockIterator.hpp>
 
 using Type = uint64_t;
 using IType = Type*;

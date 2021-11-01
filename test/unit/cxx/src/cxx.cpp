@@ -7,8 +7,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <catch2/catch.hpp>
 #include "alpaka_cxx.hpp"
+
+#include <catch2/catch.hpp>
 
 TEST_CASE("TestCxxStandard", "[c++ standard]")
 {

@@ -7,12 +7,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <iostream>
+#include "cuplaVikReduce.hpp"
+
 #include <alpaka/alpaka.hpp>
 #include <cupla.hpp>
+#include <iostream>
 #include <vikunja/reduce/reduce.hpp>
-
-#include "cuplaVikReduce.hpp"
 
 int reduce(std::vector<int> const&& input)
 {

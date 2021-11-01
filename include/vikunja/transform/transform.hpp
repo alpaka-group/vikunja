@@ -9,12 +9,12 @@
 
 #pragma once
 
-#include <vikunja/mem/iterator/PolicyBasedBlockIterator.hpp>
-#include <vikunja/workdiv/BlockBasedWorkDiv.hpp>
-#include <vikunja/transform/detail/BlockThreadTransformKernel.hpp>
-#include <vikunja/operators/operators.hpp>
 #include <alpaka/alpaka.hpp>
 #include <type_traits>
+#include <vikunja/mem/iterator/PolicyBasedBlockIterator.hpp>
+#include <vikunja/operators/operators.hpp>
+#include <vikunja/transform/detail/BlockThreadTransformKernel.hpp>
+#include <vikunja/workdiv/BlockBasedWorkDiv.hpp>
 
 namespace vikunja
 {
