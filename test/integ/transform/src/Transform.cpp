@@ -9,16 +9,19 @@
 
 #include "transform_setup.hpp"
 
-#include <algorithm>
+#include <vikunja/test/utility.hpp>
+#include <vikunja/transform/transform.hpp>
+
 #include <alpaka/alpaka.hpp>
 #include <alpaka/example/ExampleDefaultAcc.hpp>
-#include <catch2/catch.hpp>
+
+#include <algorithm>
 #include <limits>
 #include <numeric>
 #include <random>
 #include <vector>
-#include <vikunja/test/utility.hpp>
-#include <vikunja/transform/transform.hpp>
+
+#include <catch2/catch.hpp>
 
 namespace vikunja
 {

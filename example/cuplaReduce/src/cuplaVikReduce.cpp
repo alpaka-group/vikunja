@@ -9,10 +9,13 @@
 
 #include "cuplaVikReduce.hpp"
 
-#include <alpaka/alpaka.hpp>
-#include <cupla.hpp>
-#include <iostream>
 #include <vikunja/reduce/reduce.hpp>
+
+#include <alpaka/alpaka.hpp>
+
+#include <iostream>
+
+#include <cupla.hpp>
 
 int reduce(std::vector<int> const&& input)
 {

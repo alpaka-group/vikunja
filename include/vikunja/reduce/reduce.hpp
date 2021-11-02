@@ -9,14 +9,16 @@
 
 #pragma once
 
-#include <alpaka/alpaka.hpp>
-#include <iostream>
-#include <type_traits>
 #include <vikunja/mem/iterator/PolicyBasedBlockIterator.hpp>
 #include <vikunja/operators/operators.hpp>
 #include <vikunja/reduce/detail/BlockThreadReduceKernel.hpp>
 #include <vikunja/reduce/detail/SmallProblemReduceKernel.hpp>
 #include <vikunja/workdiv/BlockBasedWorkDiv.hpp>
+
+#include <alpaka/alpaka.hpp>
+
+#include <iostream>
+#include <type_traits>
 
 namespace vikunja
 {

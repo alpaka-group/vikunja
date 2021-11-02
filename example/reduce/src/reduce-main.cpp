@@ -7,9 +7,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <alpaka/alpaka.hpp>
-#include <iostream>
 #include <vikunja/reduce/reduce.hpp>
+
+#include <alpaka/alpaka.hpp>
+
+#include <iostream>
+
 
 int main()
 {
