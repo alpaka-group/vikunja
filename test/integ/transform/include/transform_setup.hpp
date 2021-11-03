@@ -26,6 +26,7 @@ namespace vikunja
                 template<typename, typename>
                 class TAcc,
                 typename TData,
+                typename TDataResult,
                 typename TIdx = std::uint64_t>
             class TestSetupBase
                 : public vikunja::test::TestAlpakaSetup<TDim, TIdx, alpaka::AccCpuSerial, TAcc, alpaka::Blocking>
@@ -38,6 +39,8 @@ namespace vikunja
                 using Vec = alpaka::Vec<TDim, TIdx>;
                 using BufHost = alpaka::Buf<Host, TData, TDim, TIdx>;
                 using BufDev = alpaka::Buf<Acc, TData, TDim, TIdx>;
+                using BufHostResult = alpaka::Buf<Host, TDataResult, TDim, TIdx>;
+                using BufDevResult = alpaka::Buf<Acc, TDataResult, TDim, TIdx>;
 
                 std::uint64_t const m_size;
                 Vec m_extent;
@@ -45,8 +48,8 @@ namespace vikunja
                 BufHost m_host_input1_mem;
                 BufDev m_device_input1_mem;
 
-                BufHost m_host_output_mem;
-                BufDev m_device_output_mem;
+                BufHostResult m_host_output_mem;
+                BufDevResult m_device_output_mem;
 
             private:
                 Vec calculate_extends(std::uint64_t const size)
@@ -62,8 +65,8 @@ namespace vikunja
                     , m_extent(calculate_extends(memSize))
                     , m_host_input1_mem(alpaka::allocBuf<TData, TIdx>(Base::devHost, m_extent))
                     , m_device_input1_mem(alpaka::allocBuf<TData, TIdx>(Base::devAcc, m_extent))
-                    , m_host_output_mem(alpaka::allocBuf<TData, TIdx>(Base::devHost, m_extent))
-                    , m_device_output_mem(alpaka::allocBuf<TData, TIdx>(Base::devAcc, m_extent))
+                    , m_host_output_mem(alpaka::allocBuf<TDataResult, TIdx>(Base::devHost, m_extent))
+                    , m_device_output_mem(alpaka::allocBuf<TDataResult, TIdx>(Base::devAcc, m_extent))
                 {
                 }
 
@@ -72,7 +75,7 @@ namespace vikunja
                     return alpaka::getPtrNative(m_host_input1_mem);
                 }
 
-                TData* get_host_output_mem_ptr()
+                TDataResult* get_host_output_mem_ptr()
                 {
                     return alpaka::getPtrNative(m_host_output_mem);
                 }
