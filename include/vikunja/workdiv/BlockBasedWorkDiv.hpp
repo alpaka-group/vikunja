@@ -9,8 +9,9 @@
 
 #pragma once
 
-#include <algorithm>
 #include <alpaka/alpaka.hpp>
+
+#include <algorithm>
 #include <thread>
 namespace vikunja
 {

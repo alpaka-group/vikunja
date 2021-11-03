@@ -99,17 +99,23 @@ TabWidth: 4
 UseCRLF: false
 UseTab: Never
 
-# Project specific options -- uncomment and modify as needed
-#IncludeCategories:
-#  - Regex:           '^"(llvm|llvm-c|clang|clang-c)/'
-#    Priority:        2
-#    SortPriority:    0
-#  - Regex:           '^(<|"(gtest|gmock|isl|json)/)'
-#    Priority:        3
-#    SortPriority:    0
-#  - Regex:           '.*'
-#    Priority:        1
-#    SortPriority:    0
+# Project specific options
+IncludeCategories:
+  # Local headers (in "") above all else
+  - Regex: '"([A-Za-z0-9.\/-_])+"'
+    Priority: 1
+  # <vikunja/foo.hpp> after local headers
+  - Regex: '<vikunja/([A-Za-z0-9.\/-_])+>'
+    Priority: 2
+  # <cupla/foo.hpp> after local headers
+  - Regex: '<cupla/([A-Za-z0-9.\/-_])+>'
+    Priority: 3
+  # <alpaka/foo.hpp> after local headers
+  - Regex: '<alpaka/([A-Za-z0-9.\/-_])+>'
+    Priority: 4
+  # C++ standard library headers are the last group to be included
+  - Regex: '<([A-Za-z0-9\/-_])+>'
+    Priority: 5
 #StatementAttributeLikeMacros: []
 
 # Future options - not supported in clang-format 12
