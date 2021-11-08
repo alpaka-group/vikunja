@@ -26,6 +26,7 @@ namespace vikunja
                 template<typename, typename>
                 class TAcc,
                 typename TData,
+                typename TDataResult,
                 typename TIdx = std::uint64_t>
             class TestSetupBase
                 : public vikunja::test::TestAlpakaSetup<TDim, TIdx, alpaka::AccCpuSerial, TAcc, alpaka::Blocking>
@@ -45,7 +46,7 @@ namespace vikunja
                 BufHost m_host_mem;
                 BufDev m_device_mem;
 
-                TData m_result = 0;
+                TDataResult m_result;
 
             private:
                 Vec calculate_extends(std::uint64_t const size)
@@ -69,7 +70,7 @@ namespace vikunja
                     return alpaka::getPtrNative(m_host_mem);
                 }
 
-                TData get_result() const
+                TDataResult get_result() const
                 {
                     return m_result;
                 }

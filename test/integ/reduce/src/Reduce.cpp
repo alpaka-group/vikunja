@@ -19,6 +19,7 @@
 #include <limits>
 #include <numeric>
 #include <random>
+#include <utility>
 #include <vector>
 
 #include <catch2/catch.hpp>
@@ -34,13 +35,14 @@ namespace vikunja
                 template<typename, typename>
                 class TAcc,
                 typename TData,
+                typename TDataResult = TData,
                 typename TIdx = std::uint64_t>
-            class TestSetupReduce : public TestSetupBase<TDim, TAcc, TData, TIdx>
+            class TestSetupReduce : public TestSetupBase<TDim, TAcc, TData, TDataResult, TIdx>
             {
             public:
-                using TestSetupBase<TDim, TAcc, TData, TIdx>::TestSetupBase;
+                using TestSetupBase<TDim, TAcc, TData, TDataResult, TIdx>::TestSetupBase;
 
-                using Base = typename vikunja::test::reduce::TestSetupBase<TDim, TAcc, TData, TIdx>;
+                using Base = typename vikunja::test::reduce::TestSetupBase<TDim, TAcc, TData, TDataResult, TIdx>;
 
                 template<typename TReduceFunctor>
                 void run(TReduceFunctor reduceFunctor)
@@ -62,13 +64,14 @@ namespace vikunja
                 template<typename, typename>
                 class TAcc,
                 typename TData,
+                typename TDataResult = TData,
                 typename TIdx = std::uint64_t>
-            class TestSetupReduceTransform : public TestSetupBase<TDim, TAcc, TData, TIdx>
+            class TestSetupReduceTransform : public TestSetupBase<TDim, TAcc, TData, TDataResult, TIdx>
             {
             public:
-                using TestSetupBase<TDim, TAcc, TData, TIdx>::TestSetupBase;
+                using TestSetupBase<TDim, TAcc, TData, TDataResult, TIdx>::TestSetupBase;
 
-                using Base = typename vikunja::test::reduce::TestSetupBase<TDim, TAcc, TData, TIdx>;
+                using Base = typename vikunja::test::reduce::TestSetupBase<TDim, TAcc, TData, TDataResult, TIdx>;
 
                 template<typename TReduceFunctor, typename TTransformFunctor>
                 void run(TReduceFunctor reduceFunctor, TTransformFunctor transformFunctor)
@@ -128,6 +131,37 @@ struct Max
     }
 };
 
+template<typename TData>
+struct MakePairUnaryOp
+{
+    ALPAKA_FN_HOST_ACC std::pair<TData, TData> operator()(TData const& x) const
+    {
+        return std::pair<TData, TData>(x, x);
+    }
+};
+
+template<typename TAcc, typename TData>
+struct MinMaxPairBinaryOp
+{
+    ALPAKA_FN_HOST_ACC std::pair<TData, TData> operator()(
+        TAcc const& acc,
+        std::pair<TData, TData> const& x,
+        std::pair<TData, TData> const& y) const
+    {
+        return std::pair<TData, TData>(
+            alpaka::math::min(acc, x.first, y.first),
+            alpaka::math::max(acc, x.second, y.second));
+    }
+};
+
+template<typename TData>
+struct MinMaxPairBinaryOpStd
+{
+    std::pair<TData, TData> operator()(std::pair<TData, TData> const& x, std::pair<TData, TData> const& y) const
+    {
+        return std::pair<TData, TData>(std::min(x.first, y.first), std::max(x.second, y.second));
+    }
+};
 
 TEMPLATE_TEST_CASE(
     "Test reduce lambda",
@@ -141,7 +175,7 @@ TEMPLATE_TEST_CASE(
 
     auto size = GENERATE(1, 10, 777, 1 << 10);
 
-    INFO((vikunja::test::print_acc_info<Dim, Data>(size)));
+    INFO((vikunja::test::print_acc_info<Dim>(size)));
 
     vikunja::test::reduce::TestSetupReduce<Dim, alpaka::ExampleDefaultAcc, Data> setup(size);
 
@@ -170,7 +204,7 @@ TEMPLATE_TEST_CASE(
 
     auto size = GENERATE(1, 10, 777, 1 << 10);
 
-    INFO((vikunja::test::print_acc_info<Dim, Data>(size)));
+    INFO((vikunja::test::print_acc_info<Dim>(size)));
 
     vikunja::test::reduce::TestSetupReduce<Dim, alpaka::ExampleDefaultAcc, Data> setup(size);
 
@@ -200,7 +234,7 @@ TEMPLATE_TEST_CASE(
 
     auto size = GENERATE(1, 10, 777, 1 << 10);
 
-    INFO((vikunja::test::print_acc_info<Dim, Data>(size)));
+    INFO((vikunja::test::print_acc_info<Dim>(size)));
 
     vikunja::test::reduce::TestSetupReduce<Dim, alpaka::ExampleDefaultAcc, Data> setup(size);
 
@@ -237,7 +271,7 @@ TEMPLATE_TEST_CASE(
 
     auto size = GENERATE(1, 10, 777, 1 << 10);
 
-    INFO((vikunja::test::print_acc_info<Dim, Data>(size)));
+    INFO((vikunja::test::print_acc_info<Dim>(size)));
 
     vikunja::test::reduce::TestSetupReduce<Dim, alpaka::ExampleDefaultAcc, Data> setup(size);
 
@@ -272,7 +306,7 @@ TEMPLATE_TEST_CASE(
 
     auto size = GENERATE(1, 10, 777, 1 << 10);
 
-    INFO((vikunja::test::print_acc_info<Dim, Data>(size)));
+    INFO((vikunja::test::print_acc_info<Dim>(size)));
 
     vikunja::test::reduce::TestSetupReduceTransform<Dim, alpaka::ExampleDefaultAcc, Data> setup(size);
 
@@ -303,7 +337,7 @@ TEMPLATE_TEST_CASE(
 
     auto size = GENERATE(1, 10, 777, 1 << 10);
 
-    INFO((vikunja::test::print_acc_info<Dim, Data>(size)));
+    INFO((vikunja::test::print_acc_info<Dim>(size)));
 
     vikunja::test::reduce::TestSetupReduceTransform<Dim, alpaka::ExampleDefaultAcc, Data> setup(size);
 
@@ -334,7 +368,7 @@ TEMPLATE_TEST_CASE(
 
     auto size = GENERATE(1, 10, 777, 1 << 10);
 
-    INFO((vikunja::test::print_acc_info<Dim, Data>(size)));
+    INFO((vikunja::test::print_acc_info<Dim>(size)));
 
     vikunja::test::reduce::TestSetupReduceTransform<Dim, alpaka::ExampleDefaultAcc, Data> setup(size);
 
@@ -369,4 +403,92 @@ TEMPLATE_TEST_CASE(
     Data expectedResult = *std::min_element(tmp.begin(), tmp.end());
 
     REQUIRE(setup.get_result() == expectedResult);
+}
+
+TEMPLATE_TEST_CASE(
+    "Test reduce with operators which uses std::pair",
+    "[reduce][operator][noAcc]",
+    (alpaka::DimInt<1u>),
+    (alpaka::DimInt<2u>),
+    (alpaka::DimInt<3u>) )
+{
+    using Dim = TestType;
+    using PairType = float;
+    using Data = std::pair<PairType, PairType>;
+
+    auto size = GENERATE(1, 10, 777, 1 << 10);
+
+    INFO((vikunja::test::print_acc_info<Dim>(size)));
+
+    vikunja::test::reduce::TestSetupReduce<Dim, alpaka::ExampleDefaultAcc, Data, Data> setup(size);
+
+    // setup initial values
+    Data* const host_mem_ptr = setup.get_host_mem_ptr();
+    std::uniform_real_distribution<PairType> distribution(
+        std::numeric_limits<PairType>::min(),
+        std::numeric_limits<PairType>::max());
+    std::default_random_engine generator;
+    std::generate(
+        host_mem_ptr,
+        host_mem_ptr + size,
+        [&distribution, &generator]()
+        { return std::make_pair<PairType, PairType>(distribution(generator), distribution(generator)); });
+
+
+    MinMaxPairBinaryOp<alpaka::ExampleDefaultAcc<Dim, std::uint64_t>, PairType> reduce;
+
+    setup.run(reduce);
+
+    MinMaxPairBinaryOpStd<PairType> reduceStd;
+
+    Data expectedResult = std::accumulate(host_mem_ptr, host_mem_ptr + size, host_mem_ptr[0], reduceStd);
+
+    REQUIRE(setup.get_result().first == expectedResult.first);
+    REQUIRE(setup.get_result().second == expectedResult.second);
+}
+
+TEMPLATE_TEST_CASE(
+    "Test reduceTransform with operators which uses as input Data and expect as result std::pair<Data, Data>",
+    "[reduceTransform][operator][noAcc]",
+    (alpaka::DimInt<1u>),
+    (alpaka::DimInt<2u>),
+    (alpaka::DimInt<3u>) )
+{
+    using Dim = TestType;
+    using Data = float;
+    using ReturnType = std::pair<Data, Data>;
+
+    auto size = GENERATE(1, 10, 777, 1 << 10);
+
+    INFO((vikunja::test::print_acc_info<Dim>(size)));
+
+    vikunja::test::reduce::TestSetupReduceTransform<Dim, alpaka::ExampleDefaultAcc, Data, ReturnType> setup(size);
+
+    // setup initial values
+    Data* const host_mem_ptr = setup.get_host_mem_ptr();
+    std::uniform_real_distribution<Data> distribution(
+        std::numeric_limits<Data>::min(),
+        std::numeric_limits<Data>::max());
+    std::default_random_engine generator;
+    std::generate(
+        host_mem_ptr,
+        host_mem_ptr + size,
+        [&distribution, &generator]() { return distribution(generator); });
+
+    MinMaxPairBinaryOp<alpaka::ExampleDefaultAcc<Dim, std::uint64_t>, Data> reduce;
+    MakePairUnaryOp<Data> transform;
+
+    setup.run(reduce, transform);
+
+    // calculate result
+    std::vector<ReturnType> tmp;
+    tmp.resize(size);
+    std::transform(host_mem_ptr, host_mem_ptr + size, tmp.begin(), transform);
+
+    MinMaxPairBinaryOpStd<Data> reduceStd;
+    ReturnType expectedResult = std::accumulate(tmp.begin(), tmp.end(), tmp[0], reduceStd);
+
+    // compare result
+    REQUIRE(setup.get_result().first == expectedResult.first);
+    REQUIRE(setup.get_result().second == expectedResult.second);
 }

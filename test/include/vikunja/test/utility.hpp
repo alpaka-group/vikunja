@@ -20,8 +20,8 @@ namespace vikunja
 {
     namespace test
     {
-        template<typename TDim, typename TData>
-        inline std::string print_acc_info(TData const size)
+        template<typename TDim>
+        inline std::string print_acc_info(std::size_t const size)
         {
             std::stringstream strs;
 

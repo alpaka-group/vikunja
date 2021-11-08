@@ -11,6 +11,8 @@
 
 #include <alpaka/alpaka.hpp>
 
+#include <utility>
+
 #include <catch2/catch.hpp>
 
 struct DummyAcc
@@ -86,6 +88,15 @@ struct UStruct2
     }
 };
 
+template<typename TAcc, typename TData>
+struct UMakePair
+{
+    std::pair<TData, TData> ALPAKA_FN_HOST_ACC operator()(TAcc const& acc, TData const& a) const
+    {
+        return std::make_pair(a, a);
+    }
+};
+
 TEST_CASE("UnaryOp", "[operators]")
 {
     DummyAcc dummyAcc;
@@ -113,8 +124,10 @@ TEST_CASE("UnaryOp", "[operators]")
 
     UStruct1 uStruct1;
     UStruct2<DummyAcc, double, int> uStruct2;
+    UMakePair<DummyAcc, double> makePair;
     REQUIRE(unaryRunner<DummyAcc>(dummyAcc, uStruct1, 1) == 2);
     REQUIRE(unaryRunner<DummyAcc>(dummyAcc, uStruct2, 6.8) == 6);
+    REQUIRE(unaryRunner<DummyAcc>(dummyAcc, makePair, 1.2) == std::make_pair(1.2, 1.2));
 }
 
 
@@ -184,6 +197,14 @@ struct BStruct2
     }
 };
 
+template<typename TAcc, typename TData1, typename TData2>
+struct BMakePair
+{
+    std::pair<TData1, TData2> ALPAKA_FN_HOST_ACC operator()(TAcc const& acc, TData1 const& a, TData2 const& b) const
+    {
+        return std::make_pair(a, b);
+    }
+};
 
 TEST_CASE("BinaryOp", "[operators]")
 {
@@ -209,6 +230,8 @@ TEST_CASE("BinaryOp", "[operators]")
 
     BStruct1 bStruct1;
     BStruct2<DummyAcc, int, float, double> bStruct2;
+    BMakePair<DummyAcc, int, float> makePair;
     REQUIRE(binaryRunner<DummyAcc>(dummyAcc, bStruct1, 1.3f, 4.7) == 6);
     REQUIRE(binaryRunner<DummyAcc>(dummyAcc, bStruct2, 3, 1.2) == 1.0);
+    REQUIRE(binaryRunner<DummyAcc>(dummyAcc, makePair, 1, 3.4f) == std::make_pair(1, 3.4f));
 }

@@ -176,8 +176,8 @@ namespace vikunja
             detail::BlockThreadReduceKernel<blockSize, MemAccessPolicy, TRed, TTransformOperator, TReduceOperator>
                 multiBlockKernel;
 
-            using TIdentityTransformOperator = vikunja::operators::
-                UnaryOp<TAcc, detail::Identity<TRed>, typename std::iterator_traits<TInputIterator>::value_type>;
+            using TIdentityTransformOperator
+                = vikunja::operators::UnaryOp<TAcc, detail::Identity<TRed>, typename TTransformOperator::TRed>;
             detail::
                 BlockThreadReduceKernel<blockSize, MemAccessPolicy, TRed, TIdentityTransformOperator, TReduceOperator>
                     singleBlockKernel;
