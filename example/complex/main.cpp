@@ -16,12 +16,21 @@
 #include <iostream>
 #include <vector>
 
+struct Transform
+{
+    template<typename TAcc, typename TData>
+    ALPAKA_FN_HOST_ACC TData operator()(TAcc const& acc, alpaka::Complex<TData> const& a) const
+    {
+        return alpaka::math::abs(acc, a);
+    }
+};
+
 int main()
 {
     // Define the accelerator here. Must be one of the enabled accelerators.
-    using Acc = alpaka::AccCpuSerial<alpaka::DimInt<1u>, std::uint64_t>;
+    // using Acc = alpaka::AccCpuSerial<alpaka::DimInt<1u>, std::uint64_t>;
     // using Acc = alpaka::AccCpuOmp2Blocks<alpaka::DimInt<1u>, std::uint64_t>;
-    // using Acc = alpaka::AccGpuCudaRt<alpaka::DimInt<1u>, std::uint64_t>;
+    using Acc = alpaka::AccGpuCudaRt<alpaka::DimInt<1u>, std::uint64_t>;
 
     // Type of the data that will be reduced
     using Data = float;
@@ -113,8 +122,7 @@ int main()
         std::cout << "Transform was not successful!\n";
     }
 
-    auto transform = [] ALPAKA_FN_HOST_ACC(Acc const& acc, alpaka::Complex<Data> const& a) -> Data
-    { return alpaka::math::abs(acc, a); };
+    Transform transform;
 
     auto reduce = [] ALPAKA_FN_HOST_ACC(Data const& sum, Data const& item) { return sum + item; };
 
