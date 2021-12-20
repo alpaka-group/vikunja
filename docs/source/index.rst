@@ -19,6 +19,7 @@ Generally, **follow the manual pages in-order** to get started. Individual chapt
    :caption: Basic
 
    basic/introduction.rst
+   basic/installation.rst
    basic/algorithm.rst
 
 .. toctree::
