@@ -8,14 +8,27 @@ Welcome to vikunja's documentation!
 
 Vikunja is a performance portable algorithms library defines functions for a variety of purposes that operate on ranges of elements. It supports the execution on multi core CPUs and various GPUs.
 
+
+vikunja - How to Read This Document
+===================================
+
+Generally, **follow the manual pages in-order** to get started. Individual chapters are based on the information of the chapters before. The documentation is separated in three sections. The ``basic`` section explains all concepts of vikunja. In the ``advanced`` you will get more details of certain functionalities. If you want to provide to the project, you should have a look in the ``development`` section.
+
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Basic
 
+   basic/introduction.rst
+   basic/algorithm.rst
 
+.. toctree::
+   :maxdepth: 2
+   :caption: Advanced
 
-Indices and tables
-==================
+   advanced/cmake.rst
 
-* :ref:`genindex`
-* :ref:`search`
+.. toctree::
+   :maxdepth: 2
+   :caption: Development
+
+   development/sphinx.rst
