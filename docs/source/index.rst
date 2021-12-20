@@ -6,7 +6,7 @@
 Welcome to vikunja's documentation!
 ===================================
 
-The documentation will follow. At the moment this empty shinxdoc exists to set up an automatic deployment on readthedocs.
+Vikunja is a performance portable algorithms library defines functions for a variety of purposes that operate on ranges of elements. It supports the execution on multi core CPUs and various GPUs.
 
 .. toctree::
    :maxdepth: 2
