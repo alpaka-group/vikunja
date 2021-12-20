@@ -94,27 +94,29 @@ namespace vikunja
 } // namespace vikunja
 
 
-template<typename TData>
 struct Sum
 {
+    template<typename TData>
     ALPAKA_FN_HOST_ACC TData operator()(TData const i, TData const j) const
     {
         return i + j;
     }
 };
 
-template<typename TData>
+
 struct DoubleNum
 {
+    template<typename TData>
     ALPAKA_FN_HOST_ACC TData operator()(TData const i) const
     {
         return 2 * i;
     }
 };
 
-template<typename TAcc, typename TData>
+
 struct Min
 {
+    template<typename TAcc, typename TData>
     ALPAKA_FN_HOST_ACC TData operator()(TAcc const& acc, TData const i, TData const j) const
     {
         return alpaka::math::min(acc, i, j);
@@ -122,27 +124,29 @@ struct Min
 };
 
 
-template<typename TAcc, typename TData>
 struct Max
 {
+    template<typename TAcc, typename TData>
     ALPAKA_FN_HOST_ACC TData operator()(TAcc const& acc, TData const i, TData const j) const
     {
         return alpaka::math::max(acc, i, j);
     }
 };
 
-template<typename TData>
+
 struct MakePairUnaryOp
 {
+    template<typename TData>
     ALPAKA_FN_HOST_ACC std::pair<TData, TData> operator()(TData const& x) const
     {
         return std::pair<TData, TData>(x, x);
     }
 };
 
-template<typename TAcc, typename TData>
+
 struct MinMaxPairBinaryOp
 {
+    template<typename TAcc, typename TData>
     ALPAKA_FN_HOST_ACC std::pair<TData, TData> operator()(
         TAcc const& acc,
         std::pair<TData, TData> const& x,
@@ -154,12 +158,22 @@ struct MinMaxPairBinaryOp
     }
 };
 
-template<typename TData>
+
 struct MinMaxPairBinaryOpStd
 {
+    template<typename TData>
     std::pair<TData, TData> operator()(std::pair<TData, TData> const& x, std::pair<TData, TData> const& y) const
     {
         return std::pair<TData, TData>(std::min(x.first, y.first), std::max(x.second, y.second));
+    }
+};
+
+struct Sqrt
+{
+    template<typename TAcc, typename TData>
+    TData ALPAKA_FN_HOST_ACC operator()(TAcc const& acc, TData const i) const
+    {
+        return static_cast<TData>(alpaka::math::sqrt(acc, static_cast<double>(i)));
     }
 };
 
@@ -212,7 +226,7 @@ TEMPLATE_TEST_CASE(
     Data* const host_mem_ptr = setup.get_host_mem_ptr();
     std::iota(host_mem_ptr, host_mem_ptr + size, 1);
 
-    Sum<Data> sumOp;
+    Sum sumOp;
 
     setup.run(sumOp);
 
@@ -286,7 +300,7 @@ TEMPLATE_TEST_CASE(
         host_mem_ptr + size,
         [&distribution, &generator]() { return distribution(generator); });
 
-    Max<alpaka::ExampleDefaultAcc<Dim, std::uint64_t>, Data> max;
+    Max max;
     setup.run(max);
 
     Data expectedResult = *std::max_element(host_mem_ptr, host_mem_ptr + size);
@@ -346,7 +360,7 @@ TEMPLATE_TEST_CASE(
     std::iota(host_mem_ptr, host_mem_ptr + size, 1);
 
     auto reduce = [] ALPAKA_FN_HOST_ACC(Data const i, Data const j) -> Data { return i + j; };
-    DoubleNum<Data> transform;
+    DoubleNum transform;
 
     setup.run(reduce, transform);
 
@@ -358,7 +372,7 @@ TEMPLATE_TEST_CASE(
 
 TEMPLATE_TEST_CASE(
     "Test reduceTransform mixed lambda and operator with acc object",
-    "[reduceTransform][mixFunc][acc]",
+    "[reduceTransform][operator][acc]",
     (alpaka::DimInt<1u>),
     (alpaka::DimInt<2u>),
     (alpaka::DimInt<3u>) )
@@ -383,13 +397,8 @@ TEMPLATE_TEST_CASE(
         host_mem_ptr + size,
         [&distribution, &generator]() { return distribution(generator); });
 
-    Min<alpaka::ExampleDefaultAcc<Dim, std::uint64_t>, Data> reduce;
-    auto transform
-        = [] ALPAKA_FN_HOST_ACC(alpaka::ExampleDefaultAcc<Dim, std::uint64_t> const& acc, Data const i) -> Data
-    {
-        // TODO: check why double is not working
-        return static_cast<Data>(alpaka::math::sqrt(acc, static_cast<float>(i)));
-    };
+    Min reduce;
+    Sqrt transform;
 
     setup.run(reduce, transform);
 
@@ -399,7 +408,7 @@ TEMPLATE_TEST_CASE(
         host_mem_ptr,
         host_mem_ptr + size,
         tmp.begin(),
-        [](Data const i) -> Data { return static_cast<Data>(std::sqrt(static_cast<float>(i))); });
+        [](Data const i) -> Data { return static_cast<Data>(std::sqrt(static_cast<double>(i))); });
     Data expectedResult = *std::min_element(tmp.begin(), tmp.end());
 
     REQUIRE(setup.get_result() == expectedResult);
@@ -435,11 +444,11 @@ TEMPLATE_TEST_CASE(
         { return std::make_pair<PairType, PairType>(distribution(generator), distribution(generator)); });
 
 
-    MinMaxPairBinaryOp<alpaka::ExampleDefaultAcc<Dim, std::uint64_t>, PairType> reduce;
+    MinMaxPairBinaryOp reduce;
 
     setup.run(reduce);
 
-    MinMaxPairBinaryOpStd<PairType> reduceStd;
+    MinMaxPairBinaryOpStd reduceStd;
 
     Data expectedResult = std::accumulate(host_mem_ptr, host_mem_ptr + size, host_mem_ptr[0], reduceStd);
 
@@ -475,8 +484,8 @@ TEMPLATE_TEST_CASE(
         host_mem_ptr + size,
         [&distribution, &generator]() { return distribution(generator); });
 
-    MinMaxPairBinaryOp<alpaka::ExampleDefaultAcc<Dim, std::uint64_t>, Data> reduce;
-    MakePairUnaryOp<Data> transform;
+    MinMaxPairBinaryOp reduce;
+    MakePairUnaryOp transform;
 
     setup.run(reduce, transform);
 
@@ -485,7 +494,7 @@ TEMPLATE_TEST_CASE(
     tmp.resize(size);
     std::transform(host_mem_ptr, host_mem_ptr + size, tmp.begin(), transform);
 
-    MinMaxPairBinaryOpStd<Data> reduceStd;
+    MinMaxPairBinaryOpStd reduceStd;
     ReturnType expectedResult = std::accumulate(tmp.begin(), tmp.end(), tmp[0], reduceStd);
 
     // compare result

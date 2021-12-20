@@ -132,27 +132,28 @@ namespace vikunja
 } // namespace vikunja
 
 
-template<typename TData>
 struct IncOne
 {
+    template<typename TData>
     ALPAKA_FN_HOST_ACC TData operator()(TData const val) const
     {
         return val + 1;
     }
 };
 
-template<typename TAcc, typename TData, int TMaxValue>
+template<int TMaxValue>
 struct Max
 {
+    template<typename TAcc, typename TData>
     ALPAKA_FN_HOST_ACC TData operator()(TAcc const& acc, TData const i) const
     {
         return alpaka::math::max(acc, i, TMaxValue);
     }
 };
 
-template<typename TData>
 struct MathOperator
 {
+    template<typename TData>
     ALPAKA_FN_HOST_ACC TData operator()(TData const i, TData const j) const
     {
         return ((i * 2) - (i + 1)) + ((j * 2) - (j + 1));
@@ -222,7 +223,7 @@ TEMPLATE_TEST_CASE(
     Data* const host_mem_ptr = setup.get_host_input1_mem_ptr();
     std::iota(host_mem_ptr, host_mem_ptr + size, 1);
 
-    IncOne<Data> transform;
+    IncOne transform;
 
     setup.run(transform);
 
@@ -309,7 +310,7 @@ TEMPLATE_TEST_CASE(
         host_mem_ptr + size,
         [&distribution, &generator]() { return distribution(generator); });
 
-    Max<alpaka::ExampleDefaultAcc<Dim, std::uint64_t>, Data, (1 << 10)> transform;
+    Max<(1 << 10)> transform;
 
     setup.run(transform);
 
@@ -408,7 +409,7 @@ TEMPLATE_TEST_CASE(
         host_mem_ptr2 + size,
         [&distribution, &generator]() { return distribution(generator); });
 
-    MathOperator<Data> transform;
+    MathOperator transform;
 
     setup.run(transform);
 
