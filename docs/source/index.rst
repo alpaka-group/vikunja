@@ -3,8 +3,15 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to vikunja's documentation!
-===================================
+.. only:: html
+
+  .. image:: logo/vikunja_logo.svg
+     :width: 400
+
+.. only:: latex
+
+  .. image:: logo/vikunja_logo.pdf
+
 
 Vikunja is a performance portable algorithms library defines functions for a variety of purposes that operate on ranges of elements. It supports the execution on multi core CPUs and various GPUs.
 
