@@ -9,16 +9,18 @@
 
 #pragma once
 
-#if __cplusplus >= 202002L
-#    define CPP20
-#endif
-
 #include <alpaka/alpaka.hpp>
 
 #include <iterator>
 
-#ifdef CPP20
+// make sure the compiler supports spaceship
+#if defined(__cpp_impl_three_way_comparison)
 #    include <compare>
+#endif
+
+// if the library supports it too, we can use it
+#if defined(__cpp_lib_three_way_comparison)
+#    define USESPACESHIP
 #endif
 
 namespace vikunja
@@ -54,6 +56,14 @@ namespace vikunja
                  * @brief Dereference operator to receive the stored value
                  */
                 ALPAKA_FN_INLINE const DataType& operator*() const
+                {
+                    return v;
+                }
+
+                /**
+                 * @brief Index operator to get stored value at some given offset from this iterator
+                 */
+                ALPAKA_FN_INLINE const DataType& operator[](int) const
                 {
                     return v;
                 }
@@ -150,15 +160,16 @@ namespace vikunja
                     index -= idx;
                     return *this;
                 }
+
 #pragma endregion arithmeticoperators
 
 #pragma region comparisonoperators
 
-// if cpp20 is being used we can use starship operator magic
-#ifdef CPP20
+// if spaceship operator is available is being used we can use spaceship operator magic
+#ifdef USESPACESHIP
 
                 /**
-                 * @brief Starship operator for comparisons
+                 * @brief Spaceship operator for comparisons
                  */
                 auto operator<=>(const ConstantIterator& other) const noexcept = default;
 
