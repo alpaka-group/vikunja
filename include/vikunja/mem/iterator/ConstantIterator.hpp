@@ -13,6 +13,12 @@
 
 #include <iterator>
 
+#if __has_cpp_attribute(nodiscard)
+#    define NODISCARD [[nodiscard]]
+#else
+#    define NODISCARD
+#endif
+
 // make sure the compiler supports spaceship
 #if defined(__cpp_impl_three_way_comparison)
 #    include <compare>
@@ -55,7 +61,7 @@ namespace vikunja
                 /**
                  * @brief Dereference operator to receive the stored value
                  */
-                ALPAKA_FN_INLINE const DataType& operator*() const
+                NODISCARD ALPAKA_FN_INLINE const DataType& operator*() const
                 {
                     return v;
                 }
@@ -63,7 +69,7 @@ namespace vikunja
                 /**
                  * @brief Index operator to get stored value at some given offset from this iterator
                  */
-                ALPAKA_FN_INLINE const DataType& operator[](int) const
+                NODISCARD ALPAKA_FN_INLINE const DataType& operator[](int) const
                 {
                     return v;
                 }
@@ -73,7 +79,7 @@ namespace vikunja
                  * @brief Postfix increment operator
                  * @note Use prefix increment operator instead if possible to avoid copies
                  */
-                ALPAKA_FN_INLINE ConstantIterator operator++()
+                NODISCARD ALPAKA_FN_INLINE ConstantIterator operator++()
                 {
                     ConstantIterator cpy = *this;
                     ++index;
@@ -83,7 +89,7 @@ namespace vikunja
                 /**
                  * @brief Prefix increment operator
                  */
-                ALPAKA_FN_INLINE ConstantIterator& operator++(int)
+                NODISCARD ALPAKA_FN_INLINE ConstantIterator& operator++(int)
                 {
                     ++index;
                     return *this;
@@ -93,7 +99,7 @@ namespace vikunja
                  * @brief Postfix decrement operator
                  * @note Use prefix decrement operator instead if possible to avoid copies
                  */
-                ALPAKA_FN_INLINE ConstantIterator operator--()
+                NODISCARD ALPAKA_FN_INLINE ConstantIterator operator--()
                 {
                     ConstantIterator cpy = *this;
                     --index;
@@ -103,7 +109,7 @@ namespace vikunja
                 /**
                  * @brief Prefix decrement operator
                  */
-                ALPAKA_FN_INLINE ConstantIterator operator--(int)
+                NODISCARD ALPAKA_FN_INLINE ConstantIterator operator--(int)
                 {
                     --index;
                     return *this;
@@ -112,7 +118,7 @@ namespace vikunja
                 /**
                  * @brief Add an index to this iterator
                  */
-                ALPAKA_FN_INLINE ConstantIterator operator+(const IdxType idx) const
+                NODISCARD ALPAKA_FN_INLINE ConstantIterator operator+(const IdxType idx) const
                 {
                     return ConstantIterator(v, index + idx);
                 }
@@ -120,7 +126,7 @@ namespace vikunja
                 /**
                  * @brief Add a second constant iterator of the same value to this one
                  */
-                ALPAKA_FN_INLINE ConstantIterator operator+(const ConstantIterator& other) const
+                NODISCARD ALPAKA_FN_INLINE ConstantIterator operator+(const ConstantIterator& other) const
                 {
                     assert(v == other.v && "Can't add constant iterators of different values!");
                     return ConstantIterator(v, index + other.index);
@@ -129,7 +135,7 @@ namespace vikunja
                 /**
                  * @brief Subtract an index from this iterator
                  */
-                ALPAKA_FN_INLINE ConstantIterator operator-(const IdxType idx) const
+                NODISCARD ALPAKA_FN_INLINE ConstantIterator operator-(const IdxType idx) const
                 {
                     return ConstantIterator(v, index - idx);
                 }
@@ -137,7 +143,7 @@ namespace vikunja
                 /**
                  * @brief Subtract a second constant iterator of the same value from this one
                  */
-                ALPAKA_FN_INLINE ConstantIterator operator-(const ConstantIterator& other) const
+                NODISCARD ALPAKA_FN_INLINE ConstantIterator operator-(const ConstantIterator& other) const
                 {
                     assert(v == other.v && "Can't subtract constant iterators of different values!");
                     return ConstantIterator(v, index - other.index);
@@ -146,7 +152,7 @@ namespace vikunja
                 /**
                  * @brief Add an index to this iterator
                  */
-                ALPAKA_FN_INLINE ConstantIterator& operator+=(const IdxType idx)
+                NODISCARD ALPAKA_FN_INLINE ConstantIterator& operator+=(const IdxType idx)
                 {
                     index += idx;
                     return *this;
@@ -155,7 +161,7 @@ namespace vikunja
                 /**
                  * @brief Subtract an index from this iterator
                  */
-                ALPAKA_FN_INLINE ConstantIterator& operator-=(const IdxType idx)
+                NODISCARD ALPAKA_FN_INLINE ConstantIterator& operator-=(const IdxType idx)
                 {
                     index -= idx;
                     return *this;
@@ -171,7 +177,7 @@ namespace vikunja
                 /**
                  * @brief Spaceship operator for comparisons
                  */
-                auto operator<=>(const ConstantIterator& other) const noexcept = default;
+                NODISCARD ALPAKA_FN_INLINE auto operator<=>(const ConstantIterator& other) const noexcept = default;
 
 // if cpp20 *isn't* defined we get to write 70 lines of boilerplate
 #else
@@ -179,7 +185,7 @@ namespace vikunja
                 /**
                  * @brief Equality comparison, returns true if the iterators are the same
                  */
-                bool operator==(const ConstantIterator& other) const noexcept
+                NODISCARD ALPAKA_FN_INLINE bool operator==(const ConstantIterator& other) const noexcept
                 {
                     return v == other.v && index == other.index;
                 }
@@ -187,7 +193,7 @@ namespace vikunja
                 /**
                  * @brief Inequality comparison, negated equality operator
                  */
-                bool operator!=(const ConstantIterator& other) const noexcept
+                NODISCARD ALPAKA_FN_INLINE bool operator!=(const ConstantIterator& other) const noexcept
                 {
                     return !operator==(other);
                 }
@@ -195,7 +201,7 @@ namespace vikunja
                 /**
                  * @brief Less than comparison, value is checked first, then index
                  */
-                bool operator<(const ConstantIterator& other) const noexcept
+                NODISCARD ALPAKA_FN_INLINE bool operator<(const ConstantIterator& other) const noexcept
                 {
                     if(v < other.v)
                         return true;
@@ -207,7 +213,7 @@ namespace vikunja
                 /**
                  * @brief Greater than comparison, value is checked first, then index
                  */
-                bool operator>(const ConstantIterator& other) const noexcept
+                NODISCARD ALPAKA_FN_INLINE bool operator>(const ConstantIterator& other) const noexcept
                 {
                     if(v > other.v)
                         return true;
@@ -219,7 +225,7 @@ namespace vikunja
                 /**
                  * @brief Less than or equal comparison, value is checked first, then index
                  */
-                bool operator<=(const ConstantIterator& other) const noexcept
+                NODISCARD ALPAKA_FN_INLINE bool operator<=(const ConstantIterator& other) const noexcept
                 {
                     if(v < other.v)
                         return true;
@@ -231,7 +237,7 @@ namespace vikunja
                 /**
                  * @brief Greater than or equal comparison, value is checked first, then index
                  */
-                bool operator>=(const ConstantIterator& other) const noexcept
+                NODISCARD ALPAKA_FN_INLINE bool operator>=(const ConstantIterator& other) const noexcept
                 {
                     if(v > other.v)
                         return true;
