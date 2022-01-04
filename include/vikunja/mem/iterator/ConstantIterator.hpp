@@ -52,6 +52,11 @@ namespace vikunja
                 using reference = DataType&;
                 using iterator_category = std::random_access_iterator_tag;
 
+                /**
+                 * @brief Constructor for the ConstantIterator
+                 * @param value The value to initialize the iterator with
+                 * @param idx The index for the iterator, default 0
+                 */
                 ConstantIterator(const DataType& value, const IdxType& idx = static_cast<IdxType>(0))
                     : v(value)
                     , index(idx)
