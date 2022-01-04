@@ -13,20 +13,23 @@
 
 #include <iterator>
 
+// check for spaceship support
+#if defined __has_include
+#    if __has_include(<version>)
+#        include <version>
+#    endif
+#    if __has_include(<compare>)
+#        include <compare>
+#        if defined(__cpp_lib_three_way_comparison) && defined(__cpp_impl_three_way_comparison)
+#            define USESPACESHIP
+#        endif
+#    endif
+#endif
+
 #if __has_cpp_attribute(nodiscard)
 #    define NODISCARD [[nodiscard]]
 #else
 #    define NODISCARD
-#endif
-
-// make sure the compiler supports spaceship
-#if defined(__cpp_impl_three_way_comparison)
-#    include <compare>
-#endif
-
-// if the library supports it too, we can use it
-#if defined(__cpp_lib_three_way_comparison)
-#    define USESPACESHIP
 #endif
 
 namespace vikunja
