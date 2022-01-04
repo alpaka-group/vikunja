@@ -7,7 +7,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <vikunja/mem/iterator/ConstantIterator.hpp>
 #include <vikunja/reduce/reduce.hpp>
 
 #include <alpaka/alpaka.hpp>
