@@ -34,7 +34,7 @@ TEMPLATE_TEST_CASE("Test Constant Iterator", "", int, double, uint64_t)
     {
         const Type value = GENERATE(take(5, random(-50, 50)));
         const Idx idx = GENERATE(take(3, random(-20, 20)));
-        ConstantIterator a(value, idx);
+        ConstantIterator<Type> a(value, idx);
 
         THEN("the iterator has correct values set")
         {
@@ -54,7 +54,7 @@ TEMPLATE_TEST_CASE("Test Constant Iterator", "", int, double, uint64_t)
         {
             // use a positive offset so we can make more assumptions
             const Idx offset = GENERATE(take(3, random(1, 20)));
-            ConstantIterator b = a + offset;
+            auto b = a + offset;
             THEN("comparisons are correct")
             {
                 REQUIRE(a < b);
@@ -74,11 +74,11 @@ TEMPLATE_TEST_CASE("Test Constant Iterator", "", int, double, uint64_t)
 
             THEN("arithmetic operators on the iterators work correctly")
             {
-                ConstantIterator c = a + b;
+                auto c = a + b;
                 REQUIRE(c - a == b);
                 REQUIRE(*c == value);
 
-                ConstantIterator d = b - offset;
+                auto d = b - offset;
                 REQUIRE(d == a);
                 REQUIRE(d < b);
                 REQUIRE(*d == value);
