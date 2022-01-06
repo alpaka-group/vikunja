@@ -13,7 +13,7 @@
 
 #include <catch2/catch.hpp>
 
-using namespace vikunja::mem::iterator;
+using vikunja::mem::iterator::ConstantIterator;
 
 TEMPLATE_TEST_CASE("Test Constant Iterator", "", int, double, uint64_t)
 {
