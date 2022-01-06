@@ -1,3 +1,5 @@
+:orphan:
+
 .. only:: html
 
   .. image:: logo/vikunja_logo.svg
@@ -38,3 +40,4 @@ Generally, **follow the manual pages in-order** to get started. Individual chapt
    :caption: Development
 
    development/sphinx.rst
+   development/apireference.rst

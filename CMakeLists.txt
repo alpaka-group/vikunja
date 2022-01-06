@@ -19,7 +19,6 @@ include(CMakeDependentOption)
 include(FetchContent)
 
 option(VIKUNJA_BUILD_EXAMPLES "Build the examples" OFF)
-option(VIKUNJA_BUILD_DOXYGEN "Build the doxygen documentation" OFF)
 option(VIKUNJA_ENABLE_EXTRA_WARNINGS "Enable extra warnings" OFF)
 option(BUILD_TESTING "Build the testing tree." OFF)
 cmake_dependent_option(VIKUNJA_SYSTEM_CATCH2 "Use your local installation of Catch2 v3" ON BUILD_TESTING OFF)
@@ -124,16 +123,6 @@ if(${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})
     "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
     DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
   install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/ DESTINATION include)
-
-  #########################################
-  ############# Documentation #############
-  #########################################
-
-  # Use doxygen for api doc when available.
-  if(VIKUNJA_BUILD_DOXYGEN)
-    find_package(Doxygen REQUIRED)
-    doxygen_add_docs(doc include/)
-  endif()
 
   #########################################
   ################ Testing ################
