@@ -19,7 +19,7 @@
 using Type = uint64_t;
 using IType = Type*;
 using Idx = std::size_t;
-using namespace vikunja::mem::iterator;
+using vikunja::mem::iterator::BaseIterator;
 
 std::vector<Type> generateIndexVector(Idx size)
 {
