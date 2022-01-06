@@ -12,6 +12,7 @@ The basic concept of vikunja is to run an ``algorithm`` with an ``operator`` ove
 
   * **sum**: `return i+j;`
   * **double of an element**: `return 2*i;`
+  * For more information see: :ref:`Operators <Operators>`
 
 .. literalinclude:: ../../../example/transform/src/transform-main.cpp
    :language: C++

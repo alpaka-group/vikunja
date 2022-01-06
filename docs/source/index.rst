@@ -1,8 +1,3 @@
-.. vikunja documentation master file, created by
-   sphinx-quickstart on Mon Dec 20 11:01:14 2021.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 .. only:: html
 
   .. image:: logo/vikunja_logo.svg
@@ -30,6 +25,7 @@ Generally, **follow the manual pages in-order** to get started. Individual chapt
    basic/introduction.rst
    basic/installation.rst
    basic/algorithm.rst
+   basic/operators.rst
 
 .. toctree::
    :maxdepth: 1
