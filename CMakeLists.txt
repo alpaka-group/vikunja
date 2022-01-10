@@ -29,7 +29,7 @@ cmake_dependent_option(VIKUNJA_ENABLE_CXX_TEST "Builds test that checks if the C
 if(ALPAKA_ACC_GPU_CUDA_ENABLE)
   # DEPRECATED: used until alpaka 0.6.x
   set(ALPAKA_CUDA_NVCC_EXPT_EXTENDED_LAMBDA ON)
-  # used with alpaka 0.7.0 and below
+  # used with alpaka 0.7.0 and later
   set(ALPAKA_CUDA_EXPT_EXTENDED_LAMBDA ON)
 endif()
 

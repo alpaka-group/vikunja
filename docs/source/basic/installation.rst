@@ -52,7 +52,7 @@ Once vikunja and alpaka are successfully installed, you can use them in your pro
    alpaka_add_executable(${CMAKE_PROJECT_NAME} main.cpp)
    target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE vikunja::vikunja)
 
-At the cmake configuration time of your project, you need to enable at least on alpaka accelerator to execute a vikunja function on a processor. The accelerators are enabled via the cmake argument``-DALPAKA_ACC_<...>_ENABLE=ON``. All existing accelerators can be found `here <https://alpaka.readthedocs.io/en/latest/advanced/cmake.html>`_.
+At the cmake configuration time of your project, you need to enable at least on alpaka accelerator to execute a vikunja function on a processor. The accelerators are enabled via the cmake argument ``-DALPAKA_ACC_<...>_ENABLE=ON``. All existing accelerators can be found `here <https://alpaka.readthedocs.io/en/latest/advanced/cmake.html>`_.
 
 .. code-block:: bash
 
