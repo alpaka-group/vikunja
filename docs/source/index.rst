@@ -40,5 +40,6 @@ Generally, **follow the manual pages in-order** to get started. Individual chapt
    :caption: Development
 
    development/docs.rst
+   development/styleguide.rst
    development/ci.rst
    development/apireference.rst
