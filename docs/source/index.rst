@@ -39,5 +39,6 @@ Generally, **follow the manual pages in-order** to get started. Individual chapt
    :maxdepth: 1
    :caption: Development
 
-   development/sphinx.rst
+   development/docs.rst
+   development/ci.rst
    development/apireference.rst
