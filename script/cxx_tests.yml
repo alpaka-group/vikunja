@@ -1,14 +1,5 @@
 # the following jobs runs the test "text_cxx"
 
-# test gcc build with manually set C++ 14 version
-gcc_cxx14:
-  variables:
-    VIKUNJA_CXX: "g++-9"
-    VIKUNJA_BOOST_VERSIONS: "1.73.0"
-    VIKUNJA_CXX_TEST: "ON"
-    ALPAKA_CXX_STANDARD: 14
-  extends: .base_gcc
-
 # test gcc build with manually set C++ 17 version
 gcc_cxx17:
   variables:
@@ -27,15 +18,6 @@ gcc_cxx20:
     ALPAKA_CXX_STANDARD: 20
   extends: .base_gcc
 
-# test clang build with manually set C++ 14 version
-clang_cxx14:
-  variables:
-    VIKUNJA_CXX: "clang++-12"
-    VIKUNJA_BOOST_VERSIONS: "1.73.0"
-    VIKUNJA_CXX_TEST: "ON"
-    ALPAKA_CXX_STANDARD: 14
-  extends: .base_clang
-
 # test clang build with manually set C++ 17 version
 clang_cxx17:
   variables:
@@ -53,16 +35,6 @@ clang_cxx20:
     VIKUNJA_CXX_TEST: "ON"
     ALPAKA_CXX_STANDARD: 20
   extends: .base_clang
-  
-# test cuda build with manually set C++ 14 version
-cuda112_cxx14:
-  image: registry.gitlab.com/hzdr/crp/alpaka-group-container/alpaka-ci-cuda112-gcc:1.4
-  variables:
-    VIKUNJA_CXX: "g++-9"
-    VIKUNJA_BOOST_VERSIONS: "1.73.0"
-    VIKUNJA_CXX_TEST: "ON"
-    ALPAKA_CXX_STANDARD: 14
-  extends: .base_cuda
 
 # test cuda build with manually set C++ 17 version
 cuda112_cxx17:
