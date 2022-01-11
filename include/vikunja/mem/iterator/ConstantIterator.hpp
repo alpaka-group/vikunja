@@ -60,7 +60,7 @@ namespace vikunja
                  * @param value The value to initialize the iterator with
                  * @param idx The index for the iterator, default 0
                  */
-                ConstantIterator(const DataType& value, const IdxType& idx = static_cast<IdxType>(0))
+                ConstantIterator(const DataType& value, const IdxType& idx = {})
                     : v(value)
                     , index(idx)
                 {
@@ -87,7 +87,7 @@ namespace vikunja
                  * @brief Postfix increment operator
                  * @note Use prefix increment operator instead if possible to avoid copies
                  */
-                NODISCARD ALPAKA_FN_INLINE ConstantIterator operator++()
+                ALPAKA_FN_INLINE ConstantIterator operator++()
                 {
                     ConstantIterator cpy = *this;
                     ++index;
@@ -97,7 +97,7 @@ namespace vikunja
                 /**
                  * @brief Prefix increment operator
                  */
-                NODISCARD ALPAKA_FN_INLINE ConstantIterator& operator++(int)
+                ALPAKA_FN_INLINE ConstantIterator& operator++(int)
                 {
                     ++index;
                     return *this;
@@ -107,7 +107,7 @@ namespace vikunja
                  * @brief Postfix decrement operator
                  * @note Use prefix decrement operator instead if possible to avoid copies
                  */
-                NODISCARD ALPAKA_FN_INLINE ConstantIterator operator--()
+                ALPAKA_FN_INLINE ConstantIterator operator--()
                 {
                     ConstantIterator cpy = *this;
                     --index;
@@ -117,7 +117,7 @@ namespace vikunja
                 /**
                  * @brief Prefix decrement operator
                  */
-                NODISCARD ALPAKA_FN_INLINE ConstantIterator operator--(int)
+                ALPAKA_FN_INLINE ConstantIterator operator--(int)
                 {
                     --index;
                     return *this;
@@ -126,9 +126,9 @@ namespace vikunja
                 /**
                  * @brief Add an index to this iterator
                  */
-                NODISCARD ALPAKA_FN_INLINE ConstantIterator operator+(const IdxType idx) const
+                friend NODISCARD ALPAKA_FN_INLINE ConstantIterator operator+(ConstantIterator it, IdxType idx) const
                 {
-                    return ConstantIterator(v, index + idx);
+                    return it += idx;
                 }
 
                 /**
@@ -179,7 +179,7 @@ namespace vikunja
 
 #pragma region comparisonoperators
 
-// if spaceship operator is available is being used we can use spaceship operator magic
+// if spaceship operator is available we can use spaceship operator magic
 #ifdef USESPACESHIP
 
                 /**
