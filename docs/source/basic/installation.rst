@@ -3,12 +3,24 @@ Installation
 
 Vikunja builds and installs itself using `CMake <https://cmake.org/>`_. Before you can install and use vikunja, you have to install the only dependency `alpaka <https://github.com/alpaka-group/alpaka>`_. Vikunja supports alpaka from version 0.6 until 0.8. It is recommend to use the latest alpaka version. Alpaka itself has also a single dependency, boost. Read the `alpaka documentation <https://github.com/alpaka-group/alpaka#dependencies>`_ to determine the supported boost version.
 
+**Install alpaka:**
+
 .. code-block:: bash
 
-  # assumed alpaka is installed via `cmake --install .` on a location, where cmake can find it
-  # git clone https://github.com/alpaka-group/vikunja.git
-  cd vikunja
-  mkdir build && cd build
+   # alpaka requires a boost installation, see alpaka documentation
+   git clone --depth 1 --branch 0.8.0 https://github.com/alpaka-group/alpaka.git
+   mkdir alpaka/build
+   cd alpaka/build
+   cmake ..
+   cmake --install .
+
+**Install vikunja:**
+
+.. code-block:: bash
+
+  git clone https://github.com/alpaka-group/vikunja.git
+  mkdir vikunja/build 
+  cd vikunja/build  
   cmake ..
   cmake --build .
   cmake --install .

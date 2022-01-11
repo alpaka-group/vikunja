@@ -12,7 +12,9 @@
      :alt: vikunja logo
 
 
-Vikunja is a performance portable algorithms library defines functions for a variety of purposes that operate on ranges of elements. It supports the execution on multi core CPUs and various GPUs.
+Vikunja is a performance portable algorithms library that defines functions operating on ranges of elements for a variety of purposes . It supports the execution on multi core CPUs and various GPUs.
+
+Vikunja uses `alpaka <https://github.com/alpaka-group/alpaka>`_ to implement platform independent primitives such as ``reduce`` or ``transform``.
 
 
 vikunja - How to Read This Document
