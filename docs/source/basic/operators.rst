@@ -93,7 +93,11 @@ The functor object must fullfil the requirements of ``std::is_trivially_copyable
     }
 
 .. warning:: 
-    Global functions are not allowed as functor objects for the vikunja ``algorithm`` due to a limitation of the CUDA accelerator.
+    Global functions and ``std::function`` are not allowed as functor objects for the vikunja ``algorithm`` due to a limitation of the CUDA accelerator.
+
+    https://nvidia.github.io/libcudacxx/standard_api/utility_library/functional.html
+
+    Other methods, such as function pointers, have not been tested. Due to the different programming models of the aplaka accelerators, it is not possible to say whether they work with all of them or not without extensive testing.
 
 
 Operator Types
