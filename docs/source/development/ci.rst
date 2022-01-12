@@ -8,4 +8,4 @@ For automatic testing we use ``GitLab CI``. ``GitLab CI`` allows us to run runti
 
    Relationship between GitHub.com, GitLab.com and HZDR gitlab-ci runners
 
-To change how the tests are built and executed, modify the code in the `vikunja repository <https://github.com/alpaka-group/vikunja>`_. If the container environment with the dependencies needs to be changed, please open an issue or contribute to `alpaka-group-container repository <https://gitlab.com/hzdr/crp/alpaka-group-container/container_registry>`_.
+To change how the tests are built and executed modify the code in the `vikunja repository <https://github.com/alpaka-group/vikunja>`_. If the container environment with the dependencies needs to be changed please open an issue or contribute to `alpaka-group-container repository <https://gitlab.com/hzdr/crp/alpaka-group-container/container_registry>`_.

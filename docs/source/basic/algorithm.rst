@@ -1,4 +1,4 @@
-Algorithm
+Algorithms
 =========
 
 This page provides an overview of all algorithms implemented in vikunja.

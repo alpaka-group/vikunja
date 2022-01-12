@@ -1,7 +1,7 @@
 Installation
 ============
 
-Vikunja builds and installs itself using `CMake <https://cmake.org/>`_. Before you can install and use vikunja, you have to install the only dependency `alpaka <https://github.com/alpaka-group/alpaka>`_. Vikunja supports alpaka from version 0.6 until 0.8. It is recommend to use the latest alpaka version. Alpaka itself has also a single dependency, boost. Read the `alpaka documentation <https://github.com/alpaka-group/alpaka#dependencies>`_ to determine the supported boost version.
+Vikunja builds and installs itself using `CMake <https://cmake.org/>`_. Before you can install and use vikunja, you have to install `alpaka <https://github.com/alpaka-group/alpaka>`_ and its dependencies. Vikunja supports alpaka from version 0.6 to 0.8. It is recommended to use the latest alpaka version. Alpaka itself has also a single non-optional dependency, Boost, as well as optional dependencies for the various back-ends. Read the `alpaka documentation <https://github.com/alpaka-group/alpaka#dependencies>`_ to determine the dependencies for your platform.
 
 **Install alpaka:**
 
@@ -52,7 +52,7 @@ Enable and run an example:
 Use vikunja in a CMake project via ``find_package``
 ---------------------------------------------------
 
-Once vikunja and alpaka are successfully installed, you can use them in your project via the cmake function ``find_packge``.
+Once vikunja and alpaka are successfully installed, you can use them in your project via the CMake function ``find_package``.
 
 .. code-block:: cmake
 
@@ -64,7 +64,7 @@ Once vikunja and alpaka are successfully installed, you can use them in your pro
    alpaka_add_executable(${CMAKE_PROJECT_NAME} main.cpp)
    target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE vikunja::vikunja)
 
-At the cmake configuration time of your project, you need to enable at least on alpaka accelerator to execute a vikunja function on a processor. The accelerators are enabled via the cmake argument ``-DALPAKA_ACC_<...>_ENABLE=ON``. All existing accelerators can be found `here <https://alpaka.readthedocs.io/en/latest/advanced/cmake.html>`_.
+During configuration you need to enable at least one alpaka accelerator to execute a vikunja function on a processor. The accelerators are enabled by the CMake argument ``-DALPAKA_ACC_<...>_ENABLE=ON``. All existing accelerators can be found `here <https://alpaka.readthedocs.io/en/latest/advanced/cmake.html>`_.
 
 .. code-block:: bash
 
@@ -74,12 +74,12 @@ At the cmake configuration time of your project, you need to enable at least on 
    cmake .. -DALPAKA_ACC_CPU_B_SEQ_T_SEQ_ENABLE=ON -DALPAKA_ACC_GPU_CUDA_ENABLE=ON
    cmake --build .
 
-By default ``find_package(vikunja)`` runs ``find_package(alpaka)``, if the ``alpaka::alpaka`` target is not already defined.
+By default ``find_package(vikunja)`` runs ``find_package(alpaka)`` if the ``alpaka::alpaka`` target is not already defined.
 
 Use vikunja in a CMake project via ``add_subdirectory``
 -------------------------------------------------------
 
-Vikunja also provides cmake integration via ``add_subdirectory``. The `add_subdirectory <https://cmake.org/cmake/help/latest/command/add_subdirectory.html>`_ approach does not require vikunja or alpaka to be installed and allows for easy deployment of a custom vikunja version together with your project.
+Vikunja also provides CMake integration via ``add_subdirectory``. The `add_subdirectory <https://cmake.org/cmake/help/latest/command/add_subdirectory.html>`_ approach does not require vikunja or alpaka to be installed and allows for easy deployment of a custom vikunja version together with your project.
 
 .. code-block:: cmake
 

@@ -1,7 +1,7 @@
 Documentation
 =============
 
-Vikunja uses two tools to create documentation: `Sphinx Doc <https://www.sphinx-doc.org/en/master/>`_ and `Doxygen <https://www.doxygen.nl/index.html>`_. Sphinx is used to write this general documentation and Doxygen enables the documentation of the API.
+Vikunja uses two tools to create documentation: `Sphinx Doc <https://www.sphinx-doc.org/en/master/>`_ and `Doxygen <https://www.doxygen.nl/index.html>`_. Sphinx is used to write this general documentation and Doxygen generates the API documentation.
 
 Building
 ++++++++

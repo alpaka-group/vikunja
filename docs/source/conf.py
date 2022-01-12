@@ -63,12 +63,12 @@ if on_rtd:
 else:
     rel_sphinx_build_folder_path = '../build'
 
-# path where doxygen generate html files
+# path where doxygen places the generated html files
 doxygen_build_dir = '../build/doxygen/html'
-# build folder of sphinx -> conntet is online available
+# build folder of sphinx -> content is online available
 doxygen_dst = os.path.join(rel_sphinx_build_folder_path, 'html/doxygen')
 
-# create build folder, if not already exists
+# create build folder if it does not exist
 if not os.path.exists(doxygen_build_dir):
     os.makedirs(doxygen_build_dir)
 

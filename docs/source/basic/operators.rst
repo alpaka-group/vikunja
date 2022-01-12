@@ -93,13 +93,13 @@ The functor object must fullfil the requirements of ``std::is_trivially_copyable
     }
 
 .. warning:: 
-    Global functions are not allowed as functor objects for the vikunja ``algorithm`` due to a limitation of the Nvidia CUDA accelerator.
+    Global functions are not allowed as functor objects for the vikunja ``algorithm`` due to a limitation of the CUDA accelerator.
 
 
 Operator Types
 ++++++++++++++
 
-Depending on the ``algorithm``, the ``operator`` requires a different number of input arguments. Currently, the vikunja ``algorithm`` requires a unary (one data input) or binary (two data inputs) ``operator``. A vikunja-specific property of the ``operator`` is that they can have an additional ``acc`` argument, which is required for some alpaka-specific functions.
+Depending on the ``algorithm``, the ``operator`` requires a different number of input arguments. Currently, the vikunja ``algorithm`` requires a unary (one data input) or binary (two data inputs) ``operator``. A vikunja-specific property of the ``operator`` is that they can have an additional ``acc`` argument, which is required for any device-specific functions (such as math functions).
 
 .. code-block:: c++
 

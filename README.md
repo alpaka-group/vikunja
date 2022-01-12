@@ -9,9 +9,9 @@
 
 ![vikunja](docs/source/logo/vikunja_logo.png)
 
-Vikunja is a performance portable algorithms library that defines functions operating on ranges of elements for a variety of purposes . It supports the execution on multi core CPUs and various GPUs.
+Vikunja is a performance portable algorithm library that defines functions operating on ranges of elements for a variety of purposes . It supports the execution on multi-core CPUs and various GPUs.
 
-Vikunja uses [alpaka](https://github.com/alpaka-group/alpaka) to implement platform independent primitives such as `reduce` or `transform`. 
+Vikunja uses [alpaka](https://github.com/alpaka-group/alpaka) to implement platform-independent primitives such as `reduce` or `transform`. 
 
 # Installation
 ## Install Alpaka
@@ -26,7 +26,7 @@ cmake ..
 cmake --install .
 ```
 
-For more information, see the [alpaka github](https://github.com/alpaka-group/alpaka) repository. It is recommenced to use the latest release version. Vikunja supports `alpaka` `0.6` up to `0.8`.
+For more information see the [alpaka GitHub](https://github.com/alpaka-group/alpaka) repository. It is recommended to use the latest release version. Vikunja supports `alpaka` from version `0.6` up to version `0.8`.
 
 ## Install Vikunja
 
@@ -38,7 +38,7 @@ cmake ..
 cmake --install .
 ```
 
-# Build and Run tests
+# Build and Run Tests
 
 ```bash
 cd vikunja/build

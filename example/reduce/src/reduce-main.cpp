@@ -17,8 +17,8 @@
 int main()
 {
     // Define the accelerator.
-    // The accelerates decides on which processor type the vikunja algorithm will be executed.
-    // The accelerators must be enabled in the CMake build to be available.
+    // The accelerator decides on which processor type the vikunja algorithm will be executed.
+    // The accelerators must be enabled during the CMake configuration to be available.
     //
     // It is possible to choose from a set of accelerators:
     // - AccGpuCudaRt
@@ -34,35 +34,36 @@ int main()
 
     // Create a device that executes the algorithm.
     // For example, it can be a CPU or GPU Nr. 0 or 1 in a multi-GPU system.
-    auto const devAcc(alpaka::getDevByIdx<Acc>(0u));
+    auto const devAcc = alpaka::getDevByIdx<Acc>(0u);
     // The host device is required if the devAcc does not use the same memory as the host.
     // For example, if the host is a CPU and the device is a GPU.
     auto const devHost(alpaka::getDevByIdx<alpaka::PltfCpu>(0u));
 
-    // All algorithms must be queued so that they are executed in the correct order.
+    // All algorithms must be enqueued so that they are executed in the correct order.
     using QueueAcc = alpaka::Queue<Acc, alpaka::Blocking>;
     QueueAcc queueAcc(devAcc);
 
 
-    // Dimension of the problem.
+    // Dimension of the problem. 1D in this case (inherited from the Accelerator).
     using Dim = alpaka::Dim<Acc>;
     // The index type needs to fit the problem size.
     // A smaller index type can reduce the execution time.
+    // In this case the index type is inherited from the Accelerator: std::uint64_t.
     using Idx = alpaka::Idx<Acc>;
     // Type of the user data.
-    using Data = uint64_t;
+    using Data = std::uint64_t;
 
-    // The extends stores the problem size.
+    // The extent stores the problem size.
     using Vec = alpaka::Vec<Dim, Idx>;
     Vec extent(Vec::all(static_cast<Idx>(1)));
     extent[0] = static_cast<Idx>(6400);
 
 
-    // Allocates memory for the device.
+    // Allocate memory for the device.
     auto deviceMem(alpaka::allocBuf<Data, Idx>(devAcc, extent));
     // The memory is accessed via a pointer.
     Data* deviceNativePtr = alpaka::getPtrNative(deviceMem);
-    // Allocates memory for the host.
+    // Allocate memory for the host.
     auto hostMem(alpaka::allocBuf<Data, Idx>(devHost, extent));
     Data* hostNativePtr = alpaka::getPtrNative(hostMem);
 
@@ -81,7 +82,7 @@ int main()
     Idx reduceResult = vikunja::reduce::deviceReduce<Acc>(
         devAcc, // The device that executes the algorithm.
         devHost, // The host is necessary to allocate memory for the result.
-        queueAcc, // Queue in which the algorithm enqueues.
+        queueAcc, // Queue in which the algorithm is enqueued.
         extent.prod(), // Problem size
         deviceNativePtr, // Input memory
         sum // Operator
@@ -95,7 +96,7 @@ int main()
     Idx transformReduceResult = vikunja::reduce::deviceTransformReduce<Acc>(
         devAcc, // The device that executes the algorithm.
         devHost, // The host is necessary to allocate memory for the result.
-        queueAcc, // Queue in which the algorithm enqueues.
+        queueAcc, // Queue in which the algorithm is enqueued.
         extent.prod(), // Problem size
         deviceNativePtr, // Input memory
         doubleNum, // transformation operator
@@ -114,7 +115,7 @@ int main()
     {
         std::cout << "Reduce was not successful!\n"
                   << "expected result: " << expectedReduceResult << "\n"
-                  << "real result: " << reduceResult << std::endl;
+                  << "actual result: " << reduceResult << std::endl;
     }
 
     // Verify the transform-reduction result.
@@ -128,7 +129,7 @@ int main()
     {
         std::cout << "TransformReduce was not successful!\n"
                   << "expected result: " << expectedTransformReduceResult << "\n"
-                  << "real result: " << transformReduceResult << std::endl;
+                  << "actual result: " << transformReduceResult << std::endl;
     }
 
     return 0;
