@@ -25,3 +25,5 @@
 # igonre build and install folder
 /build*
 /install*
+
+.vscode

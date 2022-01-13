@@ -16,88 +16,121 @@
 
 int main()
 {
-    // Define the accelerator here. Must be one of the enabled accelerators.
-    using TAcc = alpaka::AccCpuSerial<alpaka::DimInt<3u>, std::uint64_t>;
+    // Define the accelerator.
+    // The accelerator decides on which processor type the vikunja algorithm will be executed.
+    // The accelerators must be enabled during the CMake configuration to be available.
+    //
+    // It is possible to choose from a set of accelerators:
+    // - AccGpuCudaRt
+    // - AccGpuHipRt
+    // - AccCpuThreads
+    // - AccCpuFibers
+    // - AccCpuOmp2Threads
+    // - AccCpuOmp2Blocks
+    // - AccOmp5
+    // - AccCpuTbbBlocks
+    // - AccCpuSerial
+    using Acc = alpaka::AccCpuSerial<alpaka::DimInt<1u>, std::uint64_t>;
 
-    // Type of the data that will be reduced
-    using TRed = uint64_t;
+    // Create a device that executes the algorithm.
+    // For example, it can be a CPU or GPU Nr. 0 or 1 in a multi-GPU system.
+    auto const devAcc = alpaka::getDevByIdx<Acc>(0u);
+    // The host device is required if the devAcc does not use the same memory as the host.
+    // For example, if the host is a CPU and the device is a GPU.
+    auto const devHost(alpaka::getDevByIdx<alpaka::PltfCpu>(0u));
 
-    // Alpaka index type
-    using Idx = alpaka::Idx<TAcc>;
-    // Alpaka dimension type
-    using Dim = alpaka::Dim<TAcc>;
-    // Type of the extent vector
-    using Vec = alpaka::Vec<Dim, Idx>;
-    // Find the index of the CUDA blockIdx.x component. Alpaka somehow reverses
-    // these, i.e. the x component of cuda is always the last value in the vector
-    constexpr Idx xIndex = Dim::value - 1u;
-    // number of elements to reduce
-    const Idx n = static_cast<Idx>(6400);
-    // create extent
-    Vec extent(Vec::all(static_cast<Idx>(1)));
-    extent[xIndex] = n;
-
-    // define device, platform, and queue types.
-    using DevAcc = alpaka::Dev<TAcc>;
-    using PltfAcc = alpaka::Pltf<DevAcc>;
-    // using QueueAcc = alpaka::test::queue::DefaultQueue<alpaka::Dev<TAcc>>;
-    using PltfHost = alpaka::PltfCpu;
-    using DevHost = alpaka::Dev<PltfHost>;
-    using QueueAcc = alpaka::Queue<TAcc, alpaka::Blocking>;
-    using QueueHost = alpaka::QueueCpuBlocking;
-
-    // Get the host device.
-    DevHost devHost(alpaka::getDevByIdx<PltfHost>(0u));
-    // Get a queue on the host device.
-    QueueHost queueHost(devHost);
-    // Select a device to execute on.
-    DevAcc devAcc(alpaka::getDevByIdx<PltfAcc>(0u));
-    // Get a queue on the accelerator device.
+    // All algorithms must be enqueued so that they are executed in the correct order.
+    using QueueAcc = alpaka::Queue<Acc, alpaka::Blocking>;
     QueueAcc queueAcc(devAcc);
 
-    // allocate memory both on host and device.
-    auto deviceMem(alpaka::allocBuf<TRed, Idx>(devAcc, extent));
-    auto hostMem(alpaka::allocBuf<TRed, Idx>(devHost, extent));
-    // Fill memory on host with numbers from 0...n-1.
-    TRed* hostNative = alpaka::getPtrNative(hostMem);
-    for(Idx i = 0; i < n; ++i)
+
+    // Dimension of the problem. 1D in this case (inherited from the Accelerator).
+    using Dim = alpaka::Dim<Acc>;
+    // The index type needs to fit the problem size.
+    // A smaller index type can reduce the execution time.
+    // In this case the index type is inherited from the Accelerator: std::uint64_t.
+    using Idx = alpaka::Idx<Acc>;
+    // Type of the user data.
+    using Data = std::uint64_t;
+
+    // The extent stores the problem size.
+    using Vec = alpaka::Vec<Dim, Idx>;
+    Vec extent(Vec::all(static_cast<Idx>(1)));
+    extent[0] = static_cast<Idx>(6400);
+
+
+    // Allocate memory for the device.
+    auto deviceMem(alpaka::allocBuf<Data, Idx>(devAcc, extent));
+    // The memory is accessed via a pointer.
+    Data* deviceNativePtr = alpaka::getPtrNative(deviceMem);
+    // Allocate memory for the host.
+    auto hostMem(alpaka::allocBuf<Data, Idx>(devHost, extent));
+    Data* hostNativePtr = alpaka::getPtrNative(hostMem);
+
+    // Initialize the host memory with 1 to extent.prod()+1 .
+    for(Idx i = 0; i < extent.prod(); ++i)
     {
-        // std::cout << i << "\n";
-        hostNative[i] = static_cast<TRed>(i + 1);
+        hostNativePtr[i] = static_cast<Data>(i + 1);
     }
-    // Copy to accelerator.
+
+    // Copy data to the device.
     alpaka::memcpy(queueAcc, deviceMem, hostMem, extent);
-    // Use Lambda function for reduction
-    auto sum = [] ALPAKA_FN_HOST_ACC(TRed const i, TRed const j) { return i + j; };
-    auto doubleNum = [] ALPAKA_FN_HOST_ACC(TRed const i) { return 2 * i; };
-    std::cout << "Testing accelerator: " << alpaka::getAccName<TAcc>() << " with size: " << n << "\n";
 
-    // REDUCE CALL:
-    // Takes the arguments: accelerator device, host device, accelerator queue, size of data, pointer-like to memory,
-    // reduce lambda.
-    Idx reduceResult
-        = vikunja::reduce::deviceReduce<TAcc>(devAcc, devHost, queueAcc, n, alpaka::getPtrNative(deviceMem), sum);
+    // Use a lambda function to define the reduction function.
+    auto sum = [] ALPAKA_FN_HOST_ACC(Data const i, Data const j) { return i + j; };
 
-    // check reduce result
-    auto expectedResult = (n * (n + 1) / 2);
-    std::cout << "Expected reduce result: " << expectedResult << ", real result: " << reduceResult << "\n";
+    Idx reduceResult = vikunja::reduce::deviceReduce<Acc>(
+        devAcc, // The device that executes the algorithm.
+        devHost, // The host is necessary to allocate memory for the result.
+        queueAcc, // Queue in which the algorithm is enqueued.
+        extent.prod(), // Problem size
+        deviceNativePtr, // Input memory
+        sum // Operator
+    );
 
-    // TRANSFORM_REDUCE CALL:
-    // Takes the arguments: accelerator device, host device, accelerator queue, size of data, pointer-like to memory,
-    // transform lambda, reduce lambda.
-    Idx transformReduceResult = vikunja::reduce::deviceTransformReduce<TAcc>(
-        devAcc,
-        devHost,
-        queueAcc,
-        n,
-        alpaka::getPtrNative(deviceMem),
-        doubleNum,
-        sum);
 
-    // check transform result
-    auto expectedTransformReduce = expectedResult * 2;
-    std::cout << "Expected transform_reduce result: " << expectedTransformReduce
-              << ", real result: " << transformReduceResult << "\n";
+    // Use a lambda function to define the transformation function.
+    auto doubleNum = [] ALPAKA_FN_HOST_ACC(Data const i) { return 2 * i; };
+
+
+    Idx transformReduceResult = vikunja::reduce::deviceTransformReduce<Acc>(
+        devAcc, // The device that executes the algorithm.
+        devHost, // The host is necessary to allocate memory for the result.
+        queueAcc, // Queue in which the algorithm is enqueued.
+        extent.prod(), // Problem size
+        deviceNativePtr, // Input memory
+        doubleNum, // transformation operator
+        sum // reduction operator
+    );
+
+    std::cout << "Testing accelerator: " << alpaka::getAccName<Acc>() << " with size: " << extent.prod() << "\n";
+
+    // Verify the reduction result.
+    auto expectedReduceResult = (extent.prod() * (extent.prod() + 1) / 2);
+    if(expectedReduceResult == reduceResult)
+    {
+        std::cout << "Reduce was successful!\n";
+    }
+    else
+    {
+        std::cout << "Reduce was not successful!\n"
+                  << "expected result: " << expectedReduceResult << "\n"
+                  << "actual result: " << reduceResult << std::endl;
+    }
+
+    // Verify the transform-reduction result.
+    auto expectedTransformReduceResult = expectedReduceResult * 2;
+
+    if(expectedTransformReduceResult == transformReduceResult)
+    {
+        std::cout << "TransformReduce was successful!\n";
+    }
+    else
+    {
+        std::cout << "TransformReduce was not successful!\n"
+                  << "expected result: " << expectedTransformReduceResult << "\n"
+                  << "actual result: " << transformReduceResult << std::endl;
+    }
 
     return 0;
 }
