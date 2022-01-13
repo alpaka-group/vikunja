@@ -13,7 +13,7 @@ project(vikunja
   HOMEPAGE_URL "https://github.com/alpaka-group/vikunja"
   LANGUAGES    CXX)
 
-set(ALPAKA_CXX_STANDARD "14" CACHE STRING "C++ standard version")
+set(ALPAKA_CXX_STANDARD "17" CACHE STRING "C++ standard version")
 
 include(CMakeDependentOption)
 include(FetchContent)
@@ -49,6 +49,9 @@ if(NOT TARGET alpaka::alpaka)
   endif()
 endif()
 
+# Override poperty, as alpaka <= 0.8.0 supports C++ 14 and vikunja does not.
+set_property(CACHE ALPAKA_CXX_STANDARD PROPERTY STRINGS "17;20")
+
 add_library(${PROJECT_NAME} INTERFACE)
 target_include_directories(${PROJECT_NAME}
   INTERFACE
@@ -56,7 +59,7 @@ target_include_directories(${PROJECT_NAME}
   $<INSTALL_INTERFACE:include>)
 add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
-#The target vikunja::internalvikunja is for internal use only, such as the tests or examples.
+# The target vikunja::internalvikunja is for internal use only, such as the tests or examples.
 # For external projects that use vikunja, the target vikunja::vikunja should be used.
 
 # The internal target links alpaka to make it easier to use vikunja, but the target cannot be

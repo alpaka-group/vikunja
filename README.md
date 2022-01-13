@@ -3,7 +3,7 @@
 [![Build Status](https://gitlab.com/hzdr/crp/vikunja/badges/master/pipeline.svg)](https://gitlab.com/hzdr/crp/vikunja/-/commits/master/)
 [![Documentation Status](https://readthedocs.org/projects/vikunja/badge/?version=latest)](https://vikunja.readthedocs.io)
 [![Doxygen](https://img.shields.io/badge/API-Doxygen-blue.svg)](https://vikunja.readthedocs.io/en/latest/doxygen/index.html)
-[![Language](https://img.shields.io/badge/language-C%2B%2B14-orange.svg)](https://isocpp.org/)
+[![Language](https://img.shields.io/badge/language-C%2B%2B17-orange.svg)](https://isocpp.org/)
 [![Platforms](https://img.shields.io/badge/platform-linux-lightgrey.svg)](https://github.com/alpaka-group/vikunja)
 [![License](https://img.shields.io/badge/license-MPL--2.0-blue.svg)](https://www.mozilla.org/en-US/MPL/2.0/)
 

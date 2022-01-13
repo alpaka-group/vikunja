@@ -16,23 +16,6 @@
 #include <utility>
 
 
-namespace vikunjaStd
-{
-#ifdef __cpp_lib_is_invocable
-    using std::is_invocable;
-#else
-    // define std::is_invocable for c++14 and below
-    template<typename F, typename... Args>
-    struct is_invocable
-        : std::is_constructible<
-              std::function<void(Args...)>,
-              std::reference_wrapper<typename std::remove_reference<F>::type>>
-    {
-    };
-
-#endif
-} // namespace vikunjaStd
-
 namespace vikunja
 {
     /**
@@ -57,7 +40,7 @@ namespace vikunja
 
         template<typename TFunc, typename TData>
         using enable_if_UnaryOp_without_TAcc
-            = std::enable_if_t<vikunjaStd::is_invocable<decltype(std::declval<TFunc>()), TData>::value>;
+            = std::enable_if_t<std::is_invocable<decltype(std::declval<TFunc>()), TData>::value>;
 
         /**
          * Operator trait for unary functors.
@@ -87,7 +70,7 @@ namespace vikunja
 
         template<typename TFunc, typename TAcc, typename TData>
         using enable_if_UnaryOp_with_TAcc
-            = std::enable_if_t<vikunjaStd::is_invocable<decltype(std::declval<TFunc>()), TAcc, TData>::value>;
+            = std::enable_if_t<std::is_invocable<decltype(std::declval<TFunc>()), TAcc, TData>::value>;
 
         /**
          * Operator trait for unary functors.
@@ -130,7 +113,7 @@ namespace vikunja
 
         template<typename TFunc, typename TData1, typename TData2>
         using enable_if_BinaryOp_without_TAcc
-            = std::enable_if_t<vikunjaStd::is_invocable<decltype(std::declval<TFunc>()), TData1, TData2>::value>;
+            = std::enable_if_t<std::is_invocable<decltype(std::declval<TFunc>()), TData1, TData2>::value>;
 
         /**
          * Operator trait for binary functors.
@@ -163,7 +146,7 @@ namespace vikunja
 
         template<typename TFunc, typename TAcc, typename TData1, typename TData2>
         using enable_if_BinaryOp_with_TAcc
-            = std::enable_if_t<vikunjaStd::is_invocable<decltype(std::declval<TFunc>()), TAcc, TData1, TData2>::value>;
+            = std::enable_if_t<std::is_invocable<decltype(std::declval<TFunc>()), TAcc, TData1, TData2>::value>;
 
         /**
          * Operator trait for binary functors.
