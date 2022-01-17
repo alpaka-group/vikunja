@@ -26,7 +26,8 @@ TEMPLATE_TEST_CASE("Test Constant Iterator", "", int, double, uint64_t)
         ConstantIterator<Type> a(1);
         THEN("its index is zero")
         {
-            REQUIRE(a + a == a);
+            REQUIRE(a == ConstantIterator<Type>(1, 0));
+            REQUIRE(a + 0 == a);
         }
     }
 
@@ -38,6 +39,7 @@ TEMPLATE_TEST_CASE("Test Constant Iterator", "", int, double, uint64_t)
 
         THEN("the iterator has correct values set")
         {
+            REQUIRE(a + 0 == a);
             REQUIRE(*a == value);
             REQUIRE(a[5] == value);
             REQUIRE(a[-5] == value);
@@ -74,8 +76,8 @@ TEMPLATE_TEST_CASE("Test Constant Iterator", "", int, double, uint64_t)
 
             THEN("arithmetic operators on the iterators work correctly")
             {
-                auto c = a + b;
-                REQUIRE(c - a == b);
+                auto c = a + idx + offset;
+                REQUIRE(c - a == idx + offset);
                 REQUIRE(*c == value);
 
                 auto d = b - offset;

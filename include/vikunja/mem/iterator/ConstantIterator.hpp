@@ -13,17 +13,8 @@
 
 #include <iterator>
 
-// check for spaceship support
-#if defined __has_include
-#    if __has_include(<version>)
-#        include <version>
-#    endif
-#    if __has_include(<compare>)
-#        include <compare>
-#        if defined(__cpp_lib_three_way_comparison) && defined(__cpp_impl_three_way_comparison)
-#            define USESPACESHIP
-#        endif
-#    endif
+#if defined(__cpp_impl_three_way_comparison)
+#    define USESPACESHIP
 #endif
 
 #if __has_cpp_attribute(nodiscard)
@@ -60,9 +51,7 @@ namespace vikunja
                  * @param value The value to initialize the iterator with
                  * @param idx The index for the iterator, default 0
                  */
-                ConstantIterator(const DataType& value, const IdxType& idx = {})
-                    : v(value)
-                    , index(idx)
+                ConstantIterator(const DataType& value, const IdxType& idx = {}) : v(value), index(idx)
                 {
                 }
 
@@ -126,139 +115,107 @@ namespace vikunja
                 /**
                  * @brief Add an index to this iterator
                  */
-                friend NODISCARD ALPAKA_FN_INLINE ConstantIterator operator+(ConstantIterator it, IdxType idx) const
+                NODISCARD friend ALPAKA_FN_INLINE ConstantIterator operator+(ConstantIterator it, IdxType idx)
                 {
                     return it += idx;
                 }
 
                 /**
-                 * @brief Add a second constant iterator of the same value to this one
-                 */
-                NODISCARD ALPAKA_FN_INLINE ConstantIterator operator+(const ConstantIterator& other) const
-                {
-                    assert(v == other.v && "Can't add constant iterators of different values!");
-                    return ConstantIterator(v, index + other.index);
-                }
-
-                /**
                  * @brief Subtract an index from this iterator
                  */
-                NODISCARD ALPAKA_FN_INLINE ConstantIterator operator-(const IdxType idx) const
+                NODISCARD friend ALPAKA_FN_INLINE ConstantIterator operator-(ConstantIterator it, const IdxType idx)
                 {
-                    return ConstantIterator(v, index - idx);
+                    return it -= idx;
                 }
 
                 /**
                  * @brief Subtract a second constant iterator of the same value from this one
                  */
-                NODISCARD ALPAKA_FN_INLINE ConstantIterator operator-(const ConstantIterator& other) const
+                NODISCARD friend ALPAKA_FN_INLINE IdxType operator-(ConstantIterator it, const ConstantIterator& other)
                 {
-                    assert(v == other.v && "Can't subtract constant iterators of different values!");
-                    return ConstantIterator(v, index - other.index);
+                    assert(it.v == other.v && "Can't subtract constant iterators of different values!");
+                    return it.index - other.index;
                 }
 
                 /**
                  * @brief Add an index to this iterator
                  */
-                NODISCARD ALPAKA_FN_INLINE ConstantIterator& operator+=(const IdxType idx)
+                friend ALPAKA_FN_INLINE ConstantIterator& operator+=(ConstantIterator& it, const IdxType idx)
                 {
-                    index += idx;
-                    return *this;
+                    it.index += idx;
+                    return it;
                 }
 
                 /**
                  * @brief Subtract an index from this iterator
                  */
-                NODISCARD ALPAKA_FN_INLINE ConstantIterator& operator-=(const IdxType idx)
+                friend ALPAKA_FN_INLINE ConstantIterator& operator-=(ConstantIterator& it, const IdxType idx)
                 {
-                    index -= idx;
-                    return *this;
+                    it.index -= idx;
+                    return it;
                 }
 
 #pragma endregion arithmeticoperators
 
 #pragma region comparisonoperators
 
-// if spaceship operator is available we can use spaceship operator magic
 #ifdef USESPACESHIP
 
-                /**
-                 * @brief Spaceship operator for comparisons
-                 */
                 NODISCARD ALPAKA_FN_INLINE auto operator<=>(const ConstantIterator& other) const noexcept = default;
 
-// if cpp20 *isn't* defined we get to write 70 lines of boilerplate
 #else
 
-                /**
-                 * @brief Equality comparison, returns true if the iterators are the same
-                 */
-                NODISCARD ALPAKA_FN_INLINE bool operator==(const ConstantIterator& other) const noexcept
+                NODISCARD friend ALPAKA_FN_INLINE bool operator==(
+                    const ConstantIterator& it,
+                    const ConstantIterator& other) noexcept
                 {
-                    return v == other.v && index == other.index;
+                    return it.v == other.v && it.index == other.index;
                 }
 
-                /**
-                 * @brief Inequality comparison, negated equality operator
-                 */
-                NODISCARD ALPAKA_FN_INLINE bool operator!=(const ConstantIterator& other) const noexcept
+                NODISCARD friend ALPAKA_FN_INLINE bool operator!=(
+                    const ConstantIterator& it,
+                    const ConstantIterator& other) noexcept
                 {
-                    return !operator==(other);
+                    return !operator==(it, other);
                 }
 
-                /**
-                 * @brief Less than comparison, value is checked first, then index
-                 */
-                NODISCARD ALPAKA_FN_INLINE bool operator<(const ConstantIterator& other) const noexcept
+                NODISCARD friend ALPAKA_FN_INLINE bool operator<(
+                    const ConstantIterator& it,
+                    const ConstantIterator& other) noexcept
                 {
-                    if(v < other.v)
+                    if(it.v < other.v)
                         return true;
-                    if(v > other.v)
+                    if(it.v > other.v)
                         return false;
-                    return index < other.index;
+                    return it.index < other.index;
                 }
 
-                /**
-                 * @brief Greater than comparison, value is checked first, then index
-                 */
-                NODISCARD ALPAKA_FN_INLINE bool operator>(const ConstantIterator& other) const noexcept
+                NODISCARD friend ALPAKA_FN_INLINE bool operator>(
+                    const ConstantIterator& it,
+                    const ConstantIterator& other) noexcept
                 {
-                    if(v > other.v)
-                        return true;
-                    if(v < other.v)
-                        return false;
-                    return index > other.index;
+                    return operator<(other, it);
                 }
 
-                /**
-                 * @brief Less than or equal comparison, value is checked first, then index
-                 */
-                NODISCARD ALPAKA_FN_INLINE bool operator<=(const ConstantIterator& other) const noexcept
+                NODISCARD friend ALPAKA_FN_INLINE bool operator<=(
+                    const ConstantIterator& it,
+                    const ConstantIterator& other) noexcept
                 {
-                    if(v < other.v)
-                        return true;
-                    if(v > other.v)
-                        return false;
-                    return index <= other.index;
+                    return operator<(it, other) || operator==(it, other);
                 }
 
-                /**
-                 * @brief Greater than or equal comparison, value is checked first, then index
-                 */
-                NODISCARD ALPAKA_FN_INLINE bool operator>=(const ConstantIterator& other) const noexcept
+                NODISCARD friend ALPAKA_FN_INLINE bool operator>=(
+                    const ConstantIterator& it,
+                    const ConstantIterator& other) noexcept
                 {
-                    if(v > other.v)
-                        return true;
-                    if(v < other.v)
-                        return false;
-                    return index >= other.index;
+                    return operator<=(other, it);
                 }
 #endif
 
 #pragma endregion comparisonoperators
 
             private:
-                const DataType v;
+                DataType v;
                 IdxType index;
             };
 
