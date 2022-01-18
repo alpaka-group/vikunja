@@ -7,19 +7,22 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <vikunja/reduce/reduce.hpp>
 #include <vikunja/mem/iterator/ConstantIterator.hpp>
+#include <vikunja/reduce/reduce.hpp>
 
 #include <alpaka/alpaka.hpp>
 
 #include <chrono>
 #include <iostream>
 
-
 int main()
 {
-    // Define the accelerator here. Must be one of the enabled accelerators.
+// Define the accelerator here. Must be one of the enabled accelerators.
+#ifdef ALPAKA_ACC_GPU_CUDA_ENABLED
     using TAcc = alpaka::AccGpuCudaRt<alpaka::DimInt<3u>, std::uint64_t>;
+#else
+    using TAcc = alpaka::AccCpuSerial<alpaka::DimInt<3u>, std::uint64_t>;
+#endif
 
     // Type of the data that will be reduced
     using TRed = uint64_t;
@@ -81,34 +84,24 @@ int main()
               << "[[ Testing without constant iterator ]]\n";
 
     // Use chrono library to measure time;
-    using std::chrono::high_resolution_clock;
     using std::chrono::duration;
- 
+    using std::chrono::high_resolution_clock;
+
     // REDUCE CALL:
     // Takes the arguments: accelerator device, host device, accelerator queue, size of data, pointer-like to memory,
     // reduce lambda.
     // Run this once as a warm-up
-    Idx reduceResult = vikunja::reduce::deviceReduce<TAcc>(
-        devAcc, 
-        devHost, 
-        queueAcc, 
-        n, 
-        alpaka::getPtrNative(deviceMem),
-        sum);
+    TRed reduceResult
+        = vikunja::reduce::deviceReduce<TAcc>(devAcc, devHost, queueAcc, n, alpaka::getPtrNative(deviceMem), sum);
 
     // Start timer
     auto timerStart = high_resolution_clock::now();
 
-    for (int i = 0; i < benchmarkIterations; ++i)
+    for(int i = 0; i < benchmarkIterations; ++i)
     {
         // REDUCE CALL:
-        reduceResult = vikunja::reduce::deviceReduce<TAcc>(
-            devAcc, 
-            devHost, 
-            queueAcc, 
-            n, 
-            alpaka::getPtrNative(deviceMem),
-            sum);
+        reduceResult
+            = vikunja::reduce::deviceReduce<TAcc>(devAcc, devHost, queueAcc, n, alpaka::getPtrNative(deviceMem), sum);
     }
 
     // End timer and count duration
@@ -117,15 +110,14 @@ int main()
 
     // check reduce result
     auto expectedResult = n * constantIterVal;
-    std::cout << "Expected reduce result: " << expectedResult
-              << ", real result: " << reduceResult << "\n"
+    std::cout << "Expected reduce result: " << expectedResult << ", real result: " << reduceResult << "\n"
               << "Duration: " << msDouble.count() / benchmarkIterations << "ms\n";
 
     // TRANSFORM_REDUCE CALL:
     // Takes the arguments: accelerator device, host device, accelerator queue, size of data, pointer-like to memory,
     // transform lambda, reduce lambda.
     // Run this once as a warm-up
-    Idx transformReduceResult = vikunja::reduce::deviceTransformReduce<TAcc>(
+    TRed transformReduceResult = vikunja::reduce::deviceTransformReduce<TAcc>(
         devAcc,
         devHost,
         queueAcc,
@@ -137,7 +129,7 @@ int main()
     // Start timer
     timerStart = high_resolution_clock::now();
 
-    for (int i = 0; i < benchmarkIterations; ++i)
+    for(int i = 0; i < benchmarkIterations; ++i)
     {
         // TRANSFORM_REDUCE CALL:
         transformReduceResult = vikunja::reduce::deviceTransformReduce<TAcc>(
@@ -161,33 +153,21 @@ int main()
               << "Duration: " << msDouble.count() / benchmarkIterations << "ms\n"
               << "-----\n"
               << "[[ Testing constant iterator with value: " << constantIterVal << " ]]\n";
-    
+
     // Create the constant iterator
     vikunja::mem::iterator::ConstantIterator<TRed> constantIter(constantIterVal);
 
     // REDUCE CALL:
     // Run this once as a warm-up
-    reduceResult = vikunja::reduce::deviceReduce<TAcc>(
-        devAcc, 
-        devHost, 
-        queueAcc, 
-        n, 
-        constantIter,
-        sum);
+    reduceResult = vikunja::reduce::deviceReduce<TAcc>(devAcc, devHost, queueAcc, n, constantIter, sum);
 
     // Start timer
     timerStart = high_resolution_clock::now();
 
-    for (int i = 0; i < benchmarkIterations; ++i)
+    for(int i = 0; i < benchmarkIterations; ++i)
     {
         // REDUCE CALL:
-        reduceResult = vikunja::reduce::deviceReduce<TAcc>(
-            devAcc, 
-            devHost, 
-            queueAcc, 
-            n, 
-            constantIter,
-            sum);
+        reduceResult = vikunja::reduce::deviceReduce<TAcc>(devAcc, devHost, queueAcc, n, constantIter, sum);
     }
 
     // End timer and count duration
@@ -196,35 +176,22 @@ int main()
 
     // check reduce result
     expectedResult = n * constantIterVal;
-    std::cout << "Expected reduce result: " << expectedResult
-              << ", real result: " << reduceResult << "\n"
+    std::cout << "Expected reduce result: " << expectedResult << ", real result: " << reduceResult << "\n"
               << "Duration: " << msDouble.count() / benchmarkIterations << "ms\n";
 
     // TRANSFORM_REDUCE CALL:
     // Run this once as a warm-up
-    transformReduceResult = vikunja::reduce::deviceTransformReduce<TAcc>(
-        devAcc,
-        devHost,
-        queueAcc,
-        n,
-        constantIter,
-        doubleNum,
-        sum);
+    transformReduceResult
+        = vikunja::reduce::deviceTransformReduce<TAcc>(devAcc, devHost, queueAcc, n, constantIter, doubleNum, sum);
 
     // Start timer
     timerStart = high_resolution_clock::now();
 
-    for (int i = 0; i < benchmarkIterations; ++i)
+    for(int i = 0; i < benchmarkIterations; ++i)
     {
         // TRANSFORM_REDUCE CALL:
-        transformReduceResult = vikunja::reduce::deviceTransformReduce<TAcc>(
-            devAcc,
-            devHost,
-            queueAcc,
-            n,
-            constantIter,
-            doubleNum,
-            sum);
+        transformReduceResult
+            = vikunja::reduce::deviceTransformReduce<TAcc>(devAcc, devHost, queueAcc, n, constantIter, doubleNum, sum);
     }
 
     // End timer and count duration
