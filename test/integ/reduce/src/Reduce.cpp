@@ -56,7 +56,7 @@ namespace vikunja
                         Base::m_size,
                         alpaka::getPtrNative(Base::m_device_mem),
                         reduceFunctor);
-                };
+                }
             };
 
             template<
@@ -86,7 +86,7 @@ namespace vikunja
                         alpaka::getPtrNative(Base::m_device_mem),
                         transformFunctor,
                         reduceFunctor);
-                };
+                }
             };
 
         } // namespace reduce
