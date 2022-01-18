@@ -212,6 +212,62 @@ namespace vikunja
         }
 
         /**
+         * This is a function which transforms the input values and uses a reduce to accumulate the transformed values.
+         * For example, given the array [1, 2, 3, 4], the transform function (x) -> x + 1, and the reduce function
+         * (x,y) -> x + y would return 2 + 3 + 4 + 5 = 14.
+         * @tparam TAcc The alpaka accelerator type to use.
+         * @tparam WorkDivPolicy The working division policy. Defaults to a templated value depending on the
+         * accelerator. For the API of this, see workdiv/BlockBasedWorkDiv.hpp
+         * @tparam MemAccessPolicy The memory access policy. Defaults to a templated value depending on the
+         * accelerator. For the API of this, see mem/iterator/PolicyBasedBlockIterator
+         * @tparam TTransformFunc Type of the transform operator.
+         * @tparam TReduceFunc Type of the reduce operator.
+         * @tparam TInputIterator Type of the input iterator. Should be a pointer-like type.
+         * @tparam TDevAcc The type of the alpaka accelerator.
+         * @tparam TDevHost The type of the alpaka host.
+         * @tparam TQueue The type of the alpaka queue.
+         * @tparam TTransformOperator The vikunja::operators type of the transform function.
+         * @tparam TReduceOperator The vikunja::operators type of the reduce function.
+         * @tparam TRed The return value of the function.
+         * @param devAcc The alpaka accelerator.
+         * @param devHost The alpaka host.
+         * @param queue The alpaka queue.
+         * @param bufferBegin The begin pointer of the input buffer.
+         * @param bufferEnd The end pointer of the input buffer.
+         * @param transformFunc The transform operator.
+         * @param reduceFunc The reduce operator.
+         * @return Value of the combined transform/reduce operation.
+         */
+        template<
+            typename TAcc,
+            typename WorkDivPolicy = vikunja::workdiv::BlockBasedPolicy<TAcc>,
+            typename MemAccessPolicy = vikunja::mem::iterator::MemAccessPolicy<TAcc>,
+            typename TTransformFunc,
+            typename TReduceFunc,
+            typename TInputIterator,
+            typename TDevAcc,
+            typename TDevHost,
+            typename TQueue,
+            typename TTransformOperator = vikunja::operators::
+                UnaryOp<TAcc, TTransformFunc, typename std::iterator_traits<TInputIterator>::value_type>,
+            typename TReduceOperator = vikunja::operators::
+                BinaryOp<TAcc, TReduceFunc, typename TTransformOperator::TRed, typename TTransformOperator::TRed>,
+            typename TRed = typename TReduceOperator::TRed>
+        auto deviceTransformReduce(
+            TDevAcc& devAcc,
+            TDevHost& devHost,
+            TQueue& queue,
+            TInputIterator const& bufferBegin,
+            TInputIterator const& bufferEnd,
+            TTransformFunc const& transformFunc,
+            TReduceFunc const& reduceFunc) -> TRed
+        {
+            assert(bufferEnd >= bufferBegin);
+            auto size = static_cast<typename alpaka::traits::IdxType<TAcc>::type>(bufferEnd - bufferBegin);
+            return deviceTransformReduce<TAcc>(devAcc, devHost, queue, size, bufferBegin, transformFunc, reduceFunc);
+        }
+
+        /**
          * This is a reduce function, which works exactly like deviceTransformReduce with an identity function for
          * the transform operator.
          * @see deviceTransformReduce.
@@ -269,6 +325,56 @@ namespace vikunja
                 TDevHost,
                 TQueue,
                 TIdx>(devAcc, devHost, queue, n, buffer, detail::Identity<TRed>(), func);
+        }
+
+        /**
+         * This is a reduce function, which works exactly like deviceTransformReduce with an identity function for
+         * the transform operator.
+         * @see deviceTransformReduce.
+         * @tparam TAcc
+         * @tparam WorkDivPolicy
+         * @tparam MemAccessPolicy
+         * @tparam TFunc
+         * @tparam TInputIterator
+         * @tparam TDevAcc
+         * @tparam TDevHost
+         * @tparam TQueue
+         * @tparam TReduceOperator The vikunja::operators type of the reduce function.
+         * @tparam TRed The return value of the function.
+         * @param devAcc
+         * @param devHost
+         * @param queue
+         * @param bufferBegin The begin pointer of the input buffer.
+         * @param bufferEnd The end pointer of the input buffer.
+         * @param func
+         * @return
+         */
+        template<
+            typename TAcc,
+            typename WorkDivPolicy = vikunja::workdiv::BlockBasedPolicy<TAcc>,
+            typename MemAccessPolicy = vikunja::mem::iterator::MemAccessPolicy<TAcc>,
+            typename TFunc,
+            typename TInputIterator,
+            typename TDevAcc,
+            typename TDevHost,
+            typename TQueue,
+            typename TOperator = vikunja::operators::BinaryOp<
+                TAcc,
+                TFunc,
+                typename std::iterator_traits<TInputIterator>::value_type,
+                typename std::iterator_traits<TInputIterator>::value_type>,
+            typename TRed = typename TOperator::TRed>
+        auto deviceReduce(
+            TDevAcc& devAcc,
+            TDevHost& devHost,
+            TQueue& queue,
+            TInputIterator const& bufferBegin,
+            TInputIterator const& bufferEnd,
+            TFunc const& func) -> TRed
+        {
+            assert(bufferEnd >= bufferBegin);
+            auto size = static_cast<typename alpaka::traits::IdxType<TAcc>::type>(bufferEnd - bufferBegin);
+            return deviceReduce<TAcc>(devAcc, devHost, queue, size, bufferBegin, func);
         }
     } // namespace reduce
 } // namespace vikunja

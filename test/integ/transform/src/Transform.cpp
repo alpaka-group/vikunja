@@ -72,6 +72,48 @@ namespace vikunja
                 typename TDim,
                 template<typename, typename>
                 class TAcc,
+                typename TData,
+                typename TDataResult = TData,
+                typename TIdx = std::uint64_t>
+            class TestSetupTransformPtr : public TestSetupBase<TDim, TAcc, TData, TDataResult, TIdx>
+            {
+            public:
+                using TestSetupBase<TDim, TAcc, TData, TDataResult, TIdx>::TestSetupBase;
+
+                using Base = typename vikunja::test::transform::TestSetupBase<TDim, TAcc, TData, TDataResult, TIdx>;
+
+                template<typename TReduceFunctor>
+                void run(TReduceFunctor reduceFunctor)
+                {
+                    alpaka::memcpy(
+                        Base::Base::queueAcc,
+                        Base::m_device_input1_mem,
+                        Base::m_host_input1_mem,
+                        Base::m_extent);
+
+                    TData* begin = alpaka::getPtrNative(Base::m_device_input1_mem);
+                    TData* end = begin + Base::m_size;
+
+                    vikunja::transform::deviceTransform<typename Base::Acc>(
+                        Base::devAcc,
+                        Base::Base::queueAcc,
+                        begin,
+                        end,
+                        alpaka::getPtrNative(Base::m_device_output_mem),
+                        reduceFunctor);
+
+                    alpaka::memcpy(
+                        Base::Base::queueAcc,
+                        Base::m_host_output_mem,
+                        Base::m_device_output_mem,
+                        Base::m_extent);
+                };
+            };
+
+            template<
+                typename TDim,
+                template<typename, typename>
+                class TAcc,
                 typename TData1,
                 typename TData2 = TData1,
                 typename TDataResult = TData1,
@@ -125,6 +167,68 @@ namespace vikunja
                         Base::m_device_output_mem,
                         Base::m_extent);
                 }
+            };
+
+            template<
+                typename TDim,
+                template<typename, typename>
+                class TAcc,
+                typename TData1,
+                typename TData2 = TData1,
+                typename TDataResult = TData1,
+                typename TIdx = std::uint64_t>
+            class TestSetupTransformDoubleInputPtr : public TestSetupBase<TDim, TAcc, TData1, TDataResult, TIdx>
+            {
+            private:
+                using Base = typename vikunja::test::transform::TestSetupBase<TDim, TAcc, TData1, TDataResult, TIdx>;
+                using BufHost = alpaka::Buf<typename Base::Base::Host, TData2, TDim, TIdx>;
+                using BufDev = alpaka::Buf<typename Base::Base::Acc, TData2, TDim, TIdx>;
+
+                BufHost m_host_input2_mem;
+                BufDev m_device_input2_mem;
+
+            public:
+                TestSetupTransformDoubleInputPtr(uint64_t const memSize)
+                    : TestSetupBase<TDim, TAcc, TData1, TDataResult, TIdx>(memSize)
+                    , m_host_input2_mem(alpaka::allocBuf<TData2, TIdx>(Base::Base::devHost, Base::m_extent))
+                    , m_device_input2_mem(alpaka::allocBuf<TData2, TIdx>(Base::Base::devAcc, Base::m_extent))
+                {
+                }
+
+
+                TData2* get_host_input2_mem_ptr()
+                {
+                    return alpaka::getPtrNative(m_host_input2_mem);
+                }
+
+                template<typename TReduceFunctor>
+                void run(TReduceFunctor reduceFunctor)
+                {
+                    alpaka::memcpy(
+                        Base::Base::queueAcc,
+                        Base::m_device_input1_mem,
+                        Base::m_host_input1_mem,
+                        Base::m_extent);
+                    alpaka::memcpy(Base::Base::queueAcc, m_device_input2_mem, m_host_input2_mem, Base::m_extent);
+
+                    TData1* begin = alpaka::getPtrNative(Base::m_device_input1_mem);
+                    TData1* end = begin + Base::m_size;
+
+                    vikunja::transform::deviceTransform<typename Base::Acc>(
+                        Base::devAcc,
+                        Base::Base::queueAcc,
+                        begin,
+                        end,
+                        alpaka::getPtrNative(m_device_input2_mem),
+                        alpaka::getPtrNative(Base::m_device_output_mem),
+                        reduceFunctor);
+
+                    alpaka::memcpy(
+                        Base::Base::queueAcc,
+                        Base::m_host_output_mem,
+                        Base::m_device_output_mem,
+                        Base::m_extent);
+                };
             };
 
         } // namespace transform
@@ -217,7 +321,7 @@ TEMPLATE_TEST_CASE(
 
     INFO((vikunja::test::print_acc_info<Dim>(size)));
 
-    vikunja::test::transform::TestSetupTransform<Dim, alpaka::ExampleDefaultAcc, Data> setup(size);
+    vikunja::test::transform::TestSetupTransformPtr<Dim, alpaka::ExampleDefaultAcc, Data> setup(size);
 
     // setup initial values
     Data* const host_mem_ptr = setup.get_host_input1_mem_ptr();
@@ -496,8 +600,9 @@ TEMPLATE_TEST_CASE(
 
     INFO((vikunja::test::print_acc_info<Dim>(size)));
 
-    vikunja::test::transform::TestSetupTransformDoubleInput<Dim, alpaka::ExampleDefaultAcc, Data1, Data2, ReturnType>
-        setup(size);
+    vikunja::test::transform::
+        TestSetupTransformDoubleInputPtr<Dim, alpaka::ExampleDefaultAcc, Data1, Data2, ReturnType>
+            setup(size);
 
     // setup initial values
     Data1* const host_mem_ptr1 = setup.get_host_input1_mem_ptr();
