@@ -18,7 +18,6 @@ using vikunja::mem::iterator::ConstantIterator;
 TEMPLATE_TEST_CASE("Test Constant Iterator", "", int, double, uint64_t)
 {
     using Type = TestType;
-    using IType = Type*;
     using Idx = int64_t;
 
     GIVEN("A default ConstantIterator")
