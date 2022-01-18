@@ -7,8 +7,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <vikunja/reduce/reduce.hpp>
 #include <vikunja/mem/iterator/ConstantIterator.hpp>
+#include <vikunja/reduce/reduce.hpp>
 
 #include <alpaka/alpaka.hpp>
 
@@ -17,9 +17,12 @@
 
 int main()
 {
-    // Define the accelerator here. Must be one of the enabled accelerators.
+// Define the accelerator here. Must be one of the enabled accelerators.
+#ifdef ALPAKA_ACC_GPU_CUDA_ENABLED
     using TAcc = alpaka::AccGpuCudaRt<alpaka::DimInt<3u>, std::uint64_t>;
-
+#else
+    using TAcc = alpaka::AccCpuSerial<alpaka::DimInt<3u>, std::uint64_t>;
+#endif
     // Type of the data that will be reduced
     using TRed = uint64_t;
 
@@ -57,13 +60,7 @@ int main()
     // REDUCE CALL:
     // Takes the arguments: accelerator device, host device, accelerator queue, size of data, pointer-like to memory,
     // reduce lambda.
-    Idx reduceResult = vikunja::reduce::deviceReduce<TAcc>(
-        devAcc, 
-        devHost, 
-        queueAcc, 
-        n, 
-        constantIter,
-        sum);
+    Idx reduceResult = vikunja::reduce::deviceReduce<TAcc>(devAcc, devHost, queueAcc, n, constantIter, sum);
 
     // check reduce result
     auto expectedResult = n * 10;
@@ -72,14 +69,8 @@ int main()
     // TRANSFORM_REDUCE CALL:
     // Takes the arguments: accelerator device, host device, accelerator queue, size of data, pointer-like to memory,
     // transform lambda, reduce lambda.
-    Idx transformReduceResult = vikunja::reduce::deviceTransformReduce<TAcc>(
-        devAcc,
-        devHost,
-        queueAcc,
-        n,
-        constantIter,
-        doubleNum,
-        sum);
+    Idx transformReduceResult
+        = vikunja::reduce::deviceTransformReduce<TAcc>(devAcc, devHost, queueAcc, n, constantIter, doubleNum, sum);
 
     // check transform result
     auto expectedTransformReduce = expectedResult * 2;
