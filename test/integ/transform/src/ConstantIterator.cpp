@@ -8,7 +8,7 @@
  */
 
 #include <vikunja/mem/iterator/ConstantIterator.hpp>
-#include <vikunja/reduce/reduce.hpp>
+#include <vikunja/test/AlpakaSetup.hpp>
 #include <vikunja/test/utility.hpp>
 #include <vikunja/transform/transform.hpp>
 
@@ -18,24 +18,6 @@
 #include <iostream>
 
 #include <catch2/catch.hpp>
-
-using TAcc = alpaka::AccCpuSerial<alpaka::DimInt<3u>, std::uint64_t>;
-
-// Type of the data that will be transformed
-using TTrans = std::uint64_t;
-
-// Alpaka index type
-using Idx = alpaka::Idx<TAcc>;
-// Alpaka dimension type
-using Dim = alpaka::Dim<TAcc>;
-
-// define device, platform, and queue types.
-using DevAcc = alpaka::Dev<TAcc>;
-using PltfAcc = alpaka::Pltf<DevAcc>;
-// using QueueAcc = alpaka::test::queue::DefaultQueue<alpaka::Dev<TAcc>>;
-using PltfHost = alpaka::PltfCpu;
-using DevHost = alpaka::Dev<PltfHost>;
-using QueueAcc = alpaka::Queue<TAcc, alpaka::Blocking>;
 
 struct IncOne
 {
@@ -57,34 +39,45 @@ struct TimesTwo
 
 TEST_CASE("ConstantIteratorTest", "[transform][iterator][lambda]")
 {
-    auto size = GENERATE(1, 10, 777, 1 << 10);
+    // Type of the data that will be transformed
+    using TTrans = std::uint64_t;
+
+    using Setup = vikunja::test::TestAlpakaSetup<
+        alpaka::DimInt<1u>, // dim
+        std::uint64_t, // Idx
+        alpaka::AccCpuSerial, // host type
+        alpaka::ExampleDefaultAcc, // device type
+        alpaka::Blocking // queue type
+        >;
+    using Vec = alpaka::Vec<Setup::Dim, Setup::Idx>;
+
+    // Testmatrix: test each combination of size and constantIterVal
+    Setup::Idx size = GENERATE(1, 10, 777, 1 << 10);
     auto constantIterVal = GENERATE(1, 5, 10);
 
-    INFO((vikunja::test::print_acc_info<Dim>(size)));
+    INFO((vikunja::test::print_acc_info<Setup::Dim>(size)));
+    Setup setup;
 
-    // Get the host device.
-    DevHost devHost(alpaka::getDevByIdx<PltfHost>(0u));
-    // Select a device to execute on.
-    DevAcc devAcc(alpaka::getDevByIdx<PltfAcc>(0u));
-    // Get a queue on the accelerator device.
-    QueueAcc queueAcc(devAcc);
+    Vec extent = Vec::all(static_cast<Setup::Idx>(size));
 
     // allocate output memory both on host and device.
-    auto deviceOutMem(alpaka::allocBuf<TTrans, Idx>(devAcc, size));
-    auto hostOutMem(alpaka::allocBuf<TTrans, Idx>(devHost, size));
+    auto deviceOutMem(alpaka::allocBuf<TTrans, Setup::Idx>(setup.devAcc, extent));
+    auto hostOutMem(alpaka::allocBuf<TTrans, Setup::Idx>(setup.devHost, extent));
 
     vikunja::mem::iterator::ConstantIterator c_begin(constantIterVal);
 
-    vikunja::transform::deviceTransform(
-        devAcc,
-        queueAcc,
+    vikunja::transform::deviceTransform<Setup::Acc>(
+        setup.devAcc,
+        setup.queueAcc,
         size,
         c_begin,
-        &deviceOutMem,
-        [](TTrans v) -> TTrans { return 2 * v; });
+        alpaka::getPtrNative(deviceOutMem),
+        [] ALPAKA_FN_HOST_ACC(TTrans v) -> TTrans { return 2 * v; });
+
+    alpaka::memcpy(setup.queueAcc, hostOutMem, deviceOutMem, extent);
 
     TTrans* hostNative = alpaka::getPtrNative(hostOutMem);
-    for(Idx i = 0; i < size; ++i)
+    for(Setup::Idx i = 0; i < size; ++i)
     {
         REQUIRE(2 * constantIterVal == hostNative[i]);
     }
