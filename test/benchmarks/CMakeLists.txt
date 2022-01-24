@@ -23,3 +23,4 @@ endif()
 
 add_subdirectory("helper/")
 add_subdirectory("transform/")
+add_subdirectory("reduce/")
