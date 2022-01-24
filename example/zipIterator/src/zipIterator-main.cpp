@@ -13,20 +13,19 @@
 #include <alpaka/alpaka.hpp>
 
 #include <iostream>
+#include <variant>
 
 template<std::size_t I = 0, typename FuncT, typename... Tp>
-inline typename std::enable_if<I == sizeof...(Tp), void>::type
-    for_each(std::tuple<Tp...> &, FuncT) // Unused arguments are given no names
-    {
-    }
+inline typename std::enable_if<I == sizeof...(Tp), void>::type forEach(std::tuple<Tp...> &, FuncT) // Unused arguments are given no names
+{
+}
 
 template<std::size_t I = 0, typename FuncT, typename... Tp>
-inline typename std::enable_if<I < sizeof...(Tp), void>::type
-    for_each(std::tuple<Tp...>& t, FuncT f)
-    {
-        f(std::get<I>(t));
-        for_each<I + 1, FuncT, Tp...>(t, f);
-    }
+inline typename std::enable_if<I < sizeof...(Tp), void>::type forEach(std::tuple<Tp...>& t, FuncT f)
+{
+    f(std::get<I>(t));
+    forEach<I + 1, FuncT, Tp...>(t, f);
+}
 
 template<typename IteratorTuple>
 void printTuple(IteratorTuple tuple)
@@ -34,7 +33,7 @@ void printTuple(IteratorTuple tuple)
     std::cout << "tuple(";
     int index = 0;
     int tupleSize = std::tuple_size<IteratorTuple>{};
-    for_each(tuple, [&index, tupleSize](auto &x) { std::cout << *x << (++index < tupleSize ? ", " : ""); });
+    forEach(tuple, [&index, tupleSize](auto &x) { std::cout << x << (++index < tupleSize ? ", " : ""); });
     std::cout << ")";
 }
 
@@ -172,23 +171,23 @@ int main()
     printTuple(*(zipIter + 2));
     std::cout << "\n\n";
 
-    std::cout << "*(nzipIter - 3): ";
+    std::cout << "*(zipIter - 3): ";
     printTuple(*(zipIter - 3));
     std::cout << "\n\n";
 
-    std::cout << "*zipIter[0]: ";
+    std::cout << "zipIter[0]: ";
     printTuple(zipIter[0]);
     std::cout << "\n";
 
-    std::cout << "*zipIter[3]: ";
+    std::cout << "zipIter[3]: ";
     printTuple(zipIter[3]);
     std::cout << "\n";
 
-    std::cout << "*zipIter[6]: ";
+    std::cout << "zipIter[6]: ";
     printTuple(zipIter[6]);
     std::cout << "\n";
     
-    std::cout << "*zipIter[9]: ";
+    std::cout << "zipIter[9]: ";
     printTuple(zipIter[9]);
     std::cout << "\n\n";
 
