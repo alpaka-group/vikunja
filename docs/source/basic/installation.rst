@@ -19,8 +19,8 @@ Vikunja builds and installs itself using `CMake <https://cmake.org/>`_. Before y
 .. code-block:: bash
 
   git clone https://github.com/alpaka-group/vikunja.git
-  mkdir vikunja/build 
-  cd vikunja/build  
+  mkdir vikunja/build
+  cd vikunja/build
   cmake ..
   cmake --build .
   cmake --install .
@@ -37,6 +37,8 @@ Enable and run the tests:
    cmake .. -DBUILD_TESTING=ON
    cmake --build .
    ctest
+
+Read this :doc:`section </development/test>` for more information about the tests.
 
 Enable and run an example:
 

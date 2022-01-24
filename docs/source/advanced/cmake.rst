@@ -20,6 +20,7 @@ Common
 
 Testing
 +++++++
+.. _cmake-test:
 
 **BUILD_TESTING** (OFF)
     .. code-block::
@@ -38,7 +39,14 @@ Testing
 
         Only works if BUILD_TESTING is ON.
         Special test that checks if ALPAKA_CXX_STANDARD works correctly.
-        The implementation is very compiler specific, so it is possible that the test is not supported by your used C++ compiler.
+        The implementation is very compiler specific, so it is possible that the test is not
+        supported by your used C++ compiler.
+
+**VIKUNJA_ENABLE_BENCHMARKS** (OFF)
+    .. code-block::
+
+        Only works if BUILD_TESTING is ON.
+        Enable the benchmarks. The benchmarks are built automatically and can be executed via ctest.
 
 alpaka
 ++++++
@@ -64,7 +72,7 @@ The following CMake variables are provided by alpaka. This section contains only
         - ALPAKA_ACC_GPU_CUDA_ENABLE
         - ALPAKA_ACC_GPU_HIP_ENABLE
 
-        Important: Not all alpaka accelerator backends are tested together with vikunja, 
+        Important: Not all alpaka accelerator backends are tested together with vikunja,
         see CI tests.
 
 **ALPAKA_CUDA_NVCC_EXPT_EXTENDED_LAMBDA** (ON)
