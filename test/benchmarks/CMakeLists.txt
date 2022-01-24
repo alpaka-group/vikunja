@@ -15,5 +15,11 @@ add_library(vikunja::benchSetup ALIAS vikunjaBenchSetup)
 
 target_compile_definitions(vikunjaTestSetup PRIVATE CATCH_CONFIG_ENABLE_BENCHMARKING)
 
+if(VIKUNJA_ENABLE_CUDA_THRUST_BENCHMARKS)
+    if(NOT ALPAKA_ACC_GPU_CUDA_ENABLE)
+        message(FATAL_ERROR "VIKUNJA_ENABLE_CUDA_THRUST_BENCHMARKS requires the ALPAKA_ACC_GPU_CUDA_ENABLE backend to be enabled.")
+    endif()
+endif()
+
 add_subdirectory("helper/")
 add_subdirectory("transform/")

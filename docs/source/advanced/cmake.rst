@@ -48,6 +48,12 @@ Testing
         Only works if BUILD_TESTING is ON.
         Enable the benchmarks. The benchmarks are built automatically and can be executed via ctest.
 
+**VIKUNJA_ENABLE_CUDA_THRUST_BENCHMARKS** (OFF)
+    .. code-block::
+
+        Only works if VIKUNJA_ENABLE_BENCHMARKS and ALPAKA_ACC_GPU_CUDA_ENABLE are ON.
+        Enable thrust benchmarks for comparison.
+
 alpaka
 ++++++
 

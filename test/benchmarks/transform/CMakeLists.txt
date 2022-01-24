@@ -23,3 +23,22 @@ target_link_libraries(${_TARGET_NAME_VIKUNJA_TRANSFORM}
 )
 
 add_test(NAME ${_TARGET_NAME_VIKUNJA_TRANSFORM} COMMAND ${_TARGET_NAME_VIKUNJA_TRANSFORM} ${_VIKUNJA_TEST_OPTIONS})
+
+
+if(VIKUNJA_ENABLE_CUDA_THRUST_BENCHMARKS)
+  set(_TARGET_NAME_THRUST_TRANSFORM "bench_thrust_transform")
+
+  alpaka_add_executable(
+    ${_TARGET_NAME_THRUST_TRANSFORM}
+    bench_thrust_transform.cpp
+  )
+
+  target_link_libraries(${_TARGET_NAME_THRUST_TRANSFORM}
+    PRIVATE
+    vikunja::testSetup
+    vikunja::benchSetup
+    vikunja::internalvikunja
+  )
+
+  add_test(NAME ${_TARGET_NAME_THRUST_TRANSFORM} COMMAND ${_TARGET_NAME_THRUST_TRANSFORM} ${_VIKUNJA_TEST_OPTIONS})
+endif()

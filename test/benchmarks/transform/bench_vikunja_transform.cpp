@@ -15,8 +15,7 @@
 #include <alpaka/alpaka.hpp>
 #include <alpaka/example/ExampleDefaultAcc.hpp>
 
-#include <thread>
-#include <vector>
+#include <numeric>
 
 #include <catch2/catch.hpp>
 
