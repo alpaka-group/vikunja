@@ -1,4 +1,4 @@
-/* Copyright 2021 Simeon Ehrig
+/* Copyright 2022 Simeon Ehrig
  *
  * This file is part of vikunja.
  *
@@ -53,8 +53,7 @@ namespace vikunja::bench
                 // Calculate the number of elements for this thread.
                 // The result is uniform for all but the last thread.
                 TIdx const threadLastElemIdx(threadFirstElemIdx + threadElemExtent);
-                TIdx const threadLastElemIdxClipped(
-                    (numElements > threadLastElemIdx) ? threadLastElemIdx : numElements);
+                TIdx const threadLastElemIdxClipped(alpaka::math::min(acc, numElements, threadLastElemIdx));
 
                 for(TIdx i(threadFirstElemIdx); i < threadLastElemIdxClipped; ++i)
                 {

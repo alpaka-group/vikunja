@@ -1,4 +1,4 @@
-/* Copyright 2021 Simeon Ehrig
+/* Copyright 2022 Simeon Ehrig
  *
  * This file is part of vikunja.
  *
@@ -14,7 +14,7 @@
 #include <thrust/device_vector.h>
 
 template<typename TData>
-inline void benchmark_reduce(int size)
+inline void reduce_benchmark(int size)
 {
     std::vector<TData> hostMemInput(size);
     for(int i = 0; i < size; ++i)
@@ -35,29 +35,27 @@ inline void benchmark_reduce(int size)
 
     BENCHMARK("reduce thrust")
     {
-        result = thrust::reduce(devMemInput.begin(), devMemInput.end(), static_cast<TData>(0));
+        return result = thrust::reduce(devMemInput.begin(), devMemInput.end(), static_cast<TData>(0));
     };
 
     REQUIRE(expected_result == Approx(result));
 }
 
-TEST_CASE("bechmark reduce - int", "[reduce][thrust][int]")
+TEMPLATE_TEST_CASE("bechmark reduce", "[benchmark][reduce][thrust]", int, float, double)
 {
-    using Data = int;
-    int size = GENERATE(100, 100'000, 1'270'000, 1'600'000);
-    benchmark_reduce<Data>(size);
-}
+    using Data = TestType;
 
-TEST_CASE("bechmark reduce - float", "[reduce][thrust][float]")
-{
-    using Data = float;
-    int size = GENERATE(100, 100'000, 2'000'000);
-    benchmark_reduce<Data>(size);
-}
-
-TEST_CASE("bechmark reduce - double", "[reduce][thrust][double]")
-{
-    using Data = double;
-    int size = GENERATE(100, 100'000, 1'270'000, 2'000'000);
-    benchmark_reduce<Data>(size);
+    if constexpr(std::is_same_v<Data, int>)
+    {
+        reduce_benchmark<Data>(GENERATE(100, 100'000, 1'270'000, 1'600'000));
+    }
+    else if constexpr(std::is_same_v<Data, float>)
+    {
+        // removed 1'270'000 because of rounding errors.
+        reduce_benchmark<Data>(GENERATE(100, 100'000, 2'000'000));
+    }
+    else if constexpr(std::is_same_v<Data, double>)
+    {
+        reduce_benchmark<Data>(GENERATE(100, 100'000, 1'270'000, 2'000'000));
+    }
 }

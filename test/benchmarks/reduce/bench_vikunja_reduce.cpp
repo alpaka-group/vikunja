@@ -1,4 +1,4 @@
-/* Copyright 2021 Simeon Ehrig
+/* Copyright 2022 Simeon Ehrig
  *
  * This file is part of vikunja.
  *
@@ -19,22 +19,22 @@
 
 #include <catch2/catch.hpp>
 
-template<typename TData>
-inline void reduce_benchmark(int size)
+template<typename TData, typename TIdx>
+inline void reduce_benchmark(TIdx size)
 {
     using Setup = vikunja::test::TestAlpakaSetup<
         alpaka::DimInt<1u>, // dim
-        std::uint64_t, // Idx
+        TIdx, // Idx
         alpaka::AccCpuSerial, // host type
         alpaka::ExampleDefaultAcc, // device type
         alpaka::Blocking // queue type
         >;
-    using Vec = alpaka::Vec<Setup::Dim, Setup::Idx>;
+    using Vec = alpaka::Vec<typename Setup::Dim, typename Setup::Idx>;
 
-    INFO((vikunja::test::print_acc_info<Setup::Dim>(size)));
+    INFO((vikunja::test::print_acc_info<typename Setup::Dim>(size)));
 
     Setup setup;
-    Vec extent = Vec::all(static_cast<Setup::Idx>(size));
+    Vec extent = Vec::all(static_cast<typename Setup::Idx>(size));
 
     auto devMemInput = vikunja::bench::allocate_mem_iota<TData>(
         setup,
@@ -45,12 +45,12 @@ inline void reduce_benchmark(int size)
     TData* devMemInputPtrBegin = alpaka::getPtrNative(devMemInput);
     TData* devMemInputPtrEnd = devMemInputPtrBegin + size;
 
-    auto devMemOutput = alpaka::allocBuf<TData, Setup::Idx>(setup.devAcc, extent);
+    auto devMemOutput = alpaka::allocBuf<TData, typename Setup::Idx>(setup.devAcc, extent);
     TData* devMemOutputPtrBegin = alpaka::getPtrNative(devMemOutput);
 
     auto functor = [] ALPAKA_FN_HOST_ACC(TData const i, TData const j) -> TData { return i + j; };
 
-    TData result = vikunja::reduce::deviceReduce<Setup::Acc>(
+    TData result = vikunja::reduce::deviceReduce<typename Setup::Acc>(
         setup.devAcc,
         setup.devHost,
         setup.queueAcc,
@@ -68,39 +68,34 @@ inline void reduce_benchmark(int size)
 
     BENCHMARK("reduce vikunja")
     {
-        result = vikunja::reduce::deviceReduce<Setup::Acc>(
-            setup.devAcc,
-            setup.devHost,
-            setup.queueAcc,
-            devMemInputPtrBegin,
-            devMemInputPtrEnd,
-            functor);
+        return result = vikunja::reduce::deviceReduce<typename Setup::Acc>(
+                   setup.devAcc,
+                   setup.devHost,
+                   setup.queueAcc,
+                   devMemInputPtrBegin,
+                   devMemInputPtrEnd,
+                   functor);
     };
 
     REQUIRE(expected_result == Approx(result));
 }
 
-TEST_CASE("benchmark reduce - int", "[reduce][vikunja][int]")
+TEMPLATE_TEST_CASE("bechmark reduce", "[benchmark][reduce][vikunja]", int, float, double)
 {
-    using Data = int;
-    int size = GENERATE(100, 100'000, 1'270'000, 1'600'000);
+    using Data = TestType;
+    using Idx = std::uint64_t;
 
-    reduce_benchmark<Data>(size);
-}
-
-TEST_CASE("benchmark reduce - float", "[reduce][vikunja][float]")
-{
-    using Data = float;
-    // removed 1'270'000 because of rounding errors.
-    int size = GENERATE(100, 100'000, 2'000'000);
-
-    reduce_benchmark<Data>(size);
-}
-
-TEST_CASE("benchmark reduce - double", "[reduce][vikunja][double]")
-{
-    using Data = double;
-    int size = GENERATE(100, 100'000, 1'270'000, 2'000'000);
-
-    reduce_benchmark<Data>(size);
+    if constexpr(std::is_same_v<Data, int>)
+    {
+        reduce_benchmark<Data, Idx>(GENERATE(100, 100'000, 1'270'000, 1'600'000));
+    }
+    else if constexpr(std::is_same_v<Data, float>)
+    {
+        // removed 1'270'000 because of rounding errors.
+        reduce_benchmark<Data, Idx>(GENERATE(100, 100'000, 2'000'000));
+    }
+    else if constexpr(std::is_same_v<Data, double>)
+    {
+        reduce_benchmark<Data, Idx>(GENERATE(100, 100'000, 1'270'000, 2'000'000));
+    }
 }

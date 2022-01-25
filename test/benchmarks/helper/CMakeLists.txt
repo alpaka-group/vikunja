@@ -1,4 +1,4 @@
-# Copyright 2021 Simeon Ehrig
+# Copyright 2022 Simeon Ehrig
 #
 # This file is part of vikunja.
 #
