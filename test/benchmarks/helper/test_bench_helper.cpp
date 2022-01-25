@@ -88,3 +88,36 @@ TEMPLATE_TEST_CASE("allocate_mem_iota different increment", "[iota]", int, float
         REQUIRE_MESSAGE(expected_result == hostMemPtr[i], "failed with index: " + std::to_string(i));
     }
 }
+
+TEMPLATE_TEST_CASE("allocate_mem_constant", "[iota]", int, float, double)
+{
+    using Data = TestType;
+    using Setup = vikunja::test::TestAlpakaSetup<
+        alpaka::DimInt<1u>, // dim
+        int, // Idx
+        alpaka::AccCpuSerial, // host type
+        alpaka::ExampleDefaultAcc, // device type
+        alpaka::Blocking // queue type
+        >;
+    using Vec = alpaka::Vec<Setup::Dim, Setup::Idx>;
+
+    Setup::Idx size = GENERATE(1, 10, 3045, 2'000'000);
+    Data constant = GENERATE(0, 1, 45, -42);
+
+    INFO((vikunja::test::print_acc_info<Setup::Dim>(size)));
+    INFO("constant: " + std::to_string(constant));
+
+    Setup setup;
+    Vec extent = Vec::all(static_cast<Setup::Idx>(size));
+
+    auto devMem = vikunja::bench::allocate_mem_constant<Data>(setup, extent, constant);
+    auto hostMem(alpaka::allocBuf<Data, typename Setup::Idx>(setup.devHost, extent));
+    Data* const hostMemPtr(alpaka::getPtrNative(hostMem));
+
+    alpaka::memcpy(setup.queueAcc, hostMem, devMem, extent);
+
+    for(Setup::Idx i = 0; i < size; ++i)
+    {
+        REQUIRE(static_cast<Data>(constant) == hostMemPtr[i]);
+    }
+}
