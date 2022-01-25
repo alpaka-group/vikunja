@@ -40,50 +40,62 @@ namespace vikunja
         {
             /**
              * @brief A zip iterator that takes multiple input sequences and yields a sequence of tuples
-             * @tparam IteratorTuple The type of the data
+             * @tparam IteratorTuplePtr The type of the data
+             * @tparam IteratorTupleVal The type of the data
              * @tparam IdxType The type of the index
              */
-            template<typename IteratorTuple, typename IdxType = int64_t>
+            template<typename IteratorTuplePtr, typename IteratorTupleVal, typename IdxType = int64_t>
             class ZipIterator
             {
             public:
                 // Need all 5 of these types for iterator_traits
-                using reference = IteratorTuple&;
-                using value_type = IteratorTuple;
-                using pointer = IteratorTuple*;
+                using reference = IteratorTupleVal&;
+                using value_type = IteratorTupleVal;
+                using pointer = IteratorTupleVal*;
                 using difference_type = IdxType;
                 using iterator_category = std::random_access_iterator_tag;
 
                 /**
                  * @brief Constructor for the ZipIterator
-                 * @param iteratorTuple The tuple to initialize the iterator with
+                 * @param iteratorTuplePtr The tuple to initialize the iterator with
                  * @param idx The index for the iterator, default 0
                  */
-                ZipIterator(IteratorTuple iteratorTuple, const IdxType& idx = static_cast<IdxType>(0))
+                ZipIterator(IteratorTuplePtr iteratorTuplePtr, const IdxType& idx = static_cast<IdxType>(0))
                     : mIndex(idx)
-                    , mIteratorTuple(iteratorTuple)
+                    , mIteratorTuplePtr(iteratorTuplePtr)
+                    , mIteratorTupleVal(makeValueTuple(mIteratorTuplePtr))
                 {
                     if (idx != 0)
-                        forEach(mIteratorTuple, [idx](auto &x) { x += idx; });
+                    {
+                        forEach(mIteratorTuplePtr, [idx](auto &x) { x += idx; });
+                        mIteratorTupleVal = makeValueTuple(mIteratorTuplePtr);
+                    }
                 }
 
                 /**
                  * @brief Dereference operator to receive the stored value
                  */
-                NODISCARD ALPAKA_FN_INLINE auto operator*()
+                NODISCARD ALPAKA_FN_INLINE IteratorTupleVal& operator*()
                 {
-                    return makeValueTuple(mIteratorTuple);
+                    return mIteratorTupleVal;
                 }
 
                 /**
                  * @brief Index operator to get stored value at some given offset from this iterator
                  */
-                NODISCARD ALPAKA_FN_INLINE auto operator[](const IdxType idx)
+                NODISCARD ALPAKA_FN_INLINE const IteratorTupleVal operator[](const IdxType idx)
                 {
-                    IteratorTuple tmp = mIteratorTuple;
+                    IteratorTuplePtr tmp = mIteratorTuplePtr;
                     IdxType indexDiff = idx - mIndex;
                     forEach(tmp, [indexDiff](auto &x) { x += indexDiff; });
                     return makeValueTuple(tmp);
+                }
+
+                NODISCARD ALPAKA_FN_INLINE IteratorTupleVal& operator=(IteratorTupleVal iteratorTupleVal)
+                {
+                    updateIteratorTupleValue(iteratorTupleVal);
+                    mIteratorTupleVal = makeValueTuple(mIteratorTuplePtr);
+                    return mIteratorTupleVal;
                 }
 
 #pragma region arithmeticoperators
@@ -93,7 +105,8 @@ namespace vikunja
                 NODISCARD ALPAKA_FN_INLINE ZipIterator& operator++()
                 {
                     ++mIndex;
-                    forEach(mIteratorTuple, [](auto &x) { ++x; });
+                    forEach(mIteratorTuplePtr, [](auto &x) { ++x; });
+                    mIteratorTupleVal = makeValueTuple(mIteratorTuplePtr);
                     return *this;
                 }
 
@@ -105,7 +118,8 @@ namespace vikunja
                 {
                     ZipIterator tmp = *this;
                     ++mIndex;
-                    forEach(mIteratorTuple, [](auto &x) { ++x; });
+                    forEach(mIteratorTuplePtr, [](auto &x) { ++x; });
+                    mIteratorTupleVal = makeValueTuple(mIteratorTuplePtr);
                     return tmp;
                 }
 
@@ -115,7 +129,8 @@ namespace vikunja
                 NODISCARD ALPAKA_FN_INLINE ZipIterator& operator--()
                 {
                     --mIndex;
-                    forEach(mIteratorTuple, [](auto &x) { --x; });
+                    forEach(mIteratorTuplePtr, [](auto &x) { --x; });
+                    mIteratorTupleVal = makeValueTuple(mIteratorTuplePtr);
                     return *this;
                 }
 
@@ -127,30 +142,53 @@ namespace vikunja
                 {
                     ZipIterator tmp = *this;
                     --mIndex;
-                    forEach(mIteratorTuple, [](auto &x) { --x; });
+                    forEach(mIteratorTuplePtr, [](auto &x) { --x; });
+                    mIteratorTupleVal = makeValueTuple(mIteratorTuplePtr);
                     return tmp;
                 }
 
                 /**
                  * @brief Add an index to this iterator
                  */
-                NODISCARD ALPAKA_FN_INLINE ZipIterator operator+(const IdxType idx)
+                NODISCARD ALPAKA_FN_INLINE ZipIterator operator+(const int idx)
                 {
-                    IteratorTuple tmp = mIteratorTuple;
+                    IteratorTuplePtr tmp = mIteratorTuplePtr;
                     IdxType indexDiff = mIndex;
                     forEach(tmp, [indexDiff](auto &x) { x -= indexDiff; });
                     return ZipIterator(tmp, mIndex + idx);
                 }
 
                 /**
+                 * @brief Add an index to this iterator
+                 */
+                NODISCARD friend ALPAKA_FN_INLINE ZipIterator operator+(ZipIterator zipIter, const IdxType idx)
+                {
+                    IteratorTuplePtr tmp = zipIter.mIteratorTuplePtr;
+                    IdxType indexDiff = zipIter.mIndex;
+                    zipIter.forEach(tmp, [indexDiff](auto &x) { x -= indexDiff; });
+                    return ZipIterator(tmp, zipIter.mIndex + idx);
+                }
+
+                /**
                  * @brief Subtract an index from this iterator
                  */
-                NODISCARD ALPAKA_FN_INLINE ZipIterator operator-(const IdxType idx)
+                NODISCARD ALPAKA_FN_INLINE ZipIterator operator-(const int idx)
                 {
-                    IteratorTuple tmp = mIteratorTuple;
+                    IteratorTuplePtr tmp = mIteratorTuplePtr;
                     IdxType indexDiff = mIndex;
                     forEach(tmp, [indexDiff](auto &x) { x -= indexDiff; });
                     return ZipIterator(tmp, mIndex - idx);
+                }
+
+                /**
+                 * @brief Subtract an index from this iterator
+                 */
+                NODISCARD friend ALPAKA_FN_INLINE ZipIterator operator-(ZipIterator zipIter, const IdxType idx)
+                {
+                    IteratorTuplePtr tmp = zipIter.mIteratorTuplePtr;
+                    IdxType indexDiff = zipIter.mIndex;
+                    zipIter.forEach(tmp, [indexDiff](auto &x) { x -= indexDiff; });
+                    return ZipIterator(tmp, zipIter.mIndex - idx);
                 }
 
                 /**
@@ -159,7 +197,8 @@ namespace vikunja
                 NODISCARD ALPAKA_FN_INLINE ZipIterator& operator+=(const IdxType idx)
                 {
                     mIndex += idx;
-                    forEach(mIteratorTuple, [idx](auto &x) { x += idx; });
+                    forEach(mIteratorTuplePtr, [idx](auto &x) { x += idx; });
+                    mIteratorTupleVal = makeValueTuple(mIteratorTuplePtr);
                     return *this;
                 }
 
@@ -169,7 +208,8 @@ namespace vikunja
                 NODISCARD ALPAKA_FN_INLINE ZipIterator& operator-=(const IdxType idx)
                 {
                     mIndex -= idx;
-                    forEach(mIteratorTuple, [idx](auto &x) { x -= idx; });
+                    forEach(mIteratorTuplePtr, [idx](auto &x) { x -= idx; });
+                    mIteratorTupleVal = makeValueTuple(mIteratorTuplePtr);
                     return *this;
                 }
 
@@ -193,7 +233,7 @@ namespace vikunja
                  */
                 NODISCARD ALPAKA_FN_INLINE bool operator==(const ZipIterator& other) const noexcept
                 {
-                    return mIteratorTuple == other.mIteratorTuple && mIndex == other.mIndex;
+                    return mIteratorTuplePtr == other.mIteratorTuplePtr && mIndex == other.mIndex;
                 }
 
                 /**
@@ -209,9 +249,9 @@ namespace vikunja
                  */
                 NODISCARD ALPAKA_FN_INLINE bool operator<(const ZipIterator& other) const noexcept
                 {
-                    if(mIteratorTuple < other.mIteratorTuple)
+                    if(mIteratorTuplePtr < other.mIteratorTuplePtr)
                         return true;
-                    if(mIteratorTuple > other.mIteratorTuple)
+                    if(mIteratorTuplePtr > other.mIteratorTuplePtr)
                         return false;
                     return mIndex < other.mIndex;
                 }
@@ -221,9 +261,9 @@ namespace vikunja
                  */
                 NODISCARD ALPAKA_FN_INLINE bool operator>(const ZipIterator& other) const noexcept
                 {
-                    if(mIteratorTuple > other.mIteratorTuple)
+                    if(mIteratorTuplePtr > other.mIteratorTuplePtr)
                         return true;
-                    if(mIteratorTuple < other.mIteratorTuple)
+                    if(mIteratorTuplePtr < other.mIteratorTuplePtr)
                         return false;
                     return mIndex > other.mIndex;
                 }
@@ -233,9 +273,9 @@ namespace vikunja
                  */
                 NODISCARD ALPAKA_FN_INLINE bool operator<=(const ZipIterator& other) const noexcept
                 {
-                    if(mIteratorTuple < other.mIteratorTuple)
+                    if(mIteratorTuplePtr < other.mIteratorTuplePtr)
                         return true;
-                    if(mIteratorTuple > other.mIteratorTuple)
+                    if(mIteratorTuplePtr > other.mIteratorTuplePtr)
                         return false;
                     return mIndex <= other.mIndex;
                 }
@@ -245,9 +285,9 @@ namespace vikunja
                  */
                 NODISCARD ALPAKA_FN_INLINE bool operator>=(const ZipIterator& other) const noexcept
                 {
-                    if(mIteratorTuple > other.mIteratorTuple)
+                    if(mIteratorTuplePtr > other.mIteratorTuplePtr)
                         return true;
-                    if(mIteratorTuple < other.mIteratorTuple)
+                    if(mIteratorTuplePtr < other.mIteratorTuplePtr)
                         return false;
                     return mIndex >= other.mIndex;
                 }
@@ -257,7 +297,8 @@ namespace vikunja
 
             private:
                 IdxType mIndex;
-                IteratorTuple mIteratorTuple;
+                IteratorTuplePtr mIteratorTuplePtr;
+                IteratorTupleVal mIteratorTupleVal;
 
                 template<int... Is>
                 struct seq { };
@@ -292,6 +333,18 @@ namespace vikunja
                 {
                     f(std::get<I>(t));
                     forEach<I + 1, FuncT, Tp...>(t, f);
+                }
+
+                template<std::size_t I = 0, typename... Tp>
+                inline typename std::enable_if<I == sizeof...(Tp), void>::type updateIteratorTupleValue(std::tuple<Tp...> &) // Unused arguments are given no names
+                {
+                }
+
+                template<std::size_t I = 0, typename... Tp>
+                inline typename std::enable_if<I < sizeof...(Tp), void>::type updateIteratorTupleValue(std::tuple<Tp...>& t)
+                {
+                    *std::get<I>(mIteratorTuplePtr) = std::get<I>(t);
+                    updateIteratorTupleValue<I + 1, Tp...>(t);
                 }
             };
 

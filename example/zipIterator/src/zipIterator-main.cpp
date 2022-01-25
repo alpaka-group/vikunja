@@ -7,7 +7,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <vikunja/reduce/reduce.hpp>
+#include <vikunja/transform/transform.hpp>
 #include <vikunja/mem/iterator/ZipIterator.hpp>
 
 #include <alpaka/alpaka.hpp>
@@ -27,12 +27,12 @@ inline typename std::enable_if<I < sizeof...(Tp), void>::type forEach(std::tuple
     forEach<I + 1, FuncT, Tp...>(t, f);
 }
 
-template<typename IteratorTuple>
-void printTuple(IteratorTuple tuple)
+template<typename IteratorTuplePtr>
+void printTuple(IteratorTuplePtr tuple)
 {
     std::cout << "tuple(";
     int index = 0;
-    int tupleSize = std::tuple_size<IteratorTuple>{};
+    int tupleSize = std::tuple_size<IteratorTuplePtr>{};
     forEach(tuple, [&index, tupleSize](auto &x) { std::cout << x << (++index < tupleSize ? ", " : ""); });
     std::cout << ")";
 }
@@ -123,9 +123,10 @@ int main()
 
     std::cout << "\nTesting zip iterator in host with tuple<uint64_t, char, double>\n\n";
 
-    using IteratorTuple = std::tuple<TRed*, TRedChar*, TRedDouble*>;
-    IteratorTuple zipTuple = std::make_tuple(hostNative, hostNativeChar, hostNativeDouble);
-    vikunja::mem::iterator::ZipIterator<IteratorTuple> zipIter(zipTuple);
+    using IteratorTuplePtr = std::tuple<TRed*, TRedChar*, TRedDouble*>;
+    using IteratorTupleVal = std::tuple<TRed, TRedChar, TRedDouble>;
+    IteratorTuplePtr zipTuple = std::make_tuple(hostNative, hostNativeChar, hostNativeDouble);
+    vikunja::mem::iterator::ZipIterator<IteratorTuplePtr, IteratorTupleVal> zipIter(zipTuple);
 
     std::cout << "*zipIter: ";
     printTuple(*zipIter);
@@ -144,26 +145,33 @@ int main()
     std::cout << "\n\n";
 
     zipIter += 6;
-    std::cout << "zipIter += 6;\n"
+    std::cout << "*zipIter += 6;\n"
               << "*zipIter: ";
     printTuple(*zipIter);
     std::cout << "\n\n";
 
     zipIter -= 2;
-    std::cout << "zipIter -= 2;\n"
+    std::cout << "*zipIter -= 2;\n"
               << "*zipIter: ";
     printTuple(*zipIter);
     std::cout << "\n\n";
 
-    std::cout << "--zipIter: ";
+    std::cout << "*--zipIter: ";
     printTuple(*--zipIter);
     std::cout << "\n*zipIter: ";
     printTuple(*zipIter);
     std::cout << "\n\n";
 
-    std::cout << "zipIter--: ";
+    std::cout << "*zipIter--: ";
     printTuple(*zipIter--);
     std::cout << "\n*zipIter: ";
+    printTuple(*zipIter);
+    std::cout << "\n\n";
+
+    std::cout << "Double the number values of the tuple:\n"
+              << "zipIter = std::make_tuple(2 * std::get<0>(*zipIter), std::get<1>(*zipIter), 2 * std::get<2>(*zipIter));\n"
+              << "*zipIter: ";
+    zipIter = std::make_tuple(2 * std::get<0>(*zipIter), std::get<1>(*zipIter), 2 * std::get<2>(*zipIter));
     printTuple(*zipIter);
     std::cout << "\n\n";
 
@@ -179,8 +187,12 @@ int main()
     printTuple(zipIter[0]);
     std::cout << "\n";
 
-    std::cout << "zipIter[3]: ";
-    printTuple(zipIter[3]);
+    std::cout << "zipIter[2]: ";
+    printTuple(zipIter[2]);
+    std::cout << "\n";
+
+    std::cout << "zipIter[4] (number values has been doubled): ";
+    printTuple(zipIter[4]);
     std::cout << "\n";
 
     std::cout << "zipIter[6]: ";
@@ -189,45 +201,45 @@ int main()
     
     std::cout << "zipIter[9]: ";
     printTuple(zipIter[9]);
-    std::cout << "\n\n";
+    std::cout << "\n\n"
+              << "-----\n\n";
 
+    // Revert the number values for index 4
+    zipIter = std::make_tuple(std::get<0>(*zipIter) / 2, std::get<1>(*zipIter), std::get<2>(*zipIter) / 2);
 
+    IteratorTuplePtr deviceZipTuple = std::make_tuple(deviceNative, deviceNativeChar, deviceNativeDouble);
+    vikunja::mem::iterator::ZipIterator<IteratorTuplePtr, IteratorTupleVal> deviceZipIter(deviceZipTuple);
 
-    std::cout << "-----\n\n"
-              << "Failed when building for accelerator testing\n\n";
+    auto doubleNum = [] ALPAKA_FN_HOST_ACC(IteratorTupleVal const i)
+    {
+        return std::make_tuple(2 * std::get<0>(i), std::get<1>(i), 2 * std::get<2>(i));
+    };
 
-    // std::cout << "Testing accelerator: " << alpaka::getAccName<TAcc>() << " with size: " << n << "\n\n";
+    vikunja::transform::deviceTransform<TAcc>(
+        devAcc,
+        queueAcc,
+        extent[Dim::value - 1u],
+        deviceZipIter,
+        deviceZipIter,
+        doubleNum);
 
-    // IteratorTuple deviceZipTuple = std::make_tuple(deviceNative, deviceNativeChar, deviceNativeDouble);
-    // vikunja::mem::iterator::ZipIterator<IteratorTuple> deviceZipIter(deviceZipTuple);
+    // Copy the data back to the host for validation.
+    alpaka::memcpy(queueAcc, hostMem, deviceMem, extent);
 
-    // using IteratorTupleReduceResult = std::tuple<TRed, TRedChar, TRedDouble>;
+    TRed resultSum = std::accumulate(hostNative, hostNative + extent.prod(), 0);
+    TRed expectedResult = extent.prod() * (extent.prod() + 1);
 
-    // // Use Lambda function for reduction
-    // auto sum = [] ALPAKA_FN_HOST_ACC(IteratorTuple const i, IteratorTuple const j)
-    // {
-    //     IteratorTupleReduceResult tmp = std::make_tuple(*std::get<0>(i) + *std::get<0>(j), *std::get<1>(i), *std::get<2>(i) + *std::get<2>(j));
-    //     return tmp;
-    // };
-    // auto doubleNum = [] ALPAKA_FN_HOST_ACC(IteratorTuple const i)
-    // {
-    //     IteratorTupleReduceResult tmp = std::make_tuple(2 * *std::get<0>(i), *std::get<1>(i), 2 * *std::get<2>(i));
-    //     return tmp;
-    // };
-
-    // // TRANSFORM_REDUCE CALL:
-    // // Takes the arguments: accelerator device, host device, accelerator queue, size of data, pointer-like to memory,
-    // // transform lambda, reduce lambda.
-    // auto transformReduceResult = vikunja::reduce::deviceTransformReduce<TAcc>(
-    //     devAcc,
-    //     devHost,
-    //     queueAcc,
-    //     n,
-    //     deviceZipIter,
-    //     doubleNum,
-    //     sum);
-
-
+    std::cout << "Testing accelerator: " << alpaka::getAccName<TAcc>() << " with size: " << extent.prod() << "\n";
+    if(expectedResult == resultSum)
+    {
+        std::cout << "Transform was successful!\n\n";
+    }
+    else
+    {
+        std::cout << "Transform was not successful!\n"
+                  << "expected result: " << expectedResult << "\n"
+                  << "actual result: " << resultSum << "\n\n";
+    }
 
     return 0;
 }
