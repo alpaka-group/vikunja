@@ -1,5 +1,5 @@
 Algorithms
-=========
+==========
 
 This page provides an overview of all algorithms implemented in vikunja.
 
@@ -8,7 +8,7 @@ All algorithms have the property that the order in which the input elements are 
 Transform
 ---------
 
-Takes a range of elements as input, applies an unary operator to each element, and writes the result to an output range in the same order. 
+Takes a range of elements as input, applies an unary operator to each element, and writes the result to an output range in the same order.
 
 .. only:: html
 

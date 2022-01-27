@@ -33,8 +33,14 @@ target_link_libraries(vikunjaTestSetup
   PUBLIC
   Catch2::Catch2
   )
+if(VIKUNJA_ENABLE_BENCHMARKS)
+  target_compile_definitions(vikunjaTestSetup PRIVATE CATCH_CONFIG_ENABLE_BENCHMARKING)
+endif()
 add_library(vikunja::testSetup ALIAS vikunjaTestSetup)
 
 list(APPEND _VIKUNJA_TEST_OPTIONS "--use-colour yes")
 add_subdirectory("unit/")
 add_subdirectory("integ/")
+if(VIKUNJA_ENABLE_BENCHMARKS)
+    add_subdirectory("benchmarks/")
+endif()

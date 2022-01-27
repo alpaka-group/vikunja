@@ -41,6 +41,7 @@ Generally, **follow the manual pages in-order** to get started. Individual chapt
    :maxdepth: 1
    :caption: Development
 
+   development/test.rst
    development/docs.rst
    development/styleguide.rst
    development/ci.rst
