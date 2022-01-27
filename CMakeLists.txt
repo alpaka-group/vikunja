@@ -24,7 +24,7 @@ option(BUILD_TESTING "Build the testing tree." OFF)
 cmake_dependent_option(VIKUNJA_SYSTEM_CATCH2 "Use your local installation of Catch2" ON BUILD_TESTING OFF)
 cmake_dependent_option(VIKUNJA_ENABLE_CXX_TEST "Builds test that checks if the C++ standard is set correctly" OFF BUILD_TESTING OFF)
 cmake_dependent_option(VIKUNJA_ENABLE_BENCHMARKS "Enable benchmarks" OFF BUILD_TESTING OFF)
-cmake_dependent_option(VIKUNJA_ENABLE_CUDA_THRUST_BENCHMARKS "Enable benchmarks" OFF VIKUNJA_ENABLE_BENCHMARKS OFF)
+cmake_dependent_option(VIKUNJA_ENABLE_CUDA_THRUST_BENCHMARKS "Enable benchmarks using CUDA Thrust" OFF "VIKUNJA_ENABLE_BENCHMARKS;ALPAKA_ACC_GPU_CUDA_ENABLE" OFF)
 
 # activate support for host/device lambdas in cuda
 # needs to be set before alpaka is included

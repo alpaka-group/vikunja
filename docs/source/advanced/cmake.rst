@@ -30,29 +30,29 @@ Testing
 **VIKUNJA_SYSTEM_CATCH2** (OFF)
     .. code-block::
 
-        Only works if BUILD_TESTING is ON.
+        Requires BUILD_TESTING to be ON.
         Use your local installation of Catch2.
         Otherwise, it will be automatically downloaded and installed in the local build folder.
 
 **VIKUNJA_ENABLE_CXX_TEST** (OFF)
     .. code-block::
 
-        Only works if BUILD_TESTING is ON.
+        Requires BUILD_TESTING to be ON.
         Special test that checks if ALPAKA_CXX_STANDARD works correctly.
         The implementation is very compiler specific, so it is possible that the test is not
-        supported by your used C++ compiler.
+        supported by your C++ compiler.
 
 **VIKUNJA_ENABLE_BENCHMARKS** (OFF)
     .. code-block::
 
-        Only works if BUILD_TESTING is ON.
-        Enable the benchmarks. The benchmarks are built automatically and can be executed via ctest.
+        Requires BUILD_TESTING to be ON.
+        Enables the benchmarks. The benchmarks are built automatically and can be executed via CTest.
 
 **VIKUNJA_ENABLE_CUDA_THRUST_BENCHMARKS** (OFF)
     .. code-block::
 
-        Only works if VIKUNJA_ENABLE_BENCHMARKS and ALPAKA_ACC_GPU_CUDA_ENABLE are ON.
-        Enable thrust benchmarks for comparison.
+        Requires VIKUNJA_ENABLE_BENCHMARKS and ALPAKA_ACC_GPU_CUDA_ENABLE to be ON.
+        Enables Thrust benchmarks for comparison.
 
 alpaka
 ++++++

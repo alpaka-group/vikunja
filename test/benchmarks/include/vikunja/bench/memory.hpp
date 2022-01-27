@@ -22,16 +22,16 @@ namespace vikunja::bench
         TData const m_increment;
 
     public:
-        //! Functor for iota implementation with generic data type.
+        //! Iota functor for generic data types.
         //!
         //! \tparam TData Type of each element
-        //! \param begin Value of the first element.
+        //! \param init Value of the first element.
         //! \param increment Distance between two elements.
-        IotaFunctor(TData const begin, TData const increment) : m_begin(begin), m_increment(increment)
+        IotaFunctor(TData const init, TData const increment) : m_begin(init), m_increment(increment)
         {
         }
 
-        //! Writes the result of `begin + index * increment` to each element of the output vector.
+        //! Writes the result of `init + index * increment` to each element of the output vector.
         //!
         //! \tparam TAcc The accelerator environment to be executed on.
         //! \tparam TElem The element type.
@@ -64,17 +64,17 @@ namespace vikunja::bench
     };
 
 
-    //! Allocates memory and initialises each value with `begin + index * increment`,
+    //! Allocates memory and initializes each value with `init + index * increment`,
     //! where index is the position in the output vector. The allocation is done with `setup.devAcc`.
     //!
     //! \tparam TData Data type of the memory buffer.
     //! \tparam TSetup Fully specialized type of `vikunja::test::TestAlpakaSetup`.
     //! \tparam Type of the extent.
     //! \tparam TBuf Type of the alpaka memory buffer.
-    //! \param setup Instance of `vikunja::test::TestAlpakaSetup`. The `setup.devAcc` and `setup.queueDev` is used
+    //! \param setup Instance of `vikunja::test::TestAlpakaSetup`. `setup.devAcc` and `setup.queueDev` are used
     //! for allocation and initialization of the the memory.
     //! \param extent Size of the memory buffer. Needs to be 1 dimensional.
-    //! \param begin Value of the first element. Depending of TData, it can be negative.
+    //! \param init Value of the first element. Depending on TData, it can be negative.
     //! \param increment Distance between two elements of the vector. If the value is negative, the value of an
     //! element is greater than its previous element.
     template<
@@ -85,7 +85,7 @@ namespace vikunja::bench
     TBuf allocate_mem_iota(
         TSetup& setup,
         TExtent const& extent,
-        TData const begin = TData{0},
+        TData const init = TData{0},
         TData const increment = TData{1})
     {
         // TODO: test also 2 and 3 dimensional memory
@@ -105,7 +105,7 @@ namespace vikunja::bench
                 false,
                 alpaka::GridBlockExtentSubDivRestrictions::Unrestricted));
 
-        IotaFunctor iotaFunctor(begin, increment);
+        IotaFunctor iotaFunctor(init, increment);
 
         alpaka::exec<typename TSetup::Acc>(
             setup.queueAcc,
@@ -124,10 +124,10 @@ namespace vikunja::bench
         TData const m_constant;
 
     public:
-        //! Functor to write constant value in each element of a vector.
+        //! Functor to write a constant value into each element of a vector.
         //!
         //! \tparam TData Type of each element
-        //! \param begin Value of all elements.
+        //! \param constant Value to which all elements are set.
         ConstantInitFunctor(TData const constant) : m_constant(constant)
         {
         }
@@ -164,17 +164,17 @@ namespace vikunja::bench
         }
     };
 
-    //! Allocates memory and initialises each value with a constant value.
+    //! Allocates memory and initializes each value with a constant value.
     //! The allocation is done with `setup.devAcc`.
     //!
     //! \tparam TData Data type of the memory buffer.
     //! \tparam TSetup Fully specialized type of `vikunja::test::TestAlpakaSetup`.
     //! \tparam Type of the extent.
     //! \tparam TBuf Type of the alpaka memory buffer.
-    //! \param setup Instance of `vikunja::test::TestAlpakaSetup`. The `setup.devAcc` and `setup.queueDev` is used
+    //! \param setup Instance of `vikunja::test::TestAlpakaSetup`. `setup.devAcc` and `setup.queueDev` are used
     //! for allocation and initialization of the the memory.
     //! \param extent Size of the memory buffer. Needs to be 1 dimensional.
-    //! \param begin Value of the constant.
+    //! \param constant Value of the constant.
     template<
         typename TData,
         typename TSetup,

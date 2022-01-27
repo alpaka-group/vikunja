@@ -91,7 +91,7 @@ TEMPLATE_TEST_CASE("bechmark reduce", "[benchmark][reduce][vikunja]", int, float
     }
     else if constexpr(std::is_same_v<Data, float>)
     {
-        // removed 1'270'000 because of rounding errors.
+        // removed 1'270'000 because of precision errors.
         reduce_benchmark<Data, Idx>(GENERATE(100, 100'000, 2'000'000));
     }
     else if constexpr(std::is_same_v<Data, double>)
