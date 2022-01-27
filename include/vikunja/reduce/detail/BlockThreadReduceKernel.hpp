@@ -1,4 +1,4 @@
-/* Copyright 2021 Hauke Mewes
+/* Copyright 2022 Hauke Mewes, Simeon Ehrig
  *
  * This file is part of vikunja.
  *
@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include <vikunja/mem/iterator/PolicyBasedBlockIterator.hpp>
+#include <vikunja/access/PolicyBasedBlockStrategy.hpp>
 
 #include <alpaka/alpaka.hpp>
 
@@ -104,7 +104,7 @@ namespace vikunja
 
                     using MemPolicy = TMemAccessPolicy;
                     // Create an iterator with the specified memory access policy that wraps the input iterator.
-                    vikunja::mem::iterator::PolicyBasedBlockIterator<MemPolicy, TAcc, TInputIterator> iter(
+                    vikunja::MemAccess::PolicyBasedBlockStrategy<MemPolicy, TAcc, TInputIterator> iter(
                         source,
                         acc,
                         n,
