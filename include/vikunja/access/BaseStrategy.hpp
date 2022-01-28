@@ -13,114 +13,76 @@
 
 namespace vikunja::MemAccess
 {
-    //! An iterator base class.
+    //! Base class to implement memory access strategy.
     //!
-    //! \tparam T The type.
-    //! \tparam TIterator The iterator type (standard is T*)
-    template<typename TIterator>
+    //! \tparam TIdx Index type
+    template<typename TIdx>
     class BaseStrategy
     {
     protected:
-        TIterator const mData; // The underlying iterator must be const as we pass it by ref
-        uint64_t mIndex;
-        const uint64_t mMaximum;
+        TIdx m_index;
+        TIdx const m_maximum;
 
     public:
         //-----------------------------------------------------------------------------
         //! Constructor.
         //!
-        //! \param data A pointer to the data.
         //! \param index The index.
         //! \param maximum The first index outside of the iterator memory.
-        ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE BaseStrategy(TIterator const& data, uint64_t index, uint64_t maximum)
-            : mData(data)
-            , mIndex(index)
-            , mMaximum(maximum)
+        ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE BaseStrategy(TIdx const index, TIdx const maximum)
+            : m_index(index)
+            , m_maximum(maximum)
         {
         }
 
-        //-----------------------------------------------------------------------------
-        //! Constructor.
-        //!
-        //! \param other The other iterator object.
         ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE BaseStrategy(const BaseStrategy& other) = default;
 
-        //-----------------------------------------------------------------------------
-        //! Compare operator.
-        //!
-        //! \param other The other object.
-        //!
-        //! Returns true if objects are equal and false otherwise.
         ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto operator==(const BaseStrategy& other) const -> bool
         {
-            return (this->mData == other.mData) && (this->mIndex == other.mIndex)
-                && (this->mMaximum == other.mMaximum);
+            return (this->m_index == other.m_index) && (this->m_maximum == other.m_maximum);
         }
 
-        //-----------------------------------------------------------------------------
-        //! Compare operator.
-        //!
-        //! \param other The other object.
-        //!
-        //! Returns false if objects are equal and true otherwise.
         ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto operator!=(const BaseStrategy& other) const -> bool
         {
             return !operator==(other);
         }
 
-        //-----------------------------------------------------------------------------
-        //! Compare operator.
-        //!
-        //! \param other The other object.
-        //!
-        //! Returns false if the other object is equal or smaller and true
-        //! otherwise.
         ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto operator<(const BaseStrategy& other) const -> bool
         {
-            return mIndex < other.mIndex;
+            return m_index < other.m_index;
         }
 
-        //-----------------------------------------------------------------------------
-        //! Compare operator.
-        //!
-        //! \param other The other object.
-        //!
-        //! Returns false if the other object is equal or bigger and true otherwise.
         ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto operator>(const BaseStrategy& other) const -> bool
         {
-            return mIndex > other.mIndex;
+            return m_index > other.m_index;
         }
 
-        //-----------------------------------------------------------------------------
-        //! Compare operator.
-        //!
-        //! \param other The other object.
-        //!
-        //! Returns true if the other object is equal or bigger and false otherwise.
         ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto operator<=(const BaseStrategy& other) const -> bool
         {
-            return mIndex <= other.mIndex;
+            return m_index <= other.m_index;
         }
 
-        //-----------------------------------------------------------------------------
-        //! Compare operator.
-        //!
-        //! \param other The other object.
-        //!
-        //! Returns true if the other object is equal or smaller and false
-        //! otherwise.
         ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto operator>=(const BaseStrategy& other) const -> bool
         {
-            return mIndex >= other.mIndex;
+            return m_index >= other.m_index;
         }
 
         //-----------------------------------------------------------------------------
-        //! Returns the current element.
+        //! Get the current index.
+        //!
+        //! Returns a const reference to the current index.
+        ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto operator*() const -> TIdx const&
+        {
+            return m_index;
+        }
+
+        //-----------------------------------------------------------------------------
+        //! Set the current index
         //!
         //! Returns a reference to the current index.
-        ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto operator*() -> decltype(*(mData + mIndex))&
+        ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto operator*() -> TIdx&
         {
-            return *(mData + mIndex);
+            return m_index;
         }
     };
 

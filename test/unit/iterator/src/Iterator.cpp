@@ -36,10 +36,10 @@ TEST_CASE("BaseStrategy", "[iterator]")
     constexpr Idx size = 64;
     std::vector<Type> testData{generateIndexVector(size)};
 
-    BaseStrategy<IType> zeroFirst(testData.data(), 0, size);
-    BaseStrategy<IType> zeroSecond(testData.data(), 0, size);
-    BaseStrategy<IType> one(testData.data(), 1, size);
-    BaseStrategy<IType> copyOfZeroFirst(zeroFirst);
+    BaseStrategy<Idx> zeroFirst(0, size);
+    BaseStrategy<Idx> zeroSecond(0, size);
+    BaseStrategy<Idx> one(1, size);
+    BaseStrategy<Idx> copyOfZeroFirst(zeroFirst);
 
 
     REQUIRE(zeroFirst == zeroSecond);
@@ -59,7 +59,7 @@ TEST_CASE("BaseStrategy", "[iterator]")
 
     *zeroFirst = 2;
     REQUIRE(*zeroFirst == 2);
-    REQUIRE(*zeroSecond == 2);
+    REQUIRE(*zeroSecond == 0);
 };
 
 template<typename MemAccessPolicy>

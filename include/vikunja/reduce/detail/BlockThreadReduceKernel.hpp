@@ -104,11 +104,10 @@ namespace vikunja
 
                     using MemPolicy = TMemAccessPolicy;
                     // Create an iterator with the specified memory access policy that wraps the input iterator.
-                    vikunja::MemAccess::PolicyBasedBlockStrategy<MemPolicy, TAcc, TInputIterator> iter(
-                        source,
-                        acc,
-                        n,
-                        TBlockSize);
+                    using MenIndex = vikunja::MemAccess::PolicyBasedBlockStrategy<MemPolicy, TAcc, TIdx>;
+                    MenIndex iter(acc, n, TBlockSize);
+                    MenIndex end = iter.end();
+
                     auto startIndex
                         = MemPolicy::getStartIndex(acc, static_cast<TIdx>(n), static_cast<TIdx>(TBlockSize));
                     // only do work if the index is in bounds.
@@ -117,10 +116,10 @@ namespace vikunja
                     if(startIndex < n)
                     {
                         // no neutral element is used, so initialize with value from first element.
-                        auto tSum = TTransformOperator::run(acc, transformFunc, *iter);
+                        auto tSum = TTransformOperator::run(acc, transformFunc, source[*iter]);
                         ++iter;
                         // Manual unrolling. I dont know if this is really necessary, but
-                        while(iter + 3 < iter.end())
+                        for(; (iter + 3) < end; iter += 4)
                         {
                             tSum = TReduceOperator::run(
                                 acc,
@@ -135,20 +134,18 @@ namespace vikunja
                                             acc,
                                             reduceFunc,
                                             tSum,
-                                            TTransformOperator::run(acc, transformFunc, *iter)),
-                                        TTransformOperator::run(acc, transformFunc, *(iter + 1))),
-                                    TTransformOperator::run(acc, transformFunc, *(iter + 2))),
-                                TTransformOperator::run(acc, transformFunc, *(iter + 3)));
-                            iter += 4;
+                                            TTransformOperator::run(acc, transformFunc, source[*iter])),
+                                        TTransformOperator::run(acc, transformFunc, source[*(iter + 1)])),
+                                    TTransformOperator::run(acc, transformFunc, source[*(iter + 2)])),
+                                TTransformOperator::run(acc, transformFunc, source[*(iter + 3)]));
                         }
-                        while(iter < iter.end())
+                        for(; iter < end; ++iter)
                         {
                             tSum = TReduceOperator::run(
                                 acc,
                                 reduceFunc,
                                 tSum,
-                                TTransformOperator::run(acc, transformFunc, *iter));
-                            ++iter;
+                                TTransformOperator::run(acc, transformFunc, source[*iter]));
                         }
                         // This condition actually relies on the memory access pattern.
                         // When gridStriding is used, the first n threads always get the first n values,
