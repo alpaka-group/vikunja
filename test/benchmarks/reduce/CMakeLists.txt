@@ -27,6 +27,25 @@ add_test(NAME ${_TARGET_NAME_VIKUNJA_REDUCE} COMMAND ${_TARGET_NAME_VIKUNJA_REDU
 set_tests_properties(${_TARGET_NAME_VIKUNJA_REDUCE} PROPERTIES RUN_SERIAL TRUE)
 
 
+set(_TARGET_NAME_VIKUNJA_REDUCE "bench_vikunja_constiter_reduce")
+
+alpaka_add_executable(
+  ${_TARGET_NAME_VIKUNJA_REDUCE}
+  bench_vikunja_constiter_reduce.cpp
+  )
+
+target_link_libraries(${_TARGET_NAME_VIKUNJA_REDUCE}
+  PRIVATE
+  vikunja::testSetup
+  vikunja::benchSetup
+  vikunja::internalvikunja
+)
+
+add_test(NAME ${_TARGET_NAME_VIKUNJA_REDUCE} COMMAND ${_TARGET_NAME_VIKUNJA_REDUCE} ${_VIKUNJA_TEST_OPTIONS})
+# avoid running the benchmarks in parallel
+set_tests_properties(${_TARGET_NAME_VIKUNJA_REDUCE} PROPERTIES RUN_SERIAL TRUE)
+
+
 if(VIKUNJA_ENABLE_CUDA_THRUST_BENCHMARKS)
   set(_TARGET_NAME_THRUST_REDUCE "bench_thrust_reduce")
 
