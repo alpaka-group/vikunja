@@ -60,7 +60,7 @@ namespace vikunja
                  * @param iteratorTuplePtr The tuple to initialize the iterator with
                  * @param idx The index for the iterator, default 0
                  */
-                ZipIterator(IteratorTuplePtr iteratorTuplePtr, const IdxType& idx = static_cast<IdxType>(0))
+                constexpr ZipIterator(IteratorTuplePtr iteratorTuplePtr, const IdxType& idx = static_cast<IdxType>(0))
                     : mIndex(idx)
                     , mIteratorTuplePtr(iteratorTuplePtr)
                     , mIteratorTupleVal(makeValueTuple(mIteratorTuplePtr))
@@ -75,7 +75,7 @@ namespace vikunja
                 /**
                  * @brief Dereference operator to receive the stored value
                  */
-                NODISCARD ALPAKA_FN_INLINE IteratorTupleVal& operator*()
+                NODISCARD constexpr ALPAKA_FN_INLINE IteratorTupleVal& operator*()
                 {
                     return mIteratorTupleVal;
                 }
@@ -83,7 +83,7 @@ namespace vikunja
                 /**
                  * @brief Index operator to get stored value at some given offset from this iterator
                  */
-                NODISCARD ALPAKA_FN_INLINE const IteratorTupleVal operator[](const IdxType idx)
+                NODISCARD constexpr ALPAKA_FN_INLINE const IteratorTupleVal operator[](const IdxType idx)
                 {
                     IteratorTuplePtr tmp = mIteratorTuplePtr;
                     IdxType indexDiff = idx - mIndex;
@@ -91,18 +91,18 @@ namespace vikunja
                     return makeValueTuple(tmp);
                 }
 
-                NODISCARD ALPAKA_FN_INLINE IteratorTupleVal& operator=(IteratorTupleVal iteratorTupleVal)
-                {
-                    updateIteratorTupleValue(iteratorTupleVal);
-                    mIteratorTupleVal = makeValueTuple(mIteratorTuplePtr);
-                    return mIteratorTupleVal;
-                }
+                // NODISCARD constexpr ALPAKA_FN_INLINE IteratorTupleVal& operator=(IteratorTupleVal iteratorTupleVal)
+                // {
+                //     updateIteratorTupleValue(iteratorTupleVal);
+                //     mIteratorTupleVal = makeValueTuple(mIteratorTuplePtr);
+                //     return mIteratorTupleVal;
+                // }
 
 #pragma region arithmeticoperators
                 /**
                  * @brief Prefix increment operator
                  */
-                NODISCARD ALPAKA_FN_INLINE ZipIterator& operator++()
+                constexpr ALPAKA_FN_INLINE ZipIterator& operator++()
                 {
                     ++mIndex;
                     forEach(mIteratorTuplePtr, [](auto &x) { ++x; });
@@ -114,7 +114,7 @@ namespace vikunja
                  * @brief Postfix increment operator
                  * @note Use prefix increment operator instead if possible to avoid copies
                  */
-                ALPAKA_FN_INLINE ZipIterator operator++(int)
+                constexpr ZipIterator operator++(int)
                 {
                     ZipIterator tmp = *this;
                     ++mIndex;
@@ -126,7 +126,7 @@ namespace vikunja
                 /**
                  * @brief Prefix decrement operator
                  */
-                NODISCARD ALPAKA_FN_INLINE ZipIterator& operator--()
+                constexpr ALPAKA_FN_INLINE ZipIterator& operator--()
                 {
                     --mIndex;
                     forEach(mIteratorTuplePtr, [](auto &x) { --x; });
@@ -138,7 +138,7 @@ namespace vikunja
                  * @brief Postfix decrement operator
                  * @note Use prefix decrement operator instead if possible to avoid copies
                  */
-                ALPAKA_FN_INLINE ZipIterator operator--(int)
+                constexpr ALPAKA_FN_INLINE ZipIterator operator--(int)
                 {
                     ZipIterator tmp = *this;
                     --mIndex;
@@ -150,51 +150,25 @@ namespace vikunja
                 /**
                  * @brief Add an index to this iterator
                  */
-                NODISCARD ALPAKA_FN_INLINE ZipIterator operator+(const int idx)
+                NODISCARD constexpr friend ALPAKA_FN_INLINE ZipIterator operator+(ZipIterator zipIter, const IdxType idx)
                 {
-                    IteratorTuplePtr tmp = mIteratorTuplePtr;
-                    IdxType indexDiff = mIndex;
-                    forEach(tmp, [indexDiff](auto &x) { x -= indexDiff; });
-                    return ZipIterator(tmp, mIndex + idx);
-                }
-
-                /**
-                 * @brief Add an index to this iterator
-                 */
-                NODISCARD friend ALPAKA_FN_INLINE ZipIterator operator+(ZipIterator zipIter, const IdxType idx)
-                {
-                    IteratorTuplePtr tmp = zipIter.mIteratorTuplePtr;
-                    IdxType indexDiff = zipIter.mIndex;
-                    zipIter.forEach(tmp, [indexDiff](auto &x) { x -= indexDiff; });
-                    return ZipIterator(tmp, zipIter.mIndex + idx);
+                    zipIter += idx;
+                    return zipIter;
                 }
 
                 /**
                  * @brief Subtract an index from this iterator
                  */
-                NODISCARD ALPAKA_FN_INLINE ZipIterator operator-(const int idx)
+                NODISCARD constexpr friend ALPAKA_FN_INLINE ZipIterator operator-(ZipIterator zipIter, const IdxType idx)
                 {
-                    IteratorTuplePtr tmp = mIteratorTuplePtr;
-                    IdxType indexDiff = mIndex;
-                    forEach(tmp, [indexDiff](auto &x) { x -= indexDiff; });
-                    return ZipIterator(tmp, mIndex - idx);
-                }
-
-                /**
-                 * @brief Subtract an index from this iterator
-                 */
-                NODISCARD friend ALPAKA_FN_INLINE ZipIterator operator-(ZipIterator zipIter, const IdxType idx)
-                {
-                    IteratorTuplePtr tmp = zipIter.mIteratorTuplePtr;
-                    IdxType indexDiff = zipIter.mIndex;
-                    zipIter.forEach(tmp, [indexDiff](auto &x) { x -= indexDiff; });
-                    return ZipIterator(tmp, zipIter.mIndex - idx);
+                    zipIter -= idx;
+                    return zipIter;
                 }
 
                 /**
                  * @brief Add an index to this iterator
                  */
-                NODISCARD ALPAKA_FN_INLINE ZipIterator& operator+=(const IdxType idx)
+                constexpr ALPAKA_FN_INLINE ZipIterator& operator+=(const IdxType idx)
                 {
                     mIndex += idx;
                     forEach(mIteratorTuplePtr, [idx](auto &x) { x += idx; });
@@ -205,7 +179,7 @@ namespace vikunja
                 /**
                  * @brief Subtract an index from this iterator
                  */
-                NODISCARD ALPAKA_FN_INLINE ZipIterator& operator-=(const IdxType idx)
+                constexpr ALPAKA_FN_INLINE ZipIterator& operator-=(const IdxType idx)
                 {
                     mIndex -= idx;
                     forEach(mIteratorTuplePtr, [idx](auto &x) { x -= idx; });
@@ -217,79 +191,64 @@ namespace vikunja
 
 #pragma region comparisonoperators
 
-// if spaceship operator is available is being used we can use spaceship operator magic
 #ifdef USESPACESHIP
 
                 /**
                  * @brief Spaceship operator for comparisons
                  */
-                NODISCARD ALPAKA_FN_INLINE auto operator<=>(const ZipIterator& other) const noexcept = default;
+                NODISCARD constexpr ALPAKA_FN_INLINE auto operator<=>(const ZipIterator& other) const noexcept
+                {
+                    return mIteratorTuplePtr.operator<=>(other.mIteratorTuplePtr);
+                }
 
-// if cpp20 *isn't* defined we get to write 70 lines of boilerplate
 #else
 
                 /**
-                 * @brief Equality comparison, returns true if the iterators are the same
+                 * @brief Equality comparison, returns true if the index are the same
                  */
-                NODISCARD ALPAKA_FN_INLINE bool operator==(const ZipIterator& other) const noexcept
+                NODISCARD constexpr friend ALPAKA_FN_INLINE bool operator==(const ZipIterator& zipIter, const ZipIterator& other) noexcept
                 {
-                    return mIteratorTuplePtr == other.mIteratorTuplePtr && mIndex == other.mIndex;
+                    return zipIter.mIndex == other.mIndex;
                 }
 
                 /**
                  * @brief Inequality comparison, negated equality operator
                  */
-                NODISCARD ALPAKA_FN_INLINE bool operator!=(const ZipIterator& other) const noexcept
+                NODISCARD constexpr friend ALPAKA_FN_INLINE bool operator!=(const ZipIterator& zipIter, const ZipIterator& other) noexcept
                 {
-                    return !operator==(other);
+                    return !operator==(zipIter, other);
                 }
 
                 /**
-                 * @brief Less than comparison, value is checked first, then index
+                 * @brief Less than comparison, index is checked 
                  */
-                NODISCARD ALPAKA_FN_INLINE bool operator<(const ZipIterator& other) const noexcept
+                NODISCARD constexpr friend ALPAKA_FN_INLINE bool operator<(const ZipIterator& zipIter, const ZipIterator& other) noexcept
                 {
-                    if(mIteratorTuplePtr < other.mIteratorTuplePtr)
-                        return true;
-                    if(mIteratorTuplePtr > other.mIteratorTuplePtr)
-                        return false;
-                    return mIndex < other.mIndex;
+                    return zipIter.mIndex < other.mIndex;
                 }
 
                 /**
-                 * @brief Greater than comparison, value is checked first, then index
+                 * @brief Greater than comparison, index is checked 
                  */
-                NODISCARD ALPAKA_FN_INLINE bool operator>(const ZipIterator& other) const noexcept
+                NODISCARD constexpr friend ALPAKA_FN_INLINE bool operator>(const ZipIterator& zipIter, const ZipIterator& other) noexcept
                 {
-                    if(mIteratorTuplePtr > other.mIteratorTuplePtr)
-                        return true;
-                    if(mIteratorTuplePtr < other.mIteratorTuplePtr)
-                        return false;
-                    return mIndex > other.mIndex;
+                    return zipIter.mIndex > other.mIndex;
                 }
 
                 /**
-                 * @brief Less than or equal comparison, value is checked first, then index
+                 * @brief Less than or equal comparison, index is checked 
                  */
-                NODISCARD ALPAKA_FN_INLINE bool operator<=(const ZipIterator& other) const noexcept
+                NODISCARD constexpr friend ALPAKA_FN_INLINE bool operator<=(const ZipIterator& zipIter, const ZipIterator& other) noexcept
                 {
-                    if(mIteratorTuplePtr < other.mIteratorTuplePtr)
-                        return true;
-                    if(mIteratorTuplePtr > other.mIteratorTuplePtr)
-                        return false;
-                    return mIndex <= other.mIndex;
+                    return zipIter.mIndex <= other.mIndex;
                 }
 
                 /**
-                 * @brief Greater than or equal comparison, value is checked first, then index
+                 * @brief Greater than or equal comparison, index is checked 
                  */
-                NODISCARD ALPAKA_FN_INLINE bool operator>=(const ZipIterator& other) const noexcept
+                NODISCARD constexpr friend ALPAKA_FN_INLINE bool operator>=(const ZipIterator& zipIter, const ZipIterator& other) noexcept
                 {
-                    if(mIteratorTuplePtr > other.mIteratorTuplePtr)
-                        return true;
-                    if(mIteratorTuplePtr < other.mIteratorTuplePtr)
-                        return false;
-                    return mIndex >= other.mIndex;
+                    return zipIter.mIndex >= other.mIndex;
                 }
 #endif
 

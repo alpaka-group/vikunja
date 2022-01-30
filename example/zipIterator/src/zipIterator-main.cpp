@@ -27,12 +27,12 @@ inline typename std::enable_if<I < sizeof...(Tp), void>::type forEach(std::tuple
     forEach<I + 1, FuncT, Tp...>(t, f);
 }
 
-template<typename IteratorTuplePtr>
-void printTuple(IteratorTuplePtr tuple)
+template<typename IteratorTupleVal>
+void printTuple(IteratorTupleVal tuple)
 {
-    std::cout << "tuple(";
+    std::cout << "(";
     int index = 0;
-    int tupleSize = std::tuple_size<IteratorTuplePtr>{};
+    int tupleSize = std::tuple_size<IteratorTupleVal>{};
     forEach(tuple, [&index, tupleSize](auto &x) { std::cout << x << (++index < tupleSize ? ", " : ""); });
     std::cout << ")";
 }
@@ -41,11 +41,6 @@ int main()
 {
     // Define the accelerator here. Must be one of the enabled accelerators.
     using TAcc = alpaka::AccCpuSerial<alpaka::DimInt<3u>, std::uint64_t>;
-
-    // Types of the data that will be reduced
-    using TRed = uint64_t;
-    using TRedChar = char;
-    using TRedDouble = double;
 
     // Alpaka index type
     using Idx = alpaka::Idx<TAcc>;
@@ -81,57 +76,52 @@ int main()
     QueueAcc queueAcc(devAcc);
 
     // allocate memory both on host and device.
-    auto deviceMem(alpaka::allocBuf<TRed, Idx>(devAcc, extent));
-    auto hostMem(alpaka::allocBuf<TRed, Idx>(devHost, extent));
+    auto deviceMem(alpaka::allocBuf<uint64_t, Idx>(devAcc, extent));
+    auto hostMem(alpaka::allocBuf<uint64_t, Idx>(devHost, extent));
     // Fill memory on host with numbers from 0...n-1.
-    TRed* hostNative = alpaka::getPtrNative(hostMem);
+    uint64_t* hostNative = alpaka::getPtrNative(hostMem);
     for(Idx i = 0; i < n; ++i)
-        hostNative[i] = static_cast<TRed>(i + 1);
+        hostNative[i] = static_cast<uint64_t>(i + 1);
     // Copy to accelerator.
     alpaka::memcpy(queueAcc, deviceMem, hostMem, extent);
-    TRed* deviceNative = alpaka::getPtrNative(deviceMem);
+    uint64_t* deviceNative = alpaka::getPtrNative(deviceMem);
     
     // allocate memory both on host and device.
-    auto deviceMemChar(alpaka::allocBuf<TRedChar, Idx>(devAcc, extent));
-    auto hostMemChar(alpaka::allocBuf<TRedChar, Idx>(devHost, extent));
+    auto deviceMemChar(alpaka::allocBuf<char, Idx>(devAcc, extent));
+    auto hostMemChar(alpaka::allocBuf<char, Idx>(devHost, extent));
+    std::vector<char> chars = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j' };
     // Fill memory on host with char from 'a' to 'j'.
-    TRedChar* hostNativeChar = alpaka::getPtrNative(hostMemChar);
-    hostNativeChar[0] = 'a';
-    hostNativeChar[1] = 'b';
-    hostNativeChar[2] = 'c';
-    hostNativeChar[3] = 'd';
-    hostNativeChar[4] = 'e';
-    hostNativeChar[5] = 'f';
-    hostNativeChar[6] = 'g';
-    hostNativeChar[7] = 'h';
-    hostNativeChar[8] = 'i';
-    hostNativeChar[9] = 'j';
+    char* hostNativeChar = alpaka::getPtrNative(hostMemChar);
+    for(Idx i = 0; i < n; ++i)
+    {
+        hostNativeChar[i] = chars[i];
+    }
     // Copy to accelerator.
     alpaka::memcpy(queueAcc, deviceMemChar, hostMemChar, extent);
-    TRedChar* deviceNativeChar = alpaka::getPtrNative(deviceMemChar);
+    char* deviceNativeChar = alpaka::getPtrNative(deviceMemChar);
 
     // allocate memory both on host and device.
-    auto deviceMemDouble(alpaka::allocBuf<TRedDouble, Idx>(devAcc, extent));
-    auto hostMemDouble(alpaka::allocBuf<TRedDouble, Idx>(devHost, extent));
+    auto deviceMemDouble(alpaka::allocBuf<double, Idx>(devAcc, extent));
+    auto hostMemDouble(alpaka::allocBuf<double, Idx>(devHost, extent));
     // Fill memory on host with double numbers from 10.12...(n-1 + 10.12).
-    TRedDouble* hostNativeDouble = alpaka::getPtrNative(hostMemDouble);
+    double* hostNativeDouble = alpaka::getPtrNative(hostMemDouble);
     for(Idx i = 0; i < n; ++i)
-        hostNativeDouble[i] = static_cast<TRedDouble>(i + 10.12);
+        hostNativeDouble[i] = static_cast<double>(i + 10.12);
     // Copy to accelerator.
     alpaka::memcpy(queueAcc, deviceMemDouble, hostMemDouble, extent);
-    TRedDouble* deviceNativeDouble = alpaka::getPtrNative(deviceMemDouble);
+    double* deviceNativeDouble = alpaka::getPtrNative(deviceMemDouble);
 
     std::cout << "\nTesting zip iterator in host with tuple<uint64_t, char, double>\n\n";
 
-    using IteratorTuplePtr = std::tuple<TRed*, TRedChar*, TRedDouble*>;
-    using IteratorTupleVal = std::tuple<TRed, TRedChar, TRedDouble>;
+    using IteratorTuplePtr = std::tuple<uint64_t*, char*, double*>;
+    using IteratorTupleVal = std::tuple<uint64_t, char, double>;
     IteratorTuplePtr zipTuple = std::make_tuple(hostNative, hostNativeChar, hostNativeDouble);
     vikunja::mem::iterator::ZipIterator<IteratorTuplePtr, IteratorTupleVal> zipIter(zipTuple);
 
     std::cout << "*zipIter: ";
     printTuple(*zipIter);
     std::cout << "\n\n";
-    
+
     std::cout << "*++zipIter: ";
     printTuple(*++zipIter);
     std::cout << "\n*zipIter: ";
@@ -168,12 +158,12 @@ int main()
     printTuple(*zipIter);
     std::cout << "\n\n";
 
-    std::cout << "Double the number values of the tuple:\n"
-              << "zipIter = std::make_tuple(2 * std::get<0>(*zipIter), std::get<1>(*zipIter), 2 * std::get<2>(*zipIter));\n"
-              << "*zipIter: ";
-    zipIter = std::make_tuple(2 * std::get<0>(*zipIter), std::get<1>(*zipIter), 2 * std::get<2>(*zipIter));
-    printTuple(*zipIter);
-    std::cout << "\n\n";
+    // std::cout << "Double the number values of the tuple:\n"
+    //           << "zipIter = std::make_tuple(2 * std::get<0>(*zipIter), std::get<1>(*zipIter), 2 * std::get<2>(*zipIter));\n"
+    //           << "*zipIter: ";
+    // zipIter = std::make_tuple(2 * std::get<0>(*zipIter), std::get<1>(*zipIter), 2 * std::get<2>(*zipIter));
+    // printTuple(*zipIter);
+    // std::cout << "\n\n";
 
     std::cout << "*(zipIter + 2): ";
     printTuple(*(zipIter + 2));
@@ -191,28 +181,39 @@ int main()
     printTuple(zipIter[2]);
     std::cout << "\n";
 
-    std::cout << "zipIter[4] (number values has been doubled): ";
+    // std::cout << "zipIter[4] (number values has been doubled): ";
+    // printTuple(zipIter[4]);
+    // std::cout << "\n";
+
+    // std::cout << "Revert the number values for index 4\n";
+    // zipIter = std::make_tuple(std::get<0>(*zipIter) / 2, std::get<1>(*zipIter), std::get<2>(*zipIter) / 2);
+
+    std::cout << "zipIter[4]: ";
     printTuple(zipIter[4]);
     std::cout << "\n";
 
     std::cout << "zipIter[6]: ";
     printTuple(zipIter[6]);
     std::cout << "\n";
-    
+
     std::cout << "zipIter[9]: ";
     printTuple(zipIter[9]);
     std::cout << "\n\n"
               << "-----\n\n";
 
-    // Revert the number values for index 4
-    zipIter = std::make_tuple(std::get<0>(*zipIter) / 2, std::get<1>(*zipIter), std::get<2>(*zipIter) / 2);
-
     IteratorTuplePtr deviceZipTuple = std::make_tuple(deviceNative, deviceNativeChar, deviceNativeDouble);
     vikunja::mem::iterator::ZipIterator<IteratorTuplePtr, IteratorTupleVal> deviceZipIter(deviceZipTuple);
 
-    auto doubleNum = [] ALPAKA_FN_HOST_ACC(IteratorTupleVal const i)
+    auto deviceMemResult(alpaka::allocBuf<IteratorTupleVal, Idx>(devAcc, extent));
+    auto hostMemResult(alpaka::allocBuf<IteratorTupleVal, Idx>(devHost, extent));
+    IteratorTupleVal* hostNativeResultPtr = alpaka::getPtrNative(hostMemResult);
+    IteratorTupleVal* deviceNativeResultPtr = alpaka::getPtrNative(deviceMemResult);
+
+    auto doubleNum = [] ALPAKA_FN_HOST_ACC(IteratorTupleVal const& t)
     {
-        return std::make_tuple(2 * std::get<0>(i), std::get<1>(i), 2 * std::get<2>(i));
+        // return std::make_tuple(2 * std::get<0>(t), std::get<1>(t), 2 * std::get<2>(t));
+        // return std::make_tuple(static_cast<uint64_t>(5), 'e', static_cast<double>(14.12));
+        return t;
     };
 
     vikunja::transform::deviceTransform<TAcc>(
@@ -220,26 +221,42 @@ int main()
         queueAcc,
         extent[Dim::value - 1u],
         deviceZipIter,
-        deviceZipIter,
+        deviceNativeResultPtr,
         doubleNum);
 
     // Copy the data back to the host for validation.
-    alpaka::memcpy(queueAcc, hostMem, deviceMem, extent);
+    alpaka::memcpy(queueAcc, hostMemResult, deviceMemResult, extent);
 
-    TRed resultSum = std::accumulate(hostNative, hostNative + extent.prod(), 0);
-    TRed expectedResult = extent.prod() * (extent.prod() + 1);
+    std::cout << "Testing accelerator: " << alpaka::getAccName<TAcc>() << " with size: " << extent.prod() << "\n"
+              << "-----\n";
 
-    std::cout << "Testing accelerator: " << alpaka::getAccName<TAcc>() << " with size: " << extent.prod() << "\n";
-    if(expectedResult == resultSum)
+    bool isTransformSuccess = true;
+    for(Idx i = 0; i < n; ++i)
     {
-        std::cout << "Transform was successful!\n\n";
+        std::cout << "n=" << i << " | Expected result: ("
+                  << 2 * (i + 1) << ", " << chars[i] << ", " << 2 * (i + 10.12)
+                  << ") | Actual result: ";
+        printTuple(hostNativeResultPtr[i]);
+
+        if((2 * (i + 1) == std::get<0>(hostNativeResultPtr[i])) && 
+            (chars[i] == std::get<1>(hostNativeResultPtr[i])) &&
+            (2 * (i + 10.12) == std::get<2>(hostNativeResultPtr[i]))
+        ) {
+            std::cout << " | OK\n";
+        }
+        else
+        {
+            std::cout << " | NOT OK\n";
+            isTransformSuccess = false;
+        }
     }
+
+    if(isTransformSuccess)
+        std::cout << "-----\n"
+                  << "Transform was successful!\n\n";
     else
-    {
-        std::cout << "Transform was not successful!\n"
-                  << "expected result: " << expectedResult << "\n"
-                  << "actual result: " << resultSum << "\n\n";
-    }
+        std::cout << "-----\n"
+                  << "Transform was NOT successful!\n\n";
 
     return 0;
 }
