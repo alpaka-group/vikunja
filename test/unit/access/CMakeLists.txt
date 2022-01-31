@@ -8,12 +8,12 @@
 
 cmake_minimum_required(VERSION 3.18)
 
-set(_TARGET_NAME "test_iterator")
+set(_TARGET_NAME "test_memAccessStrategy")
 
 
 alpaka_add_executable(
   ${_TARGET_NAME}
-  src/Iterator.cpp
+  src/MemAccessStrategy.cpp
   )
 
 target_link_libraries(${_TARGET_NAME}

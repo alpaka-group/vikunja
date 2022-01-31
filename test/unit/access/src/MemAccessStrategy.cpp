@@ -31,7 +31,7 @@ std::vector<Type> generateIndexVector(Idx size)
     return data;
 }
 
-TEST_CASE("BaseStrategy", "[iterator]")
+TEST_CASE("BaseStrategy", "[MemAccessStrategy]")
 {
     constexpr Idx size = 64;
     std::vector<Type> testData{generateIndexVector(size)};
@@ -110,7 +110,7 @@ struct TestPolicyBasedBlockIterator
     }
 };
 
-TEST_CASE("PolicyBasedBlockStrategy", "[iterator]")
+TEST_CASE("PolicyBasedBlockStrategy", "[MemAccessStrategy]")
 {
     //    constexpr Idx size = 64;
 
