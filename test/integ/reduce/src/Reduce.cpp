@@ -56,6 +56,38 @@ namespace vikunja
                         Base::m_size,
                         alpaka::getPtrNative(Base::m_device_mem),
                         reduceFunctor);
+                }
+            };
+
+            template<
+                typename TDim,
+                template<typename, typename>
+                class TAcc,
+                typename TData,
+                typename TDataResult = TData,
+                typename TIdx = std::uint64_t>
+            class TestSetupReducePtr : public TestSetupBase<TDim, TAcc, TData, TDataResult, TIdx>
+            {
+            public:
+                using TestSetupBase<TDim, TAcc, TData, TDataResult, TIdx>::TestSetupBase;
+
+                using Base = typename vikunja::test::reduce::TestSetupBase<TDim, TAcc, TData, TDataResult, TIdx>;
+
+                template<typename TReduceFunctor>
+                void run(TReduceFunctor reduceFunctor)
+                {
+                    alpaka::memcpy(Base::Base::queueAcc, Base::m_device_mem, Base::m_host_mem, Base::m_extent);
+
+                    TData* begin = alpaka::getPtrNative(Base::m_device_mem);
+                    TData* end = begin + Base::m_size;
+
+                    Base::m_result = vikunja::reduce::deviceReduce<typename Base::Acc>(
+                        Base::devAcc,
+                        Base::devHost,
+                        Base::Base::queueAcc,
+                        begin,
+                        end,
+                        reduceFunctor);
                 };
             };
 
@@ -116,6 +148,39 @@ namespace vikunja
                         Base::Base::queueAcc,
                         Base::m_size,
                         alpaka::getPtrNative(Base::m_device_mem),
+                        transformFunctor,
+                        reduceFunctor);
+                }
+            };
+
+            template<
+                typename TDim,
+                template<typename, typename>
+                class TAcc,
+                typename TData,
+                typename TDataResult = TData,
+                typename TIdx = std::uint64_t>
+            class TestSetupReduceTransformPtr : public TestSetupBase<TDim, TAcc, TData, TDataResult, TIdx>
+            {
+            public:
+                using TestSetupBase<TDim, TAcc, TData, TDataResult, TIdx>::TestSetupBase;
+
+                using Base = typename vikunja::test::reduce::TestSetupBase<TDim, TAcc, TData, TDataResult, TIdx>;
+
+                template<typename TReduceFunctor, typename TTransformFunctor>
+                void run(TReduceFunctor reduceFunctor, TTransformFunctor transformFunctor)
+                {
+                    alpaka::memcpy(Base::Base::queueAcc, Base::m_device_mem, Base::m_host_mem, Base::m_extent);
+
+                    TData* begin = alpaka::getPtrNative(Base::m_device_mem);
+                    TData* end = begin + Base::m_size;
+
+                    Base::m_result = vikunja::reduce::deviceTransformReduce<typename Base::Acc>(
+                        Base::devAcc,
+                        Base::devHost,
+                        Base::Base::queueAcc,
+                        begin,
+                        end,
                         transformFunctor,
                         reduceFunctor);
                 };
