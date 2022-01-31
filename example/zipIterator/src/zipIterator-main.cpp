@@ -27,12 +27,12 @@ inline typename std::enable_if<I < sizeof...(Tp), void>::type forEach(std::tuple
     forEach<I + 1, FuncT, Tp...>(t, f);
 }
 
-template<typename IteratorTupleVal>
-void printTuple(IteratorTupleVal tuple)
+template<typename TIteratorTupleVal>
+void printTuple(TIteratorTupleVal tuple)
 {
     std::cout << "(";
     int index = 0;
-    int tupleSize = std::tuple_size<IteratorTupleVal>{};
+    int tupleSize = std::tuple_size<TIteratorTupleVal>{};
     forEach(tuple, [&index, tupleSize](auto &x) { std::cout << x << (++index < tupleSize ? ", " : ""); });
     std::cout << ")";
 }
@@ -113,10 +113,10 @@ int main()
 
     std::cout << "\nTesting zip iterator in host with tuple<uint64_t, char, double>\n\n";
 
-    using IteratorTuplePtr = std::tuple<uint64_t*, char*, double*>;
-    using IteratorTupleVal = std::tuple<uint64_t, char, double>;
-    IteratorTuplePtr zipTuple = std::make_tuple(hostNative, hostNativeChar, hostNativeDouble);
-    vikunja::mem::iterator::ZipIterator<IteratorTuplePtr, IteratorTupleVal> zipIter(zipTuple);
+    using TIteratorTuplePtr = std::tuple<uint64_t*, char*, double*>;
+    using TIteratorTupleVal = std::tuple<uint64_t, char, double>;
+    TIteratorTuplePtr zipTuple = std::make_tuple(hostNative, hostNativeChar, hostNativeDouble);
+    vikunja::mem::iterator::ZipIterator<TIteratorTuplePtr, TIteratorTupleVal> zipIter(zipTuple);
 
     std::cout << "*zipIter: ";
     printTuple(*zipIter);
@@ -201,19 +201,17 @@ int main()
     std::cout << "\n\n"
               << "-----\n\n";
 
-    IteratorTuplePtr deviceZipTuple = std::make_tuple(deviceNative, deviceNativeChar, deviceNativeDouble);
-    vikunja::mem::iterator::ZipIterator<IteratorTuplePtr, IteratorTupleVal> deviceZipIter(deviceZipTuple);
+    TIteratorTuplePtr deviceZipTuple = std::make_tuple(deviceNative, deviceNativeChar, deviceNativeDouble);
+    vikunja::mem::iterator::ZipIterator<TIteratorTuplePtr, TIteratorTupleVal> deviceZipIter(deviceZipTuple);
 
-    auto deviceMemResult(alpaka::allocBuf<IteratorTupleVal, Idx>(devAcc, extent));
-    auto hostMemResult(alpaka::allocBuf<IteratorTupleVal, Idx>(devHost, extent));
-    IteratorTupleVal* hostNativeResultPtr = alpaka::getPtrNative(hostMemResult);
-    IteratorTupleVal* deviceNativeResultPtr = alpaka::getPtrNative(deviceMemResult);
+    auto deviceMemResult(alpaka::allocBuf<TIteratorTupleVal, Idx>(devAcc, extent));
+    auto hostMemResult(alpaka::allocBuf<TIteratorTupleVal, Idx>(devHost, extent));
+    TIteratorTupleVal* hostNativeResultPtr = alpaka::getPtrNative(hostMemResult);
+    TIteratorTupleVal* deviceNativeResultPtr = alpaka::getPtrNative(deviceMemResult);
 
-    auto doubleNum = [] ALPAKA_FN_HOST_ACC(IteratorTupleVal const& t)
+    auto doubleNum = [] ALPAKA_FN_HOST_ACC(TIteratorTupleVal const& t)
     {
-        // return std::make_tuple(2 * std::get<0>(t), std::get<1>(t), 2 * std::get<2>(t));
-        // return std::make_tuple(static_cast<uint64_t>(5), 'e', static_cast<double>(14.12));
-        return t;
+        return std::make_tuple(2 * std::get<0>(t), std::get<1>(t), 2 * std::get<2>(t));
     };
 
     vikunja::transform::deviceTransform<TAcc>(
