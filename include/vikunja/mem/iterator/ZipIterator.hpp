@@ -163,6 +163,11 @@ namespace vikunja
                     return zipIter;
                 }
 
+                NODISCARD ALPAKA_FN_HOST_ACC friend ALPAKA_FN_INLINE TIdx operator-(const ZipIterator& zipIter, const ZipIterator& other)
+                {
+                    return zipIter.m_index - other.m_index;
+                }
+
                 /**
                  * @brief Add an index to this iterator
                  */
