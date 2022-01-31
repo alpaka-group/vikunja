@@ -1,4 +1,4 @@
-/* Copyright 2021 Hauke Mewes
+/* Copyright 2022 Hauke Mewes, Simeon Ehrig
  *
  * This file is part of vikunja.
  *
@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include <vikunja/mem/iterator/PolicyBasedBlockIterator.hpp>
+#include <vikunja/access/PolicyBasedBlockStrategy.hpp>
 
 #include <alpaka/alpaka.hpp>
 
@@ -41,16 +41,10 @@ namespace vikunja
                     TIdx const& n,
                     TFunc const& func) const
                 {
-                    vikunja::mem::iterator::PolicyBasedBlockIterator<TMemAccessPolicy, TAcc, TInputIterator>
-                        inputIterator(source, acc, n, TBlockSize);
-                    vikunja::mem::iterator::PolicyBasedBlockIterator<TMemAccessPolicy, TAcc, TOutputIterator>
-                        outputIterator(destination, acc, n, TBlockSize);
-
-                    while(inputIterator < inputIterator.end())
+                    using MenIndex = vikunja::MemAccess::PolicyBasedBlockStrategy<TMemAccessPolicy, TAcc, TIdx>;
+                    for(MenIndex iter(acc, n, TBlockSize), end = iter.end(); iter < end; ++iter)
                     {
-                        *outputIterator = TOperator::run(acc, func, *inputIterator);
-                        ++inputIterator;
-                        ++outputIterator;
+                        destination[*iter] = TOperator::run(acc, func, source[*iter]);
                     }
                 }
 
@@ -69,19 +63,10 @@ namespace vikunja
                     TIdx const& n,
                     TFunc const& func) const
                 {
-                    vikunja::mem::iterator::PolicyBasedBlockIterator<TMemAccessPolicy, TAcc, TInputIterator>
-                        inputIterator(source, acc, n, TBlockSize);
-                    vikunja::mem::iterator::PolicyBasedBlockIterator<TMemAccessPolicy, TAcc, TInputIteratorSecond>
-                        inputIteratorSecond(sourceSecond, acc, n, TBlockSize);
-                    vikunja::mem::iterator::PolicyBasedBlockIterator<TMemAccessPolicy, TAcc, TOutputIterator>
-                        outputIterator(destination, acc, n, TBlockSize);
-
-                    while(inputIterator < inputIterator.end())
+                    using MenIndex = vikunja::MemAccess::PolicyBasedBlockStrategy<TMemAccessPolicy, TAcc, TIdx>;
+                    for(MenIndex iter(acc, n, TBlockSize), end = iter.end(); iter < end; ++iter)
                     {
-                        *outputIterator = TOperator::run(acc, func, *inputIterator, *inputIteratorSecond);
-                        ++inputIterator;
-                        ++inputIteratorSecond;
-                        ++outputIterator;
+                        destination[*iter] = TOperator::run(acc, func, source[*iter], sourceSecond[*iter]);
                     }
                 }
             };

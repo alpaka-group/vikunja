@@ -44,3 +44,21 @@ if(VIKUNJA_ENABLE_CUDA_THRUST_BENCHMARKS)
   add_test(NAME ${_TARGET_NAME_THRUST_TRANSFORM} COMMAND ${_TARGET_NAME_THRUST_TRANSFORM} ${_VIKUNJA_TEST_OPTIONS})
   set_tests_properties(${_TARGET_NAME_THRUST_TRANSFORM} PROPERTIES RUN_SERIAL TRUE)
 endif()
+
+set(_TARGET_NAME_VIKUNJA_ZIPITER_TRANSFORM "bench_vikunja_transform_zipiter")
+
+alpaka_add_executable(
+  ${_TARGET_NAME_VIKUNJA_ZIPITER_TRANSFORM}
+  bench_vikunja_transform_zipiter.cpp
+)
+
+target_link_libraries(${_TARGET_NAME_VIKUNJA_ZIPITER_TRANSFORM}
+  PRIVATE
+  vikunja::testSetup
+  vikunja::benchSetup
+  vikunja::internalvikunja
+)
+
+add_test(NAME ${_TARGET_NAME_VIKUNJA_ZIPITER_TRANSFORM} COMMAND ${_TARGET_NAME_VIKUNJA_ZIPITER_TRANSFORM} ${_VIKUNJA_TEST_OPTIONS})
+# avoid running the benchmarks in parallel
+set_tests_properties(${_TARGET_NAME_VIKUNJA_ZIPITER_TRANSFORM} PROPERTIES RUN_SERIAL TRUE)

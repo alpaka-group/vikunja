@@ -1,4 +1,4 @@
-/* Copyright 2021 Hauke Mewes, Simeon Ehrig
+/* Copyright 2022 Hauke Mewes, Simeon Ehrig
  *
  * This file is part of vikunja.
  *
@@ -7,8 +7,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <vikunja/mem/iterator/BaseIterator.hpp>
-#include <vikunja/mem/iterator/PolicyBasedBlockIterator.hpp>
+#include <vikunja/access/BaseStrategy.hpp>
+#include <vikunja/access/PolicyBasedBlockStrategy.hpp>
 
 #include <alpaka/alpaka.hpp>
 
@@ -19,7 +19,7 @@
 using Type = uint64_t;
 using IType = Type*;
 using Idx = std::size_t;
-using namespace vikunja::mem::iterator;
+using namespace vikunja::MemAccess;
 
 std::vector<Type> generateIndexVector(Idx size)
 {
@@ -31,15 +31,15 @@ std::vector<Type> generateIndexVector(Idx size)
     return data;
 }
 
-TEST_CASE("BaseIterator", "[iterator]")
+TEST_CASE("BaseStrategy", "[iterator]")
 {
     constexpr Idx size = 64;
     std::vector<Type> testData{generateIndexVector(size)};
 
-    BaseIterator<IType> zeroFirst(testData.data(), 0, size);
-    BaseIterator<IType> zeroSecond(testData.data(), 0, size);
-    BaseIterator<IType> one(testData.data(), 1, size);
-    BaseIterator<IType> copyOfZeroFirst(zeroFirst);
+    BaseStrategy<Idx> zeroFirst(0, size);
+    BaseStrategy<Idx> zeroSecond(0, size);
+    BaseStrategy<Idx> one(1, size);
+    BaseStrategy<Idx> copyOfZeroFirst(zeroFirst);
 
 
     REQUIRE(zeroFirst == zeroSecond);
@@ -59,7 +59,7 @@ TEST_CASE("BaseIterator", "[iterator]")
 
     *zeroFirst = 2;
     REQUIRE(*zeroFirst == 2);
-    REQUIRE(*zeroSecond == 2);
+    REQUIRE(*zeroSecond == 0);
 };
 
 template<typename MemAccessPolicy>
@@ -68,7 +68,7 @@ struct TestPolicyBasedBlockIteratorKernel
 };
 
 template<>
-struct TestPolicyBasedBlockIteratorKernel<vikunja::mem::iterator::policies::LinearMemAccessPolicy>
+struct TestPolicyBasedBlockIteratorKernel<vikunja::MemAccess::policies::LinearMemAccessPolicy>
 {
     template<typename TAcc, typename TIdx>
     ALPAKA_FN_ACC void operator()(TAcc const& acc, Type* data, TIdx const& n) const
@@ -110,7 +110,7 @@ struct TestPolicyBasedBlockIterator
     }
 };
 
-TEST_CASE("PolicyBasedBlockIterator", "[iterator]")
+TEST_CASE("PolicyBasedBlockStrategy", "[iterator]")
 {
     //    constexpr Idx size = 64;
 
