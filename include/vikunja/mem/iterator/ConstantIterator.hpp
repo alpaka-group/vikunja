@@ -54,14 +54,16 @@ namespace vikunja
                  * @param value The value to initialize the iterator with
                  * @param idx The index for the iterator, default 0
                  */
-                constexpr ConstantIterator(const DataType& value, const IdxType& idx = {}) : v(value), index(idx)
+                ALPAKA_FN_HOST_ACC constexpr ConstantIterator(const DataType& value, const IdxType& idx = {})
+                    : v(value)
+                    , index(idx)
                 {
                 }
 
                 /**
                  * @brief Dereference operator to receive the stored value
                  */
-                NODISCARD constexpr ALPAKA_FN_INLINE const DataType& operator*() const
+                ALPAKA_FN_HOST_ACC NODISCARD constexpr ALPAKA_FN_INLINE const DataType& operator*() const
                 {
                     return v;
                 }
@@ -69,7 +71,7 @@ namespace vikunja
                 /**
                  * @brief Index operator to get stored value at some given offset from this iterator
                  */
-                NODISCARD constexpr ALPAKA_FN_INLINE const DataType& operator[](int) const
+                ALPAKA_FN_HOST_ACC NODISCARD constexpr ALPAKA_FN_INLINE const DataType& operator[](int) const
                 {
                     return v;
                 }
@@ -79,7 +81,7 @@ namespace vikunja
                  * @brief Postfix increment operator
                  * @note Use prefix increment operator instead if possible to avoid copies
                  */
-                constexpr ALPAKA_FN_INLINE ConstantIterator operator++()
+                ALPAKA_FN_HOST_ACC constexpr ALPAKA_FN_INLINE ConstantIterator operator++()
                 {
                     ConstantIterator cpy = *this;
                     ++index;
@@ -89,7 +91,7 @@ namespace vikunja
                 /**
                  * @brief Prefix increment operator
                  */
-                constexpr ALPAKA_FN_INLINE ConstantIterator& operator++(int)
+                ALPAKA_FN_HOST_ACC constexpr ALPAKA_FN_INLINE ConstantIterator& operator++(int)
                 {
                     ++index;
                     return *this;
@@ -99,7 +101,7 @@ namespace vikunja
                  * @brief Postfix decrement operator
                  * @note Use prefix decrement operator instead if possible to avoid copies
                  */
-                constexpr ALPAKA_FN_INLINE ConstantIterator operator--()
+                ALPAKA_FN_HOST_ACC constexpr ALPAKA_FN_INLINE ConstantIterator operator--()
                 {
                     ConstantIterator cpy = *this;
                     --index;
@@ -109,7 +111,7 @@ namespace vikunja
                 /**
                  * @brief Prefix decrement operator
                  */
-                constexpr ALPAKA_FN_INLINE ConstantIterator& operator--(int)
+                ALPAKA_FN_HOST_ACC constexpr ALPAKA_FN_INLINE ConstantIterator& operator--(int)
                 {
                     --index;
                     return *this;
@@ -118,7 +120,7 @@ namespace vikunja
                 /**
                  * @brief Add an index to this iterator
                  */
-                NODISCARD constexpr friend ALPAKA_FN_INLINE ConstantIterator
+                ALPAKA_FN_HOST_ACC NODISCARD constexpr friend ALPAKA_FN_INLINE ConstantIterator
                 operator+(ConstantIterator it, IdxType idx)
                 {
                     return it += idx;
@@ -127,7 +129,7 @@ namespace vikunja
                 /**
                  * @brief Subtract an index from this iterator
                  */
-                NODISCARD constexpr friend ALPAKA_FN_INLINE ConstantIterator
+                ALPAKA_FN_HOST_ACC NODISCARD constexpr friend ALPAKA_FN_INLINE ConstantIterator
                 operator-(ConstantIterator it, const IdxType idx)
                 {
                     return it -= idx;
@@ -136,7 +138,7 @@ namespace vikunja
                 /**
                  * @brief Subtract a second constant iterator of the same value from this one
                  */
-                NODISCARD constexpr friend ALPAKA_FN_INLINE IdxType
+                ALPAKA_FN_HOST_ACC NODISCARD constexpr friend ALPAKA_FN_INLINE IdxType
                 operator-(ConstantIterator it, const ConstantIterator& other)
                 {
                     assert(it.v == other.v && "Can't subtract constant iterators of different values!");
@@ -146,7 +148,9 @@ namespace vikunja
                 /**
                  * @brief Add an index to this iterator
                  */
-                constexpr friend ALPAKA_FN_INLINE ConstantIterator& operator+=(ConstantIterator& it, const IdxType idx)
+                ALPAKA_FN_HOST_ACC constexpr friend ALPAKA_FN_INLINE ConstantIterator& operator+=(
+                    ConstantIterator& it,
+                    const IdxType idx)
                 {
                     it.index += idx;
                     return it;
@@ -155,7 +159,9 @@ namespace vikunja
                 /**
                  * @brief Subtract an index from this iterator
                  */
-                constexpr friend ALPAKA_FN_INLINE ConstantIterator& operator-=(ConstantIterator& it, const IdxType idx)
+                ALPAKA_FN_HOST_ACC constexpr friend ALPAKA_FN_INLINE ConstantIterator& operator-=(
+                    ConstantIterator& it,
+                    const IdxType idx)
                 {
                     it.index -= idx;
                     return it;
@@ -167,26 +173,26 @@ namespace vikunja
 
 #ifdef USESPACESHIP
 
-                NODISCARD constexpr ALPAKA_FN_INLINE auto operator<=>(
+                ALPAKA_FN_HOST_ACC NODISCARD constexpr ALPAKA_FN_INLINE auto operator<=>(
                     const ConstantIterator& other) const noexcept = default;
 
 #else
 
-                NODISCARD constexpr friend ALPAKA_FN_INLINE bool operator==(
+                ALPAKA_FN_HOST_ACC NODISCARD constexpr friend ALPAKA_FN_INLINE bool operator==(
                     const ConstantIterator& it,
                     const ConstantIterator& other) noexcept
                 {
                     return it.v == other.v && it.index == other.index;
                 }
 
-                NODISCARD constexpr friend ALPAKA_FN_INLINE bool operator!=(
+                ALPAKA_FN_HOST_ACC NODISCARD constexpr friend ALPAKA_FN_INLINE bool operator!=(
                     const ConstantIterator& it,
                     const ConstantIterator& other) noexcept
                 {
                     return !operator==(it, other);
                 }
 
-                NODISCARD constexpr friend ALPAKA_FN_INLINE bool operator<(
+                ALPAKA_FN_HOST_ACC NODISCARD constexpr friend ALPAKA_FN_INLINE bool operator<(
                     const ConstantIterator& it,
                     const ConstantIterator& other) noexcept
                 {
@@ -197,21 +203,21 @@ namespace vikunja
                     return it.index < other.index;
                 }
 
-                NODISCARD constexpr friend ALPAKA_FN_INLINE bool operator>(
+                ALPAKA_FN_HOST_ACC NODISCARD constexpr friend ALPAKA_FN_INLINE bool operator>(
                     const ConstantIterator& it,
                     const ConstantIterator& other) noexcept
                 {
                     return operator<(other, it);
                 }
 
-                NODISCARD constexpr friend ALPAKA_FN_INLINE bool operator<=(
+                ALPAKA_FN_HOST_ACC NODISCARD constexpr friend ALPAKA_FN_INLINE bool operator<=(
                     const ConstantIterator& it,
                     const ConstantIterator& other) noexcept
                 {
                     return operator<(it, other) || operator==(it, other);
                 }
 
-                NODISCARD constexpr friend ALPAKA_FN_INLINE bool operator>=(
+                ALPAKA_FN_HOST_ACC NODISCARD constexpr friend ALPAKA_FN_INLINE bool operator>=(
                     const ConstantIterator& it,
                     const ConstantIterator& other) noexcept
                 {
