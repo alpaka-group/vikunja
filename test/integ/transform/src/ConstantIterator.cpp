@@ -64,7 +64,7 @@ TEST_CASE("ConstantIteratorTest", "[transform][iterator][lambda]")
     auto deviceOutMem(alpaka::allocBuf<TTrans, Setup::Idx>(setup.devAcc, extent));
     auto hostOutMem(alpaka::allocBuf<TTrans, Setup::Idx>(setup.devHost, extent));
 
-    vikunja::mem::iterator::ConstantIterator c_begin(constantIterVal);
+    vikunja::iterator::ConstantIterator c_begin(constantIterVal);
 
     vikunja::transform::deviceTransform<Setup::Acc>(
         setup.devAcc,

@@ -34,7 +34,7 @@ inline void reduce_benchmark(TIdx size)
         >;
     using Vec = alpaka::Vec<typename Setup::Dim, typename Setup::Idx>;
 
-    using ConstantIterator = vikunja::mem::iterator::ConstantIterator<TData>;
+    using ConstantIterator = vikunja::iterator::ConstantIterator<TData>;
 
     INFO((vikunja::test::print_acc_info<typename Setup::Dim>(size)));
 

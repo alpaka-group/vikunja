@@ -55,7 +55,7 @@ int main()
               << "Testing constant iterator with value: 10\n";
 
     // Create the constant iterator
-    vikunja::mem::iterator::ConstantIterator<TRed> constantIter(10);
+    vikunja::iterator::ConstantIterator<TRed> constantIter(10);
 
     // REDUCE CALL:
     // Takes the arguments: accelerator device, host device, accelerator queue, size of data, pointer-like to memory,
