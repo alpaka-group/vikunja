@@ -1,4 +1,4 @@
-/* Copyright 2021 Hauke Mewes, Simeon Ehrig
+/* Copyright 2022 Hauke Mewes, Simeon Ehrig
  *
  * This file is part of vikunja.
  *
@@ -49,6 +49,62 @@ namespace vikunja
                 , devHost{alpaka::getDevByIdx<PltfHost>(0u)}
                 , queueAcc{devAcc}
             {
+            }
+
+            /**
+             * @brief Allocate 1D memory on host.
+             *
+             * @tparam TData Type of the memory.
+             * @param size Size of the memory.
+             * @return auto Alpaka memory buffer on the host.
+             */
+            template<typename TData>
+            auto allocHost(Idx size)
+            {
+                using Vec = alpaka::Vec<alpaka::DimInt<1>, Idx>;
+                return alpaka::allocBuf<TData, Idx>(devHost, Vec::all(size));
+            }
+
+            /**
+             * @brief Allocate ND memory on host.
+             *
+             * @tparam TData Type of the memory.
+             * @tparam TExtentDim alpaka::Vec<N, Idx>
+             * @param size Vector with the sizes for each memory dimension.
+             * @return auto Alpaka memory buffer on the host.
+             */
+            template<typename TData, typename TExtentDim>
+            auto allocHost(alpaka::Vec<TExtentDim, Idx> size)
+            {
+                return alpaka::allocBuf<TData, Idx>(devHost, size);
+            }
+
+            /**
+             * @brief Allocate 1D memory on device.
+             *
+             * @tparam TData Type of the memory.
+             * @param size Size of the memory.
+             * @return auto Alpaka memory buffer on the device.
+             */
+            template<typename TData>
+            auto allocDev(Idx size)
+            {
+                using Vec = alpaka::Vec<alpaka::DimInt<1>, Idx>;
+                return alpaka::allocBuf<TData, Idx>(devAcc, Vec::all(size));
+            }
+
+            /**
+             * @brief Allocate ND memory on device.
+             *
+             * @tparam TData Type of the memory.
+             * @tparam TExtentDim alpaka::Vec<N, Idx>
+             * @param size Vector with the sizes for each memory dimension.
+             * @return auto Alpaka memory buffer on the device.
+             */
+            template<typename TData, typename TExtentDim>
+            auto allocDev(alpaka::Vec<TExtentDim, Idx> size)
+            {
+                return alpaka::allocBuf<TData, Idx>(devAcc, size);
             }
         };
     } // namespace test
