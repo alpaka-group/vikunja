@@ -28,7 +28,7 @@ namespace vikunja::MemAccess
         //! Constructor.
         //!
         //! \param index The index.
-        //! \param maximum The first index outside of the iterator memory.
+        //! \param maximum value of the index (not inclusive).
         ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE BaseStrategy(TIdx const index, TIdx const maximum)
             : m_index(index)
             , m_maximum(maximum)
@@ -37,34 +37,46 @@ namespace vikunja::MemAccess
 
         ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE BaseStrategy(const BaseStrategy& other) = default;
 
-        ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto operator==(const BaseStrategy& other) const -> bool
+        ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE constexpr friend auto operator==(
+            BaseStrategy const& st,
+            const BaseStrategy& other) -> bool
         {
-            return (this->m_index == other.m_index) && (this->m_maximum == other.m_maximum);
+            return (st.m_index == other.m_index) && (st.m_maximum == other.m_maximum);
         }
 
-        ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto operator!=(const BaseStrategy& other) const -> bool
+        ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE constexpr friend auto operator!=(
+            BaseStrategy const& st,
+            const BaseStrategy& other) -> bool
         {
-            return !operator==(other);
+            return !operator==(st, other);
         }
 
-        ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto operator<(const BaseStrategy& other) const -> bool
+        ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE constexpr friend auto operator<(
+            BaseStrategy const& st,
+            const BaseStrategy& other) -> bool
         {
-            return m_index < other.m_index;
+            return st.m_index < other.m_index;
         }
 
-        ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto operator>(const BaseStrategy& other) const -> bool
+        ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE constexpr friend auto operator>(
+            BaseStrategy const& st,
+            const BaseStrategy& other) -> bool
         {
-            return m_index > other.m_index;
+            return st.m_index > other.m_index;
         }
 
-        ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto operator<=(const BaseStrategy& other) const -> bool
+        ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE constexpr friend auto operator<=(
+            BaseStrategy const& st,
+            const BaseStrategy& other) -> bool
         {
-            return m_index <= other.m_index;
+            return st.m_index <= other.m_index;
         }
 
-        ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto operator>=(const BaseStrategy& other) const -> bool
+        ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE constexpr friend auto operator>=(
+            BaseStrategy const& st,
+            const BaseStrategy& other) -> bool
         {
-            return m_index >= other.m_index;
+            return st.m_index >= other.m_index;
         }
 
         //-----------------------------------------------------------------------------

@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include <vikunja/access/PolicyBasedBlockStrategy.hpp>
+#include <vikunja/access/BlockStrategy.hpp>
 #include <vikunja/operators/operators.hpp>
 #include <vikunja/transform/detail/BlockThreadTransformKernel.hpp>
 #include <vikunja/workdiv/BlockBasedWorkDiv.hpp>

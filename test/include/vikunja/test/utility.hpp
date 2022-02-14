@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include <vikunja/access/PolicyBasedBlockStrategy.hpp>
+#include <vikunja/access/BlockStrategy.hpp>
 
 #include <alpaka/alpaka.hpp>
 #include <alpaka/example/ExampleDefaultAcc.hpp>

@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include <vikunja/access/PolicyBasedBlockStrategy.hpp>
+#include <vikunja/access/BlockStrategy.hpp>
 
 #include <alpaka/alpaka.hpp>
 
@@ -104,9 +104,9 @@ namespace vikunja
 
                     using MemPolicy = TMemAccessPolicy;
                     // Create an iterator with the specified memory access policy that wraps the input iterator.
-                    using MenIndex = vikunja::MemAccess::PolicyBasedBlockStrategy<MemPolicy, TAcc, TIdx>;
-                    MenIndex iter(acc, n, TBlockSize);
-                    MenIndex end = iter.end();
+                    using MemIndex = vikunja::MemAccess::BlockStrategy<MemPolicy, TAcc, TIdx>;
+                    MemIndex iter(acc, n, TBlockSize);
+                    MemIndex end = iter.end();
 
                     auto startIndex
                         = MemPolicy::getStartIndex(acc, static_cast<TIdx>(n), static_cast<TIdx>(TBlockSize));

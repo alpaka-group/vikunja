@@ -52,7 +52,7 @@ namespace vikunja
             }
 
             /**
-             * @brief Allocate 1D memory on host.
+             * @brief Allocate 1D memory on the host.
              *
              * @tparam TData Type of the memory.
              * @param size Size of the memory.
@@ -66,7 +66,7 @@ namespace vikunja
             }
 
             /**
-             * @brief Allocate ND memory on host.
+             * @brief Allocate ND memory on the host.
              *
              * @tparam TData Type of the memory.
              * @tparam TExtentDim alpaka::Vec<N, Idx>
@@ -80,7 +80,7 @@ namespace vikunja
             }
 
             /**
-             * @brief Allocate 1D memory on device.
+             * @brief Allocate 1D memory on the device.
              *
              * @tparam TData Type of the memory.
              * @param size Size of the memory.
@@ -94,7 +94,7 @@ namespace vikunja
             }
 
             /**
-             * @brief Allocate ND memory on device.
+             * @brief Allocate ND memory on the device.
              *
              * @tparam TData Type of the memory.
              * @tparam TExtentDim alpaka::Vec<N, Idx>

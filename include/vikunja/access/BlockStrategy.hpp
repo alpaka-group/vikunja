@@ -17,29 +17,29 @@ namespace vikunja::MemAccess
 {
     /**
      * A policy based memory access strategy that splits the data access into chunks. Depending on the memory access
-     * policy, these chunks can access the data sequential or in a striding pattern.
+     * policy, these chunks can access the data sequentially or in a striding pattern.
      * @tparam MemAccessPolicy The memory access policy to use.
      * @tparam TAcc The alpaka accelerator type.
      * @tparam TIdx The index type
      *
      * The memory access policy should provide three values:
-     * - The startIndex of the iterator, which is the first index to use.
-     * - The endIndex of the iterator, which is the last index to use.
-     * - The stepSize of the iterator, which tells how far the iterator should move.
+     * - The startIndex which is the first index to use.
+     * - The endIndex which is the last index to use.
+     * - The stepSize which specifies how large the distance is between an index position and its successor.
      */
     template<typename MemAccessPolicy, typename TAcc, typename TIdx>
-    class PolicyBasedBlockStrategy : public BaseStrategy<TIdx>
+    class BlockStrategy : public BaseStrategy<TIdx>
     {
     private:
-        TIdx m_step; /**< The step size of this iterator. */
+        TIdx m_step; /**< The step size of this strategy. */
     public:
         /**
-         * Create a policy based block iterator
+         * Create a policy based block strategy accessor
          * @param acc The accelerator type to use.
-         * @param problemSize The size of the original iterator.
+         * @param problemSize The size of the original strategy.
          * @param blockSize The size of the blocks.
          */
-        ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE PolicyBasedBlockStrategy(TAcc const& acc, TIdx problemSize, TIdx blockSize)
+        ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE BlockStrategy(TAcc const& acc, TIdx problemSize, TIdx blockSize)
             : BaseStrategy<TIdx>(
                 MemAccessPolicy::getStartIndex(acc, problemSize, blockSize),
                 MemAccessPolicy::getEndIndex(acc, problemSize, blockSize))
@@ -47,13 +47,13 @@ namespace vikunja::MemAccess
         {
         }
 
-        ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE PolicyBasedBlockStrategy(const PolicyBasedBlockStrategy& other) = default;
+        ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE BlockStrategy(const BlockStrategy& other) = default;
 
         //-----------------------------------------------------------------------------
         //! Returns a memory access object with the index set to the last item.
-        ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto end() const -> PolicyBasedBlockStrategy
+        ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto end() const -> BlockStrategy
         {
-            PolicyBasedBlockStrategy ret(*this);
+            BlockStrategy ret(*this);
             ret.m_index = this->m_maximum;
             return ret;
         }
@@ -62,7 +62,7 @@ namespace vikunja::MemAccess
         //! Increments the internal index to the next one.
         //!
         //! Returns a reference to the next index.
-        ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto operator++() -> PolicyBasedBlockStrategy&
+        ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto operator++() -> BlockStrategy&
         {
             this->m_index += this->m_step;
             return *this;
@@ -73,7 +73,7 @@ namespace vikunja::MemAccess
         //! next one.
         //!
         //! Returns a reference to the current index.
-        ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto operator++(int) -> PolicyBasedBlockStrategy
+        ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto operator++(int) -> BlockStrategy
         {
             auto ret(*this);
             this->m_index += this->m_step;
@@ -85,7 +85,7 @@ namespace vikunja::MemAccess
         //! element.
         //!
         //! Returns a reference to the previous index.
-        ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto operator--() -> PolicyBasedBlockStrategy&
+        ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto operator--() -> BlockStrategy&
         {
             this->m_index -= this->m_step;
             return *this;
@@ -96,7 +96,7 @@ namespace vikunja::MemAccess
         //! previous one.
         //!
         //! Returns a reference to the current index.
-        ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto operator--(int) -> PolicyBasedBlockStrategy
+        ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto operator--(int) -> BlockStrategy
         {
             auto ret(*this);
             this->m_index -= this->m_step;
@@ -107,7 +107,7 @@ namespace vikunja::MemAccess
         //! Returns the index + a supplied offset.
         //!
         //! \param n The offset.
-        ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto operator+(uint64_t n) const -> PolicyBasedBlockStrategy
+        ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto operator+(uint64_t n) const -> BlockStrategy
         {
             auto ret(*this);
             ret.m_index += n * m_step;
@@ -118,7 +118,7 @@ namespace vikunja::MemAccess
         //! Returns the index - a supplied offset.
         //!
         //! \param n The offset.
-        ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto operator-(uint64_t n) const -> PolicyBasedBlockStrategy
+        ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto operator-(uint64_t n) const -> BlockStrategy
         {
             auto ret(*this);
             ret.m_index -= n * m_step;
@@ -131,7 +131,7 @@ namespace vikunja::MemAccess
         //! \param offset The offset.
         //!
         //! Returns the current object offset by the offset.
-        ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto operator+=(uint64_t offset) -> PolicyBasedBlockStrategy&
+        ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto operator+=(uint64_t offset) -> BlockStrategy&
         {
             this->m_index += offset * this->m_step;
             return *this;
@@ -143,7 +143,7 @@ namespace vikunja::MemAccess
         //! \param offset The offset.
         //!
         //! Returns the current object offset by the offset.
-        ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto operator-=(uint64_t offset) -> PolicyBasedBlockStrategy&
+        ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto operator-=(uint64_t offset) -> BlockStrategy&
         {
             this->m_index -= offset * this->m_step;
             return *this;
@@ -153,15 +153,15 @@ namespace vikunja::MemAccess
     namespace policies
     {
         /**
-         * A memory policy for the PolicyBlockBasedIterator that provides grid striding memory access.
+         * A memory policy for the BlockStrategy that provides grid striding memory access.
          */
         struct GridStridingMemAccessPolicy
         {
             template<typename TAcc, typename TIdx>
             ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE static auto getStartIndex(
                 TAcc const& acc,
-                TIdx const& problemSize __attribute__((unused)),
-                TIdx const& blockSize __attribute__((unused))) -> TIdx const
+                TIdx const& /* problemSize */,
+                TIdx const& /* blockSize */) -> TIdx const
             {
                 constexpr TIdx xIndex = alpaka::Dim<TAcc>::value - 1u;
                 return alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc)[xIndex];
@@ -171,7 +171,7 @@ namespace vikunja::MemAccess
             ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE static auto getEndIndex(
                 TAcc const& acc,
                 TIdx const& problemSize,
-                TIdx const& blockSize __attribute__((unused))) -> TIdx const
+                TIdx const& /* blockSize */) -> TIdx const
             {
                 return problemSize;
             }
@@ -179,7 +179,7 @@ namespace vikunja::MemAccess
             template<typename TAcc, typename TIdx>
             ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE static auto getStepSize(
                 TAcc const& acc,
-                TIdx const& problemSize __attribute__((unused)),
+                TIdx const& /* problemSize */,
                 TIdx const& blockSize) -> TIdx const
             {
                 constexpr TIdx xIndex = alpaka::Dim<TAcc>::value - 1u;
@@ -191,7 +191,7 @@ namespace vikunja::MemAccess
             ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE static auto isValidThreadResult(
                 TAcc const& acc,
                 TIdx const& problemSize,
-                TIdx const& blockSize __attribute__((unused))) -> bool const
+                TIdx const& /* blockSize */) -> bool const
             {
                 constexpr TIdx xIndex = alpaka::Dim<TAcc>::value - 1u;
                 auto threadIndex = (alpaka::getIdx<alpaka::Block, alpaka::Threads>(acc)[xIndex]);
@@ -207,7 +207,7 @@ namespace vikunja::MemAccess
         };
 
         /**
-         * A memory access policy for the PolicyBlockBasedIterator that provides linear memory access.
+         * A memory access policy for the BlockStrategy that provides linear memory access.
          */
         struct LinearMemAccessPolicy
         {
@@ -241,18 +241,18 @@ namespace vikunja::MemAccess
 
             template<typename TAcc, typename TIdx>
             ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE static constexpr auto getStepSize(
-                TAcc const& acc __attribute__((unused)),
-                TIdx const& problemSize __attribute__((unused)),
-                TIdx const& blockSize __attribute__((unused))) -> TIdx const
+                TAcc const& /* acc */,
+                TIdx const& /* problemSize */,
+                TIdx const& /* blockSize */) -> TIdx const
             {
                 return 1;
             }
 
             template<typename TAcc, typename TIdx>
             ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE static constexpr auto isValidThreadResult(
-                TAcc const& acc __attribute__((unused)),
-                TIdx const& problemSize __attribute__((unused)),
-                TIdx const& blockSize __attribute__((unused))) -> bool const
+                TAcc const& /* acc */,
+                TIdx const& /* problemSize */,
+                TIdx const& /* blockSize */) -> bool const
             {
                 return true;
             }

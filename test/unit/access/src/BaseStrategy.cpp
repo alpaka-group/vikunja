@@ -8,7 +8,6 @@
  */
 
 #include <vikunja/access/BaseStrategy.hpp>
-#include <vikunja/access/PolicyBasedBlockStrategy.hpp>
 
 #include <alpaka/alpaka.hpp>
 

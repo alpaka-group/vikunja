@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include <vikunja/access/PolicyBasedBlockStrategy.hpp>
+#include <vikunja/access/BlockStrategy.hpp>
 
 #include <alpaka/alpaka.hpp>
 
@@ -41,8 +41,8 @@ namespace vikunja
                     TIdx const& n,
                     TFunc const& func) const
                 {
-                    using MenIndex = vikunja::MemAccess::PolicyBasedBlockStrategy<TMemAccessPolicy, TAcc, TIdx>;
-                    for(MenIndex iter(acc, n, TBlockSize), end = iter.end(); iter < end; ++iter)
+                    using MemIndex = vikunja::MemAccess::BlockStrategy<TMemAccessPolicy, TAcc, TIdx>;
+                    for(MemIndex iter(acc, n, TBlockSize), end = iter.end(); iter < end; ++iter)
                     {
                         destination[*iter] = TOperator::run(acc, func, source[*iter]);
                     }
@@ -63,8 +63,8 @@ namespace vikunja
                     TIdx const& n,
                     TFunc const& func) const
                 {
-                    using MenIndex = vikunja::MemAccess::PolicyBasedBlockStrategy<TMemAccessPolicy, TAcc, TIdx>;
-                    for(MenIndex iter(acc, n, TBlockSize), end = iter.end(); iter < end; ++iter)
+                    using MemIndex = vikunja::MemAccess::BlockStrategy<TMemAccessPolicy, TAcc, TIdx>;
+                    for(MemIndex iter(acc, n, TBlockSize), end = iter.end(); iter < end; ++iter)
                     {
                         destination[*iter] = TOperator::run(acc, func, source[*iter], sourceSecond[*iter]);
                     }
