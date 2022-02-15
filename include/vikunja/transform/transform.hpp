@@ -1,4 +1,4 @@
-/* Copyright 2021 Hauke Mewes, Simeon Ehrig
+/* Copyright 2022 Hauke Mewes, Simeon Ehrig
  *
  * This file is part of vikunja.
  *
@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include <vikunja/mem/iterator/PolicyBasedBlockIterator.hpp>
+#include <vikunja/access/BlockStrategy.hpp>
 #include <vikunja/operators/operators.hpp>
 #include <vikunja/transform/detail/BlockThreadTransformKernel.hpp>
 #include <vikunja/workdiv/BlockBasedWorkDiv.hpp>
@@ -32,7 +32,7 @@ namespace vikunja
          * @tparam WorkDivPolicy The working division policy. Defaults to a templated value depending on the
          * accelerator. For the API of this, see workdiv/BlockBasedWorkDiv.hpp
          * @tparam MemAccessPolicy The memory access policy. Defaults to a templated value depending on the
-         * accelerator. For the API of this, see mem/iterator/PolicyBasedBlockIterator
+         * accelerator. For the API of this, see vikunja::MemAccess::PolicyBasedBlockStrategy
          * @tparam TFunc Type of the transform operator.
          * @tparam TInputIterator  Type of the input iterator. Should be a pointer-like type.
          * @tparam TOutputIterator Type of the output iterator. Should be a pointer-like type.
@@ -50,7 +50,7 @@ namespace vikunja
         template<
             typename TAcc,
             typename WorkDivPolicy = vikunja::workdiv::BlockBasedPolicy<TAcc>,
-            typename MemAccessPolicy = vikunja::mem::iterator::MemAccessPolicy<TAcc>,
+            typename MemAccessPolicy = vikunja::MemAccess::MemAccessPolicy<TAcc>,
             typename TFunc,
             typename TInputIterator,
             typename TOutputIterator,
@@ -112,7 +112,7 @@ namespace vikunja
          * @tparam WorkDivPolicy The working division policy. Defaults to a templated value depending on the
          * accelerator. For the API of this, see workdiv/BlockBasedWorkDiv.hpp
          * @tparam MemAccessPolicy The memory access policy. Defaults to a templated value depending on the
-         * accelerator. For the API of this, see mem/iterator/PolicyBasedBlockIterator
+         * accelerator. For the API of this, see vikunja::MemAccess::PolicyBasedBlockStrategy
          * @tparam TFunc Type of the transform operator.
          * @tparam TInputIterator  Type of the input iterator. Should be a pointer-like type.
          * @tparam TOutputIterator Type of the output iterator. Should be a pointer-like type.
@@ -129,7 +129,7 @@ namespace vikunja
         template<
             typename TAcc,
             typename WorkDivPolicy = vikunja::workdiv::BlockBasedPolicy<TAcc>,
-            typename MemAccessPolicy = vikunja::mem::iterator::MemAccessPolicy<TAcc>,
+            typename MemAccessPolicy = vikunja::MemAccess::MemAccessPolicy<TAcc>,
             typename TFunc,
             typename TInputIterator,
             typename TOutputIterator,
@@ -174,7 +174,7 @@ namespace vikunja
         template<
             typename TAcc,
             typename WorkDivPolicy = vikunja::workdiv::BlockBasedPolicy<TAcc>,
-            typename MemAccessPolicy = vikunja::mem::iterator::MemAccessPolicy<TAcc>,
+            typename MemAccessPolicy = vikunja::MemAccess::MemAccessPolicy<TAcc>,
             typename TFunc,
             typename TInputIterator,
             typename TInputIteratorSecond,
@@ -254,7 +254,7 @@ namespace vikunja
         template<
             typename TAcc,
             typename WorkDivPolicy = vikunja::workdiv::BlockBasedPolicy<TAcc>,
-            typename MemAccessPolicy = vikunja::mem::iterator::MemAccessPolicy<TAcc>,
+            typename MemAccessPolicy = vikunja::MemAccess::MemAccessPolicy<TAcc>,
             typename TFunc,
             typename TInputIterator,
             typename TInputIteratorSecond,

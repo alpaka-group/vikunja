@@ -1,4 +1,4 @@
-/* Copyright 2021 Simeon Ehrig
+/* Copyright 2022 Simeon Ehrig
  *
  * This file is part of vikunja.
  *
@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include <vikunja/mem/iterator/PolicyBasedBlockIterator.hpp>
+#include <vikunja/access/BlockStrategy.hpp>
 
 #include <alpaka/alpaka.hpp>
 #include <alpaka/example/ExampleDefaultAcc.hpp>
@@ -35,7 +35,7 @@ namespace vikunja
             using Acc = alpaka::ExampleDefaultAcc<TDim, std::uint64_t>;
             strs << "Testing accelerator: " << alpaka::getAccName<Acc>() << " with size: " << size << "\n";
 
-            using MemAccess = vikunja::mem::iterator::MemAccessPolicy<Acc>;
+            using MemAccess = vikunja::MemAccess::MemAccessPolicy<Acc>;
             strs << "MemAccessPolicy: " << MemAccess::getName() << "\n";
 
             return strs.str();

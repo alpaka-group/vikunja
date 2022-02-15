@@ -134,6 +134,7 @@ if(${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})
   #########################################
 
   if(BUILD_TESTING)
+    include("${PROJECT_SOURCE_DIR}/cmake/testUtils.cmake")
     include(CTest)
     enable_testing()
     add_subdirectory("test/")
