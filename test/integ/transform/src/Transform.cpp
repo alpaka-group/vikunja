@@ -65,7 +65,7 @@ namespace vikunja
                         Base::m_host_output_mem,
                         Base::m_device_output_mem,
                         Base::m_extent);
-                };
+                }
             };
 
             template<
@@ -166,7 +166,7 @@ namespace vikunja
                         Base::m_host_output_mem,
                         Base::m_device_output_mem,
                         Base::m_extent);
-                };
+                }
             };
 
             template<

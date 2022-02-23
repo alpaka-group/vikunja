@@ -26,4 +26,4 @@
 /build*
 /install*
 
-.vscode
+.vscode/
