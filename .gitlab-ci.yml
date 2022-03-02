@@ -9,7 +9,7 @@
 # VIKUNJA_CXX_TEST                        : {ON}, optional
 
 variables:
-  CONTAINER_VERSION: "2.0"
+  CONTAINER_VERSION: 2.0
 
 include:
   - local: '/script/compiler_base.yml'
@@ -27,6 +27,7 @@ pull-request-validation:
   stage: validate
   image: ubuntu:focal
   script:
+    - echo "Container version -> ${CONTAINER_VERSION}"
     - apt update
     # install clang-format-11
     - apt install -y -q wget
