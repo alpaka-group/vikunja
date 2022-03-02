@@ -7,7 +7,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 .base_gcc:
-  image: registry.hzdr.de/crp/alpaka-group-container/alpaka-ci-ubuntu20.04-gcc:${CONTAINER_VERSION}
+  image: registry.hzdr.de/crp/alpaka-group-container/alpaka-ci-ubuntu20.04-gcc:2.0
   stage: compile-and-run
   variables:
     ALPAKA_ACCS: "ALPAKA_ACC_CPU_B_SEQ_T_SEQ_ENABLE
@@ -20,7 +20,7 @@
     - cpuonly
 
 .base_clang:
-  image: registry.hzdr.de/crp/alpaka-group-container/alpaka-ci-ubuntu20.04-clang:${CONTAINER_VERSION}
+  image: registry.hzdr.de/crp/alpaka-group-container/alpaka-ci-ubuntu20.04-clang:2.0
   stage: compile-and-run
   variables:
     ALPAKA_ACCS: "ALPAKA_ACC_CPU_B_SEQ_T_SEQ_ENABLE
