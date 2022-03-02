@@ -11,16 +11,16 @@
 #variables:
 #  CONTAINER_VERSION: 2.0
 
+stages:
+  - validate
+  - compile-and-run
+
 variables:
   TEST_VAR: "All jobs can use this variable's value"
 
 include:
   - local: '/script/compiler_base.yml'
   - local: '/script/cxx_tests.yml'
-
-stages:
-  - validate
-  - compile-and-run
 
 ################################################################################
 # Check code formation with clang-format
