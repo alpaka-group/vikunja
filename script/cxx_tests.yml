@@ -38,7 +38,7 @@ clang_cxx20:
 
 # test cuda build with manually set C++ 17 version
 cuda112_cxx17:
-  image: registry.gitlab.com/hzdr/crp/alpaka-group-container/alpaka-ci-cuda112-gcc:1.4
+  image: registry.hzdr.de/crp/alpaka-group-container/ alpaka-ci-ubuntu20.04-cuda112-gcc:${CONTAINER_VERSION}
   variables:
     VIKUNJA_CXX: "g++-9"
     VIKUNJA_BOOST_VERSIONS: "1.73.0"
