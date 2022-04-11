@@ -33,15 +33,20 @@ if(ALPAKA_ACC_GPU_CUDA_ENABLE)
   set(ALPAKA_CUDA_NVCC_EXPT_EXTENDED_LAMBDA ON)
   # used with alpaka 0.7.0 and later
   set(ALPAKA_CUDA_EXPT_EXTENDED_LAMBDA ON)
+  # used with alpaka 0.9.0 and later
+  set(alpaka_CUDA_EXPT_EXTENDED_LAMBDA ON)
 endif()
 
 # the sequential accelerator is required for the tests and examples
-if(NOT DEFINED ALPAKA_ACC_CPU_B_SEQ_T_SEQ_ENABLE AND (VIKUNJA_BUILD_EXAMPLES OR BUILD_TESTING))
+if((NOT DEFINED ALPAKA_ACC_CPU_B_SEQ_T_SEQ_ENABLE OR  NOT DEFINED alpaka_ACC_CPU_B_SEQ_T_SEQ_ENABLE)
+    AND (VIKUNJA_BUILD_EXAMPLES OR BUILD_TESTING)
+  )
   option(ALPAKA_ACC_CPU_B_SEQ_T_SEQ_ENABLE "enable alpaka serial accelerator" ON)
+  option(alpaka_ACC_CPU_B_SEQ_T_SEQ_ENABLE "enable alpaka serial accelerator" ON)
 endif()
 
 set(_VIKUNJA_MIN_ALPAKA_VERSION 0.6.0)
-set(_VIKUNJA_UNSUPPORTED_ALPAKA_VERSION 0.9.0)
+set(_VIKUNJA_UNSUPPORTED_ALPAKA_VERSION 1.0.0)
 
 if(NOT TARGET alpaka::alpaka)
   find_package(alpaka ${_VIKUNJA_MIN_ALPAKA_VERSION} REQUIRED HINTS $ENV{ALPAKA_ROOT})
