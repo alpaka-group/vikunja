@@ -14,6 +14,19 @@ set -o pipefail
 echo "CUPLA_TRANSFORM_DIR -> ${CUPLA_TRANSFORM_DIR}"
 
 ###############################################
+# find boost
+###############################################
+
+if agc-manager -e boost@${VIKUNJA_BOOST_VERSIONS} ; then
+    VIKUNJA_BOOST_ROOT=$(agc-manager -b boost@${VIKUNJA_BOOST_VERSIONS})
+else
+    echo "boost ${VIKUNJA_BOOST_VERSIONS} is not available"
+    exit 1
+fi
+
+echo "VIKUNJA_BOOST_ROOT -> ${VIKUNJA_BOOST_ROOT}"
+
+###############################################
 # prepare project
 ###############################################
 

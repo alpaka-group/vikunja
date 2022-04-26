@@ -14,6 +14,19 @@ set -o pipefail
 echo "CUPLA_TRANSFORM_DIR -> ${CUPLA_TRANSFORM_DIR}"
 
 ###############################################
+# find boost
+###############################################
+
+if agc-manager -e boost@${VIKUNJA_BOOST_VERSIONS} ; then
+    VIKUNJA_BOOST_ROOT=$(agc-manager -b boost@${VIKUNJA_BOOST_VERSIONS})
+else
+    echo "boost ${VIKUNJA_BOOST_VERSIONS} is not available"
+    exit 1
+fi
+
+echo "VIKUNJA_BOOST_ROOT -> ${VIKUNJA_BOOST_ROOT}"
+
+###############################################
 # Install alpaka
 ###############################################
 
@@ -23,7 +36,7 @@ cd alpaka
 # use this specific alpaka version because of bug fixes for alpaka_add_library
 git checkout 261bdf70f359b3d97dfdfb3cc2bd39ec0472c8d1
 mkdir build && cd build
-cmake .. -DBOOST_ROOT=/opt/boost/${VIKUNJA_BOOST_VERSIONS}
+cmake .. -DBOOST_ROOT=${VIKUNJA_BOOST_ROOT}
 cmake --build .
 cmake --install .
 cd $CI_PROJECT_DIR
@@ -39,7 +52,7 @@ cd cupla
 # use this specific cupla version because of a bug fix in the CMakeLists.txt
 git checkout d83fe957009e7b3774f423b3f53887a7af50aabe
 mkdir build && cd build
-cmake .. -DBOOST_ROOT=/opt/boost/${VIKUNJA_BOOST_VERSIONS}
+cmake .. -DBOOST_ROOT=${VIKUNJA_BOOST_ROOT}
 cmake --build .
 cmake --install .
 cd $CI_PROJECT_DIR
@@ -51,7 +64,7 @@ rm -r cupla
 
 cd $CI_PROJECT_DIR
 mkdir build && cd build
-cmake .. -DBOOST_ROOT=/opt/boost/${VIKUNJA_BOOST_VERSIONS}
+cmake .. -DBOOST_ROOT=${VIKUNJA_BOOST_ROOT}
 cmake --build .
 cmake --install .
 cd $CI_PROJECT_DIR
