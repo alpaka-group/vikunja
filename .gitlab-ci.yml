@@ -8,12 +8,17 @@
 # VIKUNJA_CMAKE_ARGS                      : <string>
 # VIKUNJA_CXX_TEST                        : {ON}, optional
 
-include:
-  - local: '/ci/custom_jobs/integration_test.yml'
+#include:
+#  - local: '/ci/custom_jobs/integration_test.yml'
+
+variables:
+  CONTAINER_VERSION: "3.0"
 
 stages:
   - validate
-  - compile-and-run
+  - generator
+  - run-test-jobs
+  #- compile-and-run
 
 ################################################################################
 # Check code formation with clang-format
@@ -33,3 +38,24 @@ pull-request-validation:
     - clang-format --version
     # Check C++ code style
     - source $CI_PROJECT_DIR/ci/check_cpp_code_style.sh
+
+generate:
+  stage: generator
+  image: alpine:latest
+  script:
+    - apk update && apk add python3 py3-pip
+    - pip3 install -r ci/job_generator/requirements.txt
+    - python3 ci/job_generator/job_generator.py ${CONTAINER_VERSION}
+    - cat jobs.yml
+  artifacts:
+    paths:
+      - jobs.yml
+    expire_in: 1 week
+
+run-tests:
+  stage: run-test-jobs
+  trigger:
+    include:
+      - artifact: jobs.yml
+        job: generate
+    strategy: depend
