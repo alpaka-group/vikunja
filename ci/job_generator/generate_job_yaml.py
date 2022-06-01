@@ -184,6 +184,13 @@ def job_variables(job: Dict[str, Tuple[str, str]]) -> Dict[str, str]:
         cmake_extra_arg += "-DCMAKE_CUDA_ARCHITECTURES=61 "
 
     variables["VIKUNJA_CI_EXTRA_ARGS"] = cmake_extra_arg
+    variables["VIKUNJA_CI_CONST_ARGS"] = (
+        "-DBUILD_TESTING=ON "
+        + "-DVIKUNJA_SYSTEM_CATCH2=OFF "
+        + "-DVIKUNJA_BUILD_EXAMPLES=ON "
+        + "-DVIKUNJA_ENABLE_CXX_TEST=ON "
+        + "-DCMAKE_BUILD_TYPE=Release"
+    )
 
     return variables
 
@@ -198,12 +205,15 @@ def job_tags(job: Dict[str, Tuple[str, str]]) -> List[str]:
     Returns:
         List[str]: List of tags.
     """
-    # TODO: change back to correct tags
-    return ["x86_64", "cpuonly"]
-
-    if job[ALPAKA_ACC_GPU_CUDA_ENABLE][VERSION] != OFF:
+    if (
+        ALPAKA_ACC_GPU_CUDA_ENABLE in job
+        and job[ALPAKA_ACC_GPU_CUDA_ENABLE][VERSION] != OFF
+    ):
         return ["x86_64", "cuda"]
-    if job[ALPAKA_ACC_GPU_HIP_ENABLE][VERSION] != OFF:
+    if (
+        ALPAKA_ACC_GPU_HIP_ENABLE in job
+        and job[ALPAKA_ACC_GPU_HIP_ENABLE][VERSION] != OFF
+    ):
         return ["x86_64", "rocm"]
     return ["x86_64", "cpuonly"]
 
@@ -241,9 +251,9 @@ def create_job(
     job_yaml["stage"] = "stage" + str(stage_number)
     job_yaml["variables"] = job_variables(job)
     job_yaml["script"] = [
-        "./ci/gitlab_scripts/setup.sh",
-        "./ci/gitlab_scripts/print_env.sh",
-        "./ci/gitlab_scripts/test.sh",
+        "source ./ci/gitlab_scripts/setup.sh",
+        "source ./ci/gitlab_scripts/print_env.sh",
+        "source ./ci/gitlab_scripts/test.sh",
     ]
     job_yaml["tags"] = job_tags(job)
 

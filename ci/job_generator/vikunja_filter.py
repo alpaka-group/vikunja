@@ -8,6 +8,7 @@ from packaging import version as pk_version
 
 
 def vikunja_post_filter(row: List) -> bool:
+    # the minimum boost version for alpaka 0.9.0 is 1.74.0
     if (
         is_in_row(row, ALPAKA)
         and is_in_row(row, BOOST)

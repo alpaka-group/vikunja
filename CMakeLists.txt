@@ -13,7 +13,10 @@ project(vikunja
   HOMEPAGE_URL "https://github.com/alpaka-group/vikunja"
   LANGUAGES    CXX)
 
-set(ALPAKA_CXX_STANDARD "17" CACHE STRING "C++ standard version")
+set(alpaka_CXX_STANDARD "17" CACHE STRING "C++ standard version")
+# used for alpaka 0.8.0 and before
+set(ALPAKA_CXX_STANDARD ${alpaka_CXX_STANDARD} CACHE STRING "C++ standard version")
+
 
 include(CMakeDependentOption)
 include(FetchContent)
@@ -49,7 +52,8 @@ set(_VIKUNJA_MIN_ALPAKA_VERSION 0.6.0)
 set(_VIKUNJA_UNSUPPORTED_ALPAKA_VERSION 1.0.0)
 
 if(NOT TARGET alpaka::alpaka)
-  find_package(alpaka ${_VIKUNJA_MIN_ALPAKA_VERSION} REQUIRED HINTS $ENV{ALPAKA_ROOT})
+  # TODO: bring back the version check
+  find_package(alpaka REQUIRED HINTS $ENV{ALPAKA_ROOT})
   if(alpaka_VERSION VERSION_GREATER_EQUAL _VIKUNJA_UNSUPPORTED_ALPAKA_VERSION)
     message(WARNING "Unsupported alpaka version ${alpaka_VERSION}. "
         "Supported versions [${_VIKUNJA_MIN_ALPAKA_VERSION},${_VIKUNJA_UNSUPPORTED_ALPAKA_VERSION}).")
