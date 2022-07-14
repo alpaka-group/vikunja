@@ -117,18 +117,21 @@ def reorder_jobs(job_matrix: List[Dict[str, Tuple[str, str]]]):
         job_matrix=job_matrix,
         searched_job={
             HOST_COMPILER: (GCC, "9"),
-            DEVICE_COMPILER: (NVCC, "11.6"),
-            ALPAKA_ACC_GPU_CUDA_ENABLE: (ALPAKA_ACC_GPU_CUDA_ENABLE, "11.6"),
+            DEVICE_COMPILER: (NVCC, "11.0"),
+            ALPAKA_ACC_GPU_CUDA_ENABLE: (ALPAKA_ACC_GPU_CUDA_ENABLE, "11.0"),
             ALPAKA: (ALPAKA, "0.9.0"),
         },
     )
+
+    # TODO: enable me
+    return
 
     force_job(
         job_matrix=job_matrix,
         searched_job={
             HOST_COMPILER: (GCC, "9"),
-            DEVICE_COMPILER: (NVCC, "11.6"),
-            ALPAKA_ACC_GPU_CUDA_ENABLE: (ALPAKA_ACC_GPU_CUDA_ENABLE, "11.6"),
+            DEVICE_COMPILER: (NVCC, "11.0"),
+            ALPAKA_ACC_GPU_CUDA_ENABLE: (ALPAKA_ACC_GPU_CUDA_ENABLE, "11.0"),
             ALPAKA: (ALPAKA, "develop"),
         },
     )

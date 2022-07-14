@@ -167,29 +167,59 @@ def job_variables(job: Dict[str, Tuple[str, str]]) -> Dict[str, str]:
     # is required for a recursive clone
     variables["GIT_SUBMODULE_STRATEGY"] = "normal"
 
-    cmake_extra_arg = ""
+    cmake_extra_arg = []
 
     if (
         ALPAKA_ACC_GPU_HIP_ENABLE in job
         and job[ALPAKA_ACC_GPU_HIP_ENABLE][VERSION] != OFF
     ):
         # architecture of the Vega 64
-        cmake_extra_arg += "-DALPAKA_HIP_ARCH=900 "
+        cmake_extra_arg.append("-DALPAKA_HIP_ARCH=900")
 
     if (
         ALPAKA_ACC_GPU_CUDA_ENABLE in job
         and job[ALPAKA_ACC_GPU_CUDA_ENABLE][VERSION] != OFF
     ):
         # CI contains a Quadro P5000 (sm_61)
-        cmake_extra_arg += "-DCMAKE_CUDA_ARCHITECTURES=61 "
+        cmake_extra_arg.append("-DCMAKE_CUDA_ARCHITECTURES=61")
 
-    variables["VIKUNJA_CI_EXTRA_ARGS"] = cmake_extra_arg
-    variables["VIKUNJA_CI_CONST_ARGS"] = (
-        "-DBUILD_TESTING=ON "
-        + "-DVIKUNJA_SYSTEM_CATCH2=OFF "
-        + "-DVIKUNJA_BUILD_EXAMPLES=ON "
-        + "-DVIKUNJA_ENABLE_CXX_TEST=ON "
-        + "-DCMAKE_BUILD_TYPE=Release"
+    # enable cxx version test for only for specific compiler
+    # * for C++ 17 every supported compiler
+    # * for C++ 20
+    #   * GCC 11 and newer
+    #   * Clang 10 and newer
+    enable_cxx_test = False
+    if CXX_STANDARD in job and job[CXX_STANDARD][VERSION] == "17":
+        enable_cxx_test = True
+    elif CXX_STANDARD in job and job[CXX_STANDARD][VERSION] == "20":
+        for compiler_name in [HOST_COMPILER, DEVICE_COMPILER]:
+            if compiler_name in job and (
+                (
+                    (job[compiler_name][NAME] == GCC)
+                    and pk_version.parse(job[compiler_name][VERSION])
+                    >= pk_version.parse("11.0")
+                )
+                or (
+                    job[compiler_name][NAME] == CLANG
+                    and pk_version.parse(job[compiler_name][VERSION])
+                    >= pk_version.parse("10.0")
+                )
+            ):
+                enable_cxx_test = True
+
+    if enable_cxx_test:
+        variables["VIKUNJA_CI_CXX_TEST"] = "ON"
+    else:
+        variables["VIKUNJA_CI_CXX_TEST"] = "OFF"
+
+    variables["VIKUNJA_CI_EXTRA_ARGS"] = " ".join(cmake_extra_arg)
+    variables["VIKUNJA_CI_CONST_ARGS"] = " ".join(
+        [
+            "-DBUILD_TESTING=ON",
+            "-DVIKUNJA_SYSTEM_CATCH2=OFF",
+            "-DVIKUNJA_BUILD_EXAMPLES=ON",
+            "-DCMAKE_BUILD_TYPE=Release",
+        ]
     )
 
     return variables

@@ -16,6 +16,7 @@ cmake_args=""
 cmake_args="${cmake_args} -DCMAKE_CXX_COMPILER=${VIKUNJA_CI_CXX}"
 cmake_args="${cmake_args} -Dalpaka_CXX_STANDARD=${VIKUNJA_CI_CXX_STANDARD}"
 cmake_args="${cmake_args} -DBOOST_ROOT=${VIKUNJA_CI_BOOST_ROOT}"
+cmake_args="${cmake_args} -DVIKUNJA_ENABLE_CXX_TEST=${VIKUNJA_CI_CXX_TEST}"
 cmake_args="${cmake_args} ${VIKUNJA_CI_ALPAKA_BACKENDS}"
 
 # if the nvcc is the device compiler, set the correct host and device compiler
@@ -50,5 +51,7 @@ $VIKUNJA_CI_CMAKE_ROOT/bin/cmake --build . -j
 $VIKUNJA_CI_CMAKE_ROOT/bin/ctest --output-on-failure
 # if ALPAKA_CXX_STANDARD is set manually, run this without ctest
 # to eliminate errors in CMake
-echo -e "test/unit/cxx/test_cxx --cxx ${VIKUNJA_CI_CXX_STANDARD}"
-test/unit/cxx/test_cxx --cxx ${VIKUNJA_CI_CXX_STANDARD}
+if [ "${VIKUNJA_CI_CXX_TEST}" == "ON" ]; then
+    echo -e "test/unit/cxx/test_cxx --cxx ${VIKUNJA_CI_CXX_STANDARD}"
+    test/unit/cxx/test_cxx --cxx ${VIKUNJA_CI_CXX_STANDARD}
+fi

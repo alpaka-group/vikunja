@@ -9,13 +9,14 @@ from vikunja_globals import *  # pylint: disable=wildcard-import,unused-wildcard
 
 sw_versions: Dict[str, List[str]] = {
     GCC: ["7", "8", "9", "10", "11"],
-    CLANG: ["6.0", "7", "8", "9", "10", "11", "12", "13", "14", "15"],
-    NVCC: ["11.0", "11.1", "11.2", "11.3", "11.4", "11.5", "11.6"],
-    HIPCC: ["4.3", "4.5", "5.0", "5.1"],
+    CLANG: ["7", "8", "9", "10", "11", "12", "13", "14", "15"],
+    # NVCC: ["11.0", "11.1", "11.2", "11.3", "11.4", "11.5", "11.6"],
+    NVCC: ["11.0"],
+    # HIPCC: ["4.3", "4.5", "5.0", "5.1"],
     BACKENDS: [
         ALPAKA_ACC_CPU_B_OMP2_T_SEQ_ENABLE,
         ALPAKA_ACC_GPU_CUDA_ENABLE,
-        ALPAKA_ACC_GPU_HIP_ENABLE,
+        # ALPAKA_ACC_GPU_HIP_ENABLE,
     ],
     UBUNTU: ["20.04"],
     CMAKE: ["3.18.6", "3.19.8", "3.20.6", "3.21.6", "3.22.3"],
@@ -44,7 +45,10 @@ def get_compiler_versions(clang_cuda: bool = True) -> List[Tuple[str, str]]:
     """
     compilers: List[Tuple[str, str]] = []
 
-    for compiler_name in [GCC, CLANG, NVCC, HIPCC]:
+    # only use keys defined in sw_versions
+    for compiler_name in set(sw_versions.keys()).intersection(
+        [GCC, CLANG, NVCC, HIPCC]
+    ):
         for version in sw_versions[compiler_name]:
             compilers.append((compiler_name, version))
             if clang_cuda and compiler_name == CLANG:
@@ -67,11 +71,13 @@ def get_backend_matrix() -> List[List[Tuple[str, str]]]:
         ]
     )
 
-    for cuda_version in sw_versions[NVCC]:
-        combination_matrix.append([(ALPAKA_ACC_GPU_CUDA_ENABLE, cuda_version)])
+    if NVCC in sw_versions:
+        for cuda_version in sw_versions[NVCC]:
+            combination_matrix.append([(ALPAKA_ACC_GPU_CUDA_ENABLE, cuda_version)])
 
-    for rocm_version in sw_versions[HIPCC]:
-        combination_matrix.append([(ALPAKA_ACC_GPU_HIP_ENABLE, rocm_version)])
+    if HIPCC in sw_versions:
+        for rocm_version in sw_versions[HIPCC]:
+            combination_matrix.append([(ALPAKA_ACC_GPU_HIP_ENABLE, rocm_version)])
 
     return combination_matrix
 

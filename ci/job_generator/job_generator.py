@@ -63,8 +63,10 @@ if __name__ == "__main__":
 
     # setup the parameters
     parameters: OrderedDict = OrderedDict()
-    parameters[HOST_COMPILER] = get_compiler_versions()
-    parameters[DEVICE_COMPILER] = get_compiler_versions()
+    # TODO: enable clang-cuda as device compiler
+    enable_clang_cuda = False
+    parameters[HOST_COMPILER] = get_compiler_versions(clang_cuda=enable_clang_cuda)
+    parameters[DEVICE_COMPILER] = get_compiler_versions(clang_cuda=enable_clang_cuda)
     parameters[BACKENDS] = get_backend_matrix()
     parameters[CMAKE] = get_sw_tuple_list(CMAKE)
     parameters[BOOST] = get_sw_tuple_list(BOOST)
