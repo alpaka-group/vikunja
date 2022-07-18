@@ -14,9 +14,12 @@ from versions import (
     get_backend_matrix,
 )
 from vikunja_filter import vikunja_post_filter
+from custom_job import add_custom_jobs
 from reorder_jobs import reorder_jobs
-from generate_job_yaml import generate_job_yaml
+from generate_job_yaml import generate_job_yaml_list, write_job_yaml
 from verify import verify
+
+from typeguard import typechecked
 
 
 def get_args() -> argparse.Namespace:
@@ -92,15 +95,18 @@ if __name__ == "__main__":
 
         print(f"number of combinations: {len(job_matrix)}")
 
-    # TODO: remove max number of jobs
-    wave_job_matrix = ajc.distribute_to_waves(job_matrix, 10)
-
     if args.verify or args.all:
         if not verify(job_matrix):
             sys.exit(1)
 
-    generate_job_yaml(
+    job_matrix_yaml = generate_job_yaml_list(
+        job_matrix=job_matrix, container_version=args.version
+    )
+    add_custom_jobs(job_matrix_yaml, args.version)
+
+    wave_job_matrix = ajc.distribute_to_waves(job_matrix_yaml, 10)
+
+    write_job_yaml(
         job_matrix=wave_job_matrix,
         path=args.output_path,
-        container_version=args.version,
     )

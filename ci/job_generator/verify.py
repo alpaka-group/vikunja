@@ -26,28 +26,34 @@ def verify(combinations: List[Dict[str, Tuple[str, str]]]) -> bool:
 
     expected_values: Dict[str, Dict[str, List[str]]] = {}
 
-    expected_values[HOST_COMPILER] = {
-        GCC: [],
-        CLANG: [],
-        CLANG_CUDA: [],
-        HIPCC: [],
-    }
+    expected_values[HOST_COMPILER] = {}
+
+    # only use keys defined in sw_versions
+    for compiler_name in set(versions.sw_versions.keys()).intersection(
+        [GCC, CLANG, CLANG_CUDA, HIPCC]
+    ):
+        expected_values[HOST_COMPILER][compiler_name] = []
+
     # I believe, nobody understand the syntax ;-p
     # it copies the the dict host_compiler and append the entry nvcc
-    expected_values[DEVICE_COMPILER] = {
-        **expected_values[HOST_COMPILER],
-        **{NVCC: []},
-    }
+    expected_values[DEVICE_COMPILER] = {**expected_values[HOST_COMPILER]}
+
+    if NVCC in versions.sw_versions.keys():
+        expected_values[DEVICE_COMPILER][NVCC] = []
 
     expected_values[ALPAKA_ACC_CPU_B_OMP2_T_SEQ_ENABLE] = {
         ALPAKA_ACC_CPU_B_OMP2_T_SEQ_ENABLE: ["on"],
     }
-    expected_values[ALPAKA_ACC_GPU_CUDA_ENABLE] = {
-        ALPAKA_ACC_GPU_CUDA_ENABLE: versions.sw_versions[NVCC],
-    }
-    expected_values[ALPAKA_ACC_GPU_HIP_ENABLE] = {
-        ALPAKA_ACC_GPU_HIP_ENABLE: versions.sw_versions[HIPCC],
-    }
+
+    if NVCC in versions.sw_versions.keys():
+        expected_values[ALPAKA_ACC_GPU_CUDA_ENABLE] = {
+            ALPAKA_ACC_GPU_CUDA_ENABLE: versions.sw_versions[NVCC],
+        }
+
+    if HIPCC in versions.sw_versions.keys():
+        expected_values[ALPAKA_ACC_GPU_HIP_ENABLE] = {
+            ALPAKA_ACC_GPU_HIP_ENABLE: versions.sw_versions[HIPCC],
+        }
 
     for sw_name in [CMAKE, BOOST, ALPAKA, UBUNTU, CXX_STANDARD]:
         expected_values[sw_name] = {

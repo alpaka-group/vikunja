@@ -1,5 +1,5 @@
 integration_add_subdirectory:
-  image: registry.hzdr.de/crp/alpaka-group-container/alpaka-ci-ubuntu20.04:3.0
+  image: registry.hzdr.de/crp/alpaka-group-container/alpaka-ci-ubuntu20.04
   stage: compile-and-run
   variables:
     VIKUNJA_BOOST_VERSIONS: 1.74.0
@@ -15,7 +15,7 @@ integration_add_subdirectory:
     - cpuonly
 
 integration_find_package:
-  image: registry.hzdr.de/crp/alpaka-group-container/alpaka-ci-ubuntu20.04:3.0
+  image: registry.hzdr.de/crp/alpaka-group-container/alpaka-ci-ubuntu20.04
   stage: compile-and-run
   variables:
     VIKUNJA_BOOST_VERSIONS: 1.74.0

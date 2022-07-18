@@ -250,7 +250,7 @@ def job_tags(job: Dict[str, Tuple[str, str]]) -> List[str]:
 
 @typechecked
 def create_job(
-    job: Dict[str, Tuple[str, str]], stage_number: int, container_version: float
+    job: Dict[str, Tuple[str, str]], container_version: float
 ) -> Dict[str, Dict]:
     """Create complete GitLab-CI yaml for a single job
 
@@ -278,7 +278,6 @@ def create_job(
     job_yaml: Dict = {}
 
     job_yaml["image"] = job_image(job, container_version)
-    job_yaml["stage"] = "stage" + str(stage_number)
     job_yaml["variables"] = job_variables(job)
     job_yaml["script"] = [
         "source ./ci/gitlab_scripts/setup.sh",
@@ -291,17 +290,38 @@ def create_job(
 
 
 @typechecked
-def generate_job_yaml(
-    job_matrix: List[List[Dict[str, Tuple[str, str]]]],
-    path: str,
+def generate_job_yaml_list(
+    job_matrix: List[Dict[str, Tuple[str, str]]],
     container_version: float,
-):
-    """Generate the job yaml for each job in the job matrix and write it ot a file.
+) -> List[Dict[str, Dict]]:
+    """Generate the job yaml for each job in the job matrix.
 
     Args:
         job_matrix (List[List[Dict[str, Tuple[str, str]]]]): Job Matrix
-        path (str): Path of the GitLab-CI yaml file.
         container_version (float): Container version tag.
+
+    Returns:
+        List[Dict[str, Dict]]: List of GitLab-CI jobs. The key of a dict entry
+        is the job name and the value is the body.
+    """
+    job_matrix_yaml: Dict[str, Dict] = []
+    for job in job_matrix:
+        job_matrix_yaml.append(create_job(job, container_version))
+
+    return job_matrix_yaml
+
+
+@typechecked
+def write_job_yaml(
+    job_matrix: List[List[Dict[str, Dict]]],
+    path: str,
+):
+    """Write GitLab-CI jobs to file.
+
+    Args:
+        job_matrix (List[List[Dict[str, Dict]]]): List of GitLab-CI jobs. The
+        key of a dict entry is the job name and the value is the body.
+        path (str): Path of the GitLab-CI yaml file.
     """
     with open(path, "w", encoding="utf-8") as output_file:
         # setup all stages
@@ -317,5 +337,8 @@ def generate_job_yaml(
             # Improve the readability of the generated job yaml
             output_file.write(f"# <<<<<<<<<<<<< stage {stage_number} >>>>>>>>>>>>>\n\n")
             for job in wave:
-                yaml.dump(create_job(job, stage_number, container_version), output_file)
+                # the first key is the name
+                job[list(job.keys())[0]]["stage"] = "stage" + str(stage_number)
+
+                yaml.dump(job, output_file)
                 output_file.write("\n")
