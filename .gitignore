@@ -27,3 +27,9 @@
 /install*
 
 .vscode
+
+# python chache
+__pycache__
+
+# default name of the job_generator.py output
+jobs.yml

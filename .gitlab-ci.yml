@@ -8,13 +8,17 @@
 # VIKUNJA_CMAKE_ARGS                      : <string>
 # VIKUNJA_CXX_TEST                        : {ON}, optional
 
-include:
-  - local: '/script/compiler_base.yml'
-  - local: '/script/cxx_tests.yml'
+#include:
+#  - local: '/ci/custom_jobs/integration_test.yml'
+
+variables:
+  CONTAINER_VERSION: "3.0"
 
 stages:
   - validate
-  - compile-and-run
+  - generator
+  - run-test-jobs
+  #- compile-and-run
 
 ################################################################################
 # Check code formation with clang-format
@@ -33,74 +37,25 @@ pull-request-validation:
     - chmod +x /usr/bin/clang-format
     - clang-format --version
     # Check C++ code style
-    - source $CI_PROJECT_DIR/script/check_cpp_code_style.sh
+    - source $CI_PROJECT_DIR/ci/check_cpp_code_style.sh
 
-variables:
-  VIKUNJA_ALPAKA_VERSIONS: "0.6.0 0.6.1 0.7.0 0.8.0"
-
-cuda112:
-  image: registry.gitlab.com/hzdr/crp/alpaka-group-container/alpaka-ci-cuda112-gcc:1.4
-  variables:
-    VIKUNJA_CXX: "g++-9"
-    VIKUNJA_BOOST_VERSIONS: "1.65.1 1.66.0 1.67.0 1.68.0 1.69.0 1.70.0 1.71.0 1.72.0 1.73.0"
-  extends: .base_cuda
-
-gcc:
-  variables:
-    VIKUNJA_CXX: "g++-7 g++-8 g++-9 g++-10 g++-11"
-    VIKUNJA_BOOST_VERSIONS: "1.65.1 1.75.0"
-  extends: .base_gcc
-
-clang:
-  variables:
-    VIKUNJA_CXX: "clang++-5.0 clang++-6.0 clang++-7 clang++-8 clang++-9 clang++-10 clang++-11"
-    VIKUNJA_BOOST_VERSIONS: "1.65.1 1.75.0"
-  extends: .base_clang
-
-# cudaClang101:
-#   image: registry.gitlab.com/hzdr/crp/alpaka-group-container/alpaka-ci-cuda101-clang:1.3
-#   variables:
-#     VIKUNJA_CXX: "clang++-9 clang++-10 clang++-11"
-#     VIKUNJA_BOOST_VERSIONS: "1.65.1 1.75.0"
-#   extends: .base_cuda_clang
-
-# removed HIP support for the moment
-# CI errors are not reproduce able
-#hip42:
-#  image: registry.gitlab.com/hzdr/crp/alpaka-group-container/alpaka-ci-rocm4.2:1.4
-#  variables:
-#    CMAKE_MODULE_PATH: "/opt/rocm-4.2.0/hip/cmake"
-#    VIKUNJA_BOOST_VERSIONS: "1.65.1 1.75.0"
-#  extends: .base_hip
-
-integration_add_subdirectory:
-  image: registry.gitlab.com/hzdr/crp/alpaka-group-container/alpaka-ci-gcc:1.4
-  stage: compile-and-run
-  variables:
-    VIKUNJA_BOOST_VERSIONS: 1.74.0
-    VIKUNJA_GCC_VERSION: 9
+generate:
+  stage: generator
+  image: alpine:latest
   script:
-    - export CC=gcc-$VIKUNJA_GCC_VERSION
-    - export CXX=g++-$VIKUNJA_GCC_VERSION
-    - export CUPLA_TRANSFORM_DIR=$CI_PROJECT_DIR/cupla_transform
-    - source $CI_PROJECT_DIR/script/integration_test/prepare_add_subdirectory.sh
-    - source $CI_PROJECT_DIR/script/integration_test/run.sh
-  tags:
-    - x86_64
-    - cpuonly
+    - apk update && apk add python3 py3-pip
+    - pip3 install -r ci/job_generator/requirements.txt
+    - python3 ci/job_generator/job_generator.py ${CONTAINER_VERSION}
+    - cat jobs.yml
+  artifacts:
+    paths:
+      - jobs.yml
+    expire_in: 1 week
 
-integration_find_package:
-  image: registry.gitlab.com/hzdr/crp/alpaka-group-container/alpaka-ci-gcc:1.4
-  stage: compile-and-run
-  variables:
-    VIKUNJA_BOOST_VERSIONS: 1.74.0
-    VIKUNJA_GCC_VERSION: 9
-  script:
-    - export CC=gcc-$VIKUNJA_GCC_VERSION
-    - export CXX=g++-$VIKUNJA_GCC_VERSION
-    - export CUPLA_TRANSFORM_DIR=$CI_PROJECT_DIR/cupla_transform
-    - source $CI_PROJECT_DIR/script/integration_test/prepare_find_package.sh
-    - source $CI_PROJECT_DIR/script/integration_test/run.sh
-  tags:
-    - x86_64
-    - cpuonly
+run-tests:
+  stage: run-test-jobs
+  trigger:
+    include:
+      - artifact: jobs.yml
+        job: generate
+    strategy: depend

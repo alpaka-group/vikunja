@@ -20,6 +20,17 @@
 #include <iostream>
 #include <type_traits>
 
+// @ALPAKA_BACKWARD(<=0.8)
+// in alpaka 0.9, the namespace traits was renamed to trait
+// https://github.com/alpaka-group/alpaka/pull/1651
+// enable backwards compatibility
+#if ALPAKA_VERSION_MAJOR == 0 && ALPAKA_VERSION_MINOR < 9
+namespace alpaka
+{
+    namespace trait = ::alpaka::traits;
+}
+#endif
+
 namespace vikunja
 {
     namespace reduce
@@ -263,7 +274,7 @@ namespace vikunja
             TReduceFunc const& reduceFunc) -> TRed
         {
             assert(bufferEnd >= bufferBegin);
-            auto size = static_cast<typename alpaka::traits::IdxType<TAcc>::type>(bufferEnd - bufferBegin);
+            auto size = static_cast<typename alpaka::trait::IdxType<TAcc>::type>(bufferEnd - bufferBegin);
             return deviceTransformReduce<TAcc>(devAcc, devHost, queue, size, bufferBegin, transformFunc, reduceFunc);
         }
 
@@ -373,7 +384,7 @@ namespace vikunja
             TFunc const& func) -> TRed
         {
             assert(bufferEnd >= bufferBegin);
-            auto size = static_cast<typename alpaka::traits::IdxType<TAcc>::type>(bufferEnd - bufferBegin);
+            auto size = static_cast<typename alpaka::trait::IdxType<TAcc>::type>(bufferEnd - bufferBegin);
             return deviceReduce<TAcc>(devAcc, devHost, queue, size, bufferBegin, func);
         }
     } // namespace reduce
