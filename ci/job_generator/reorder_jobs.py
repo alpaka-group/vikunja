@@ -74,6 +74,8 @@ def reorder_jobs(job_matrix: List[Dict[str, Tuple[str, str]]]):
         },
     )
 
+    # TODO: enable me
+    """
     force_job(
         job_matrix=job_matrix,
         searched_job={
@@ -86,6 +88,7 @@ def reorder_jobs(job_matrix: List[Dict[str, Tuple[str, str]]]):
             ALPAKA: (ALPAKA, "develop"),
         },
     )
+    """
 
     force_job(
         job_matrix=job_matrix,
@@ -100,6 +103,8 @@ def reorder_jobs(job_matrix: List[Dict[str, Tuple[str, str]]]):
         },
     )
 
+    # TODO: enable me
+    """
     force_job(
         job_matrix=job_matrix,
         searched_job={
@@ -112,6 +117,7 @@ def reorder_jobs(job_matrix: List[Dict[str, Tuple[str, str]]]):
             ALPAKA: (ALPAKA, "develop"),
         },
     )
+    """
 
     force_job(
         job_matrix=job_matrix,
