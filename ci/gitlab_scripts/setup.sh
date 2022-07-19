@@ -1,5 +1,14 @@
 #!/bin/bash
 
+# Copyright 2022 Simeon Ehrig
+#
+# This file is part of vikunja.
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+
 : ${VIKUNJA_CI_BOOST_VER?"\e[31mERROR: VIKUNJA_CI_BOOST_VER is not define\e[0m"}
 : ${VIKUNJA_CI_CMAKE_VER?"\e[31mERROR: VIKUNJA_CI_CMAKE_VER is not define\e[0m"}
 : ${VIKUNJA_CI_CXX?"\e[31mERROR: VIKUNJA_CI_CXX is not define\e[0m"}
