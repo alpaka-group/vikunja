@@ -68,6 +68,31 @@ After installing the Python package, you can simply run the job generator via:
 
 The generator creates a ``jobs.yaml`` in the current directory with all job combinations.
 
+Filter and Reorder Jobs
++++++++++++++++++++++++
+
+The job generator provides the ability to filter and reorder the generated job matrix using `Python <https://docs.python.org/3/howto/regex.html>`_ regex. The regex is applied via the commit message for the current commit:
+
+.. code-block::
+
+  Add function to filter and reorder CI jobs
+
+  This commit message demonstrates how it works. The job filter removes
+  all jobs whose names do not begin with NVCC or GCC. Then the jobs are
+  reordered. First all GCC11 are executed, then all GCC8 and then the
+  rest.
+
+  CI_FILTER: ^NVCC|^GCC
+  CI_REORDER: ^GCC11 ^GCC8
+
+The job generator looks for a line starting with the prefix ``CI_FILTER`` to filter the jobs or ``CI_REORDER`` to reorder the jobs. The filter statement is a single regex. The reorder statement can consist of multiple regex separated by a whitespace. For reordering, the jobs have the same order as the regex. This means that all orders matching the first regex are executed first, then the orders matching the second regex and so on. At the end, all orders that do not match any regex are executed. **Attention:** the order is only guaranteed across waves. Within a wave, it is not guaranteed which job will start first.
+
+It is not necessary that both prefixes are used. One of them or none is also possible.
+
+.. hint::
+
+  You can test your regex offline before creating and pushing a commit. The ``job_generator.py`` provides the ``--filter`` and ``--reorder`` flags that do the same thing as the lines starting with ``CI_FILTER`` and ``CI_REORDER`` in the commit message.
+
 Develop new Feature for the alpaka-job-coverage Library
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
