@@ -27,9 +27,7 @@ sw_versions: Dict[str, List[str]] = {
         "1.77.0",
         "1.78.0",
     ],
-    # TODO: enable develop version
-    # ALPAKA: ["0.6.0", "0.6.1", "0.7.0", "0.8.0", "0.9.0", "develop"],
-    ALPAKA: ["0.6.0", "0.6.1", "0.7.0", "0.8.0", "0.9.0"],
+    ALPAKA: ["0.6.0", "0.6.1", "0.7.0", "0.8.0", "0.9.0", "develop"],
     CXX_STANDARD: ["17", "20"],
 }
 
