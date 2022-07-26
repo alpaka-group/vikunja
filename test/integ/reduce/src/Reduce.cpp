@@ -158,6 +158,22 @@ namespace vikunja
     } // namespace test
 } // namespace vikunja
 
+// use your own simple implementation of std::pair, since the CUDA SDK only provides a __host__ version of the
+// assignment operator, which generates a runtime error
+template<typename TFirst, typename TSecond>
+struct MyPair
+{
+    TFirst first;
+    TSecond second;
+
+    ALPAKA_FN_HOST_ACC MyPair()
+    {
+    }
+
+    ALPAKA_FN_HOST_ACC MyPair(TFirst f, TSecond s) : first(f), second(s)
+    {
+    }
+};
 
 struct Sum
 {
@@ -202,9 +218,9 @@ struct Max
 struct MakePairUnaryOp
 {
     template<typename TData>
-    ALPAKA_FN_HOST_ACC std::pair<TData, TData> operator()(TData const& x) const
+    ALPAKA_FN_HOST_ACC MyPair<TData, TData> operator()(TData const& x) const
     {
-        return std::pair<TData, TData>(x, x);
+        return MyPair<TData, TData>(x, x);
     }
 };
 
@@ -212,12 +228,12 @@ struct MakePairUnaryOp
 struct MinMaxPairBinaryOp
 {
     template<typename TAcc, typename TData>
-    ALPAKA_FN_HOST_ACC std::pair<TData, TData> operator()(
+    ALPAKA_FN_HOST_ACC MyPair<TData, TData> operator()(
         TAcc const& acc,
-        std::pair<TData, TData> const& x,
-        std::pair<TData, TData> const& y) const
+        MyPair<TData, TData> const& x,
+        MyPair<TData, TData> const& y) const
     {
-        return std::pair<TData, TData>(
+        return MyPair<TData, TData>(
             alpaka::math::min(acc, x.first, y.first),
             alpaka::math::max(acc, x.second, y.second));
     }
@@ -227,9 +243,9 @@ struct MinMaxPairBinaryOp
 struct MinMaxPairBinaryOpStd
 {
     template<typename TData>
-    std::pair<TData, TData> operator()(std::pair<TData, TData> const& x, std::pair<TData, TData> const& y) const
+    MyPair<TData, TData> operator()(MyPair<TData, TData> const& x, MyPair<TData, TData> const& y) const
     {
-        return std::pair<TData, TData>(std::min(x.first, y.first), std::max(x.second, y.second));
+        return MyPair<TData, TData>(std::min(x.first, y.first), std::max(x.second, y.second));
     }
 };
 
@@ -480,7 +496,7 @@ TEMPLATE_TEST_CASE(
 }
 
 TEMPLATE_TEST_CASE(
-    "Test reduce with operators which uses std::pair",
+    "Test reduce with operators which uses MyPair",
     "[reduce][operator][noAcc]",
     (alpaka::DimInt<1u>),
     (alpaka::DimInt<2u>),
@@ -488,7 +504,7 @@ TEMPLATE_TEST_CASE(
 {
     using Dim = TestType;
     using PairType = float;
-    using Data = std::pair<PairType, PairType>;
+    using Data = MyPair<PairType, PairType>;
 
     auto size = GENERATE(1, 10, 777, 1 << 10);
 
@@ -506,7 +522,7 @@ TEMPLATE_TEST_CASE(
         host_mem_ptr,
         host_mem_ptr + size,
         [&distribution, &generator]()
-        { return std::make_pair<PairType, PairType>(distribution(generator), distribution(generator)); });
+        { return MyPair<PairType, PairType>(distribution(generator), distribution(generator)); });
 
 
     MinMaxPairBinaryOp reduce;
@@ -522,7 +538,7 @@ TEMPLATE_TEST_CASE(
 }
 
 TEMPLATE_TEST_CASE(
-    "Test reduceTransform with operators which uses as input Data and expect as result std::pair<Data, Data>",
+    "Test reduceTransform with operators which uses as input Data and expect as result MyPair<Data, Data>",
     "[reduceTransform][operator][noAcc]",
     (alpaka::DimInt<1u>),
     (alpaka::DimInt<2u>),
@@ -530,7 +546,7 @@ TEMPLATE_TEST_CASE(
 {
     using Dim = TestType;
     using Data = float;
-    using ReturnType = std::pair<Data, Data>;
+    using ReturnType = MyPair<Data, Data>;
 
     auto size = GENERATE(1, 10, 777, 1 << 10);
 

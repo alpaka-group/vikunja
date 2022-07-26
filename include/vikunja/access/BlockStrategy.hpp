@@ -53,7 +53,7 @@ namespace vikunja::MemAccess
         //! Returns a memory access object with the index set to the last item.
         ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto end() const -> BlockStrategy
         {
-            BlockStrategy ret(*this);
+            BlockStrategy ret = *this;
             ret.m_index = this->m_maximum;
             return ret;
         }
@@ -75,7 +75,7 @@ namespace vikunja::MemAccess
         //! Returns a reference to the current index.
         ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto operator++(int) -> BlockStrategy
         {
-            auto ret(*this);
+            auto ret = *this;
             this->m_index += this->m_step;
             return ret;
         }
@@ -98,7 +98,7 @@ namespace vikunja::MemAccess
         //! Returns a reference to the current index.
         ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto operator--(int) -> BlockStrategy
         {
-            auto ret(*this);
+            auto ret = *this;
             this->m_index -= this->m_step;
             return ret;
         }
@@ -109,7 +109,7 @@ namespace vikunja::MemAccess
         //! \param n The offset.
         ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto operator+(uint64_t n) const -> BlockStrategy
         {
-            auto ret(*this);
+            auto ret = *this;
             ret.m_index += n * m_step;
             return ret;
         }
@@ -120,7 +120,7 @@ namespace vikunja::MemAccess
         //! \param n The offset.
         ALPAKA_FN_HOST_ACC ALPAKA_FN_INLINE auto operator-(uint64_t n) const -> BlockStrategy
         {
-            auto ret(*this);
+            auto ret = *this;
             ret.m_index -= n * m_step;
             return ret;
         }

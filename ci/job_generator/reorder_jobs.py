@@ -70,7 +70,8 @@ def reorder_jobs(job_matrix: List[Dict[str, Tuple[str, str]]]):
                 ALPAKA_ACC_CPU_B_OMP2_T_SEQ_ENABLE,
                 ON,
             ),
-            ALPAKA: (ALPAKA, "0.9.0"),
+            # latest release
+            ALPAKA: (ALPAKA, sw_versions[ALPAKA][-2]),
         },
     )
 
@@ -83,33 +84,35 @@ def reorder_jobs(job_matrix: List[Dict[str, Tuple[str, str]]]):
                 ALPAKA_ACC_CPU_B_OMP2_T_SEQ_ENABLE,
                 ON,
             ),
-            ALPAKA: (ALPAKA, "develop"),
+            # develop
+            ALPAKA: (ALPAKA, sw_versions[ALPAKA][-1]),
         },
     )
 
     force_job(
         job_matrix=job_matrix,
         searched_job={
-            HOST_COMPILER: (CLANG, "13"),
-            DEVICE_COMPILER: (CLANG, "13"),
+            # latest clang version
+            HOST_COMPILER: (CLANG, sw_versions[CLANG][-1]),
+            DEVICE_COMPILER: (CLANG, sw_versions[CLANG][-1]),
             ALPAKA_ACC_CPU_B_OMP2_T_SEQ_ENABLE: (
                 ALPAKA_ACC_CPU_B_OMP2_T_SEQ_ENABLE,
                 ON,
             ),
-            ALPAKA: (ALPAKA, "0.9.0"),
+            ALPAKA: (ALPAKA, sw_versions[ALPAKA][-2]),
         },
     )
 
     force_job(
         job_matrix=job_matrix,
         searched_job={
-            HOST_COMPILER: (CLANG, "13"),
-            DEVICE_COMPILER: (CLANG, "13"),
+            HOST_COMPILER: (CLANG, sw_versions[CLANG][-1]),
+            DEVICE_COMPILER: (CLANG, sw_versions[CLANG][-1]),
             ALPAKA_ACC_CPU_B_OMP2_T_SEQ_ENABLE: (
                 ALPAKA_ACC_CPU_B_OMP2_T_SEQ_ENABLE,
                 ON,
             ),
-            ALPAKA: (ALPAKA, "develop"),
+            ALPAKA: (ALPAKA, sw_versions[ALPAKA][-1]),
         },
     )
 
@@ -117,9 +120,13 @@ def reorder_jobs(job_matrix: List[Dict[str, Tuple[str, str]]]):
         job_matrix=job_matrix,
         searched_job={
             HOST_COMPILER: (GCC, "9"),
-            DEVICE_COMPILER: (NVCC, "11.0"),
-            ALPAKA_ACC_GPU_CUDA_ENABLE: (ALPAKA_ACC_GPU_CUDA_ENABLE, "11.0"),
-            ALPAKA: (ALPAKA, "0.9.0"),
+            # latest NVCC version
+            DEVICE_COMPILER: (NVCC, sw_versions[NVCC][-1]),
+            ALPAKA_ACC_GPU_CUDA_ENABLE: (
+                ALPAKA_ACC_GPU_CUDA_ENABLE,
+                sw_versions[NVCC][-1],
+            ),
+            ALPAKA: (ALPAKA, sw_versions[ALPAKA][-2]),
         },
     )
 
@@ -127,9 +134,12 @@ def reorder_jobs(job_matrix: List[Dict[str, Tuple[str, str]]]):
         job_matrix=job_matrix,
         searched_job={
             HOST_COMPILER: (GCC, "9"),
-            DEVICE_COMPILER: (NVCC, "11.0"),
-            ALPAKA_ACC_GPU_CUDA_ENABLE: (ALPAKA_ACC_GPU_CUDA_ENABLE, "11.0"),
-            ALPAKA: (ALPAKA, "develop"),
+            DEVICE_COMPILER: (NVCC, sw_versions[NVCC][-1]),
+            ALPAKA_ACC_GPU_CUDA_ENABLE: (
+                ALPAKA_ACC_GPU_CUDA_ENABLE,
+                sw_versions[NVCC][-1],
+            ),
+            ALPAKA: (ALPAKA, sw_versions[ALPAKA][-1]),
         },
     )
 
@@ -138,19 +148,19 @@ def reorder_jobs(job_matrix: List[Dict[str, Tuple[str, str]]]):
     force_job(
         job_matrix=job_matrix,
         searched_job={
-            HOST_COMPILER: (HIPCC, "5.1"),
-            DEVICE_COMPILER: (HIPCC, "5.1"),
+            HOST_COMPILER: (HIPCC, sw_versions[HIPCC][-1]),
+            DEVICE_COMPILER: (HIPCC, sw_versions[HIPCC][-1]),
             ALPAKA_ACC_GPU_HIP_ENABLE: (ALPAKA_ACC_GPU_HIP_ENABLE, "5.1"),
-            ALPAKA: (ALPAKA, "0.9.0"),
+            ALPAKA: (ALPAKA, sw_versions[ALPAKA][-2]),
         },
     )
 
     force_job(
         job_matrix=job_matrix,
         searched_job={
-            HOST_COMPILER: (HIPCC, "5.1"),
-            DEVICE_COMPILER: (HIPCC, "5.1"),
+            HOST_COMPILER: (HIPCC, sw_versions[HIPCC][-1]),
+            DEVICE_COMPILER: (HIPCC, sw_versions[HIPCC][-1]),
             ALPAKA_ACC_GPU_HIP_ENABLE: (ALPAKA_ACC_GPU_HIP_ENABLE, "5.1"),
-            ALPAKA: (ALPAKA, "develop"),
+            ALPAKA: (ALPAKA, sw_versions[ALPAKA][-1]),
         },
     )

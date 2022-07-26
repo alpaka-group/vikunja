@@ -100,7 +100,7 @@ namespace vikunja
                     // threadIdx.x
                     auto threadIndex = (alpaka::getIdx<alpaka::Block, alpaka::Threads>(acc)[xIndex]);
                     // blockIdx.x * TBlocksize + threadIdx.x
-                    auto indexInBlock(alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc)[xIndex]);
+                    auto indexInBlock = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc)[xIndex];
 
                     using MemPolicy = TMemAccessPolicy;
                     // Create an iterator with the specified memory access policy that wraps the input iterator.

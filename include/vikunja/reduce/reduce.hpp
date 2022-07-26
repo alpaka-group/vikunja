@@ -128,13 +128,13 @@ namespace vikunja
             Vec blocksPerGrid(Vec::all(static_cast<TIdx>(1u)));
 
             Vec const resultBufferExtent(Vec::all(static_cast<TIdx>(1u)));
-            auto resultBuffer(alpaka::allocBuf<TRed, TIdx>(devAcc, resultBufferExtent));
+            auto resultBuffer = alpaka::allocBuf<TRed, TIdx>(devAcc, resultBufferExtent);
 
             // in case n < blockSize, the block reductions only work
             // if the MemAccessPolicy maps the correct values.
             if(n < blockSize)
             {
-                auto resultBuffer(alpaka::allocBuf<TRed, TIdx>(devAcc, resultBufferExtent));
+                auto resultBuffer = alpaka::allocBuf<TRed, TIdx>(devAcc, resultBufferExtent);
                 WorkDiv dummyWorkDiv{blocksPerGrid, threadsPerBlock, elementsPerThread};
                 detail::SmallProblemReduceKernel<TTransformOperator, TReduceOperator> kernel;
                 alpaka::exec<TAcc>(
@@ -146,7 +146,7 @@ namespace vikunja
                     n,
                     transformFunc,
                     reduceFunc);
-                auto resultView(alpaka::allocBuf<TRed, TIdx>(devHost, resultBufferExtent));
+                auto resultView = alpaka::allocBuf<TRed, TIdx>(devHost, resultBufferExtent);
                 // TRed result;
                 // alpaka::ViewPlainPtr<TDevHost, TRed, Dim, TIdx> resultView{&result, devHost,
                 // static_cast<TIdx>(1u)};
@@ -182,7 +182,7 @@ namespace vikunja
             WorkDiv multiBlockWorkDiv{blocksPerGrid, threadsPerBlock, elementsPerThread};
             WorkDiv singleBlockWorkDiv{singleBlocksPerGrid, singleThreadsPerBlock, singleElementsPerThread};
 
-            auto secondPhaseBuffer(alpaka::allocBuf<TRed, TIdx>(devAcc, sharedMemExtent));
+            auto secondPhaseBuffer = alpaka::allocBuf<TRed, TIdx>(devAcc, sharedMemExtent);
 
             detail::BlockThreadReduceKernel<blockSize, MemAccessPolicy, TRed, TTransformOperator, TReduceOperator>
                 multiBlockKernel;
@@ -212,7 +212,7 @@ namespace vikunja
                 detail::Identity<TRed>(),
                 reduceFunc);
 
-            auto resultView(alpaka::allocBuf<TRed, TIdx>(devHost, resultBufferExtent));
+            auto resultView = alpaka::allocBuf<TRed, TIdx>(devHost, resultBufferExtent);
             alpaka::memcpy(queue, resultView, secondPhaseBuffer, resultBufferExtent);
 
             // wait for result, otherwise the async CPU queue causes a segfault
