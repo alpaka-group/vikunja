@@ -29,4 +29,12 @@ def vikunja_post_filter(row: List) -> bool:
     ):
         return False
 
+    # the minimum boost version for alpaka 0.9.0 is 1.74.0
+    if (
+        row_check_name(row, DEVICE_COMPILER, "==", NVCC)
+        and row_check_version(row, DEVICE_COMPILER, ">=", "11.3")
+        and row_check_version(row, ALPAKA, "<", "0.7.0")
+    ):
+        return False
+
     return True
