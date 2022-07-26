@@ -287,16 +287,54 @@ namespace vikunja::MemAccess
             using type = policies::LinearMemAccessPolicy;
         };
 
-#if defined(ALPAKA_ACC_GPU_CUDA_ENABLED) || defined(ALPAKA_ACC_GPU_HIP_ENABLED)
+#if defined(ALPAKA_ACC_GPU_CUDA_ENABLED)
+#    if ALPAKA_VERSION_MAJOR >= 1
+
         /**
-         * On cuda, default memory access is grid striding.
+         * On cuda and hip, default memory access is grid striding.
+         */
+        template<>
+        struct GetMemAccessPolicyByPltf<alpaka::PltfCudaRt>
+        {
+            using type = policies::GridStridingMemAccessPolicy;
+        };
+
+        // alpaka 0.9.x and older
+#    else
+        /**
+         * On cuda and hip, default memory access is grid striding.
          */
         template<>
         struct GetMemAccessPolicyByPltf<alpaka::PltfUniformCudaHipRt>
         {
             using type = policies::GridStridingMemAccessPolicy;
         };
-#endif // (ALPAKA_ACC_GPU_CUDA_ENABLED) || defined(ALPAKA_ACC_GPU_HIP_ENABLED)
+#    endif
+#endif // (ALPAKA_ACC_GPU_CUDA_ENABLED)
+
+#if defined(ALPAKA_ACC_GPU_HIP_ENABLED)
+#    if ALPAKA_VERSION_MAJOR >= 1
+        /**
+         * On cuda and hip, default memory access is grid striding.
+         */
+        template<>
+        struct GetMemAccessPolicyByPltf<alpaka::PltfHipRt>
+        {
+            using type = policies::GridStridingMemAccessPolicy;
+        };
+
+        // alpaka 0.9.x and older
+#    else
+        /**
+         * On cuda and hip, default memory access is grid striding.
+         */
+        template<>
+        struct GetMemAccessPolicyByPltf<alpaka::PltfUniformCudaHipRt>
+        {
+            using type = policies::GridStridingMemAccessPolicy;
+        };
+#    endif
+#endif // defined(ALPAKA_ACC_GPU_HIP_ENABLED)
 
     } // namespace traits
 

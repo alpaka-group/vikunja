@@ -130,14 +130,26 @@ namespace vikunja
 #endif
 #ifdef ALPAKA_ACC_GPU_CUDA_ENABLED
             template<typename... TArgs>
-            struct GetBlockBasedPolicy<alpaka::AccGpuCudaRt<TArgs...>>
+            struct GetBlockBasedPolicy
+#    if ALPAKA_VERSION_MAJOR >= 1
+                // workaround, which should be fixed with this issue:
+                // https://github.com/alpaka-group/alpaka/issues/1246
+                <alpaka::AccGpuUniformCudaHipRt<alpaka::ApiCudaRt, TArgs...>>
+#    else
+                <alpaka::AccGpuCudaRt<TArgs...>>
+#    endif
             {
                 using type = policies::BlockBasedCudaPolicy;
             };
 #endif
 #ifdef ALPAKA_ACC_GPU_HIP_ENABLED
             template<typename... TArgs>
-            struct GetBlockBasedPolicy<alpaka::AccGpuHipRt<TArgs...>>
+            struct GetBlockBasedPolicy
+#    if ALPAKA_VERSION_MAJOR >= 1
+                <alpaka::AccGpuUniformCudaHipRt<alpaka::ApiHipRt, TArgs...>>
+#    else
+                <alpaka::AccGpuHipRt<TArgs...>>
+#    endif
             {
                 using type = policies::BlockBasedCudaPolicy;
             };

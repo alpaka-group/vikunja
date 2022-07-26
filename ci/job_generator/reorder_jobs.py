@@ -74,8 +74,6 @@ def reorder_jobs(job_matrix: List[Dict[str, Tuple[str, str]]]):
         },
     )
 
-    # TODO: enable me
-    """
     force_job(
         job_matrix=job_matrix,
         searched_job={
@@ -88,7 +86,6 @@ def reorder_jobs(job_matrix: List[Dict[str, Tuple[str, str]]]):
             ALPAKA: (ALPAKA, "develop"),
         },
     )
-    """
 
     force_job(
         job_matrix=job_matrix,
@@ -103,8 +100,6 @@ def reorder_jobs(job_matrix: List[Dict[str, Tuple[str, str]]]):
         },
     )
 
-    # TODO: enable me
-    """
     force_job(
         job_matrix=job_matrix,
         searched_job={
@@ -117,7 +112,6 @@ def reorder_jobs(job_matrix: List[Dict[str, Tuple[str, str]]]):
             ALPAKA: (ALPAKA, "develop"),
         },
     )
-    """
 
     force_job(
         job_matrix=job_matrix,
@@ -126,22 +120,21 @@ def reorder_jobs(job_matrix: List[Dict[str, Tuple[str, str]]]):
             DEVICE_COMPILER: (NVCC, "11.0"),
             ALPAKA_ACC_GPU_CUDA_ENABLE: (ALPAKA_ACC_GPU_CUDA_ENABLE, "11.0"),
             ALPAKA: (ALPAKA, "0.9.0"),
+        },
+    )
+
+    force_job(
+        job_matrix=job_matrix,
+        searched_job={
+            HOST_COMPILER: (GCC, "9"),
+            DEVICE_COMPILER: (NVCC, "11.0"),
+            ALPAKA_ACC_GPU_CUDA_ENABLE: (ALPAKA_ACC_GPU_CUDA_ENABLE, "11.0"),
+            ALPAKA: (ALPAKA, "develop"),
         },
     )
 
     # TODO: enable me
     return
-
-    force_job(
-        job_matrix=job_matrix,
-        searched_job={
-            HOST_COMPILER: (GCC, "9"),
-            DEVICE_COMPILER: (NVCC, "11.0"),
-            ALPAKA_ACC_GPU_CUDA_ENABLE: (ALPAKA_ACC_GPU_CUDA_ENABLE, "11.0"),
-            ALPAKA: (ALPAKA, "develop"),
-        },
-    )
-
     force_job(
         job_matrix=job_matrix,
         searched_job={
