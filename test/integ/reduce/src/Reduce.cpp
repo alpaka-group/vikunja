@@ -325,7 +325,18 @@ TEMPLATE_TEST_CASE(
     (alpaka::DimInt<3u>) )
 {
     using Dim = TestType;
+#ifdef ALPAKA_ACC_GPU_HIP_ENABLED
+    // Use int instead std::uint64_t for the HIP backend, because of a complicated bug.
+    // The bug causes a signal abort, if a kernel is launched.
+    // Following conditions needs to be fulfilled:
+    //  - HIP backend needs to be used
+    //  - reduce functions needs to be used
+    //  - data type needs to be unsigned long, long or unsigned int
+    //  - the functor needs to be a lambda
+    using Data = int;
+#else
     using Data = std::uint64_t;
+#endif
 
     auto size = GENERATE(1, 10, 777, 1 << 10);
 
