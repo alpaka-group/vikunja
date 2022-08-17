@@ -29,11 +29,17 @@ def vikunja_post_filter(row: List) -> bool:
     ):
         return False
 
-    # the minimum boost version for alpaka 0.9.0 is 1.74.0
+    # CUDA 11.3+ is only supported by alpaka 0.7.0 an newer
     if (
         row_check_name(row, DEVICE_COMPILER, "==", NVCC)
         and row_check_version(row, DEVICE_COMPILER, ">=", "11.3")
         and row_check_version(row, ALPAKA, "<", "0.7.0")
+    ):
+        return False
+
+    # disable HIP for alpaka 0.8.0 and older, because of missing HIP 4.3+ support
+    if row_check_name(row, DEVICE_COMPILER, "==", HIPCC) and row_check_version(
+        row, ALPAKA, "<", "0.9.0"
     ):
         return False
 

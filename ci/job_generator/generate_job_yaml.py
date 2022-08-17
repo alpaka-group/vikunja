@@ -174,7 +174,7 @@ def job_variables(job: Dict[str, Tuple[str, str]]) -> Dict[str, str]:
         and job[ALPAKA_ACC_GPU_HIP_ENABLE][VERSION] != OFF
     ):
         # architecture of the Vega 64
-        cmake_extra_arg.append("-DALPAKA_HIP_ARCH=900")
+        cmake_extra_arg.append("-DGPU_TARGETS=gfx900")
 
     if (
         ALPAKA_ACC_GPU_CUDA_ENABLE in job

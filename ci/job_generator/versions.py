@@ -11,7 +11,7 @@ sw_versions: Dict[str, List[str]] = {
     GCC: ["7", "8", "9", "10", "11"],
     CLANG: ["7", "8", "9", "10", "11", "12", "13", "14", "15"],
     NVCC: ["11.0", "11.1", "11.2", "11.3", "11.4", "11.5", "11.6"],
-    # HIPCC: ["4.3", "4.5", "5.0", "5.1"],
+    HIPCC: ["4.3", "4.5", "5.0", "5.1", "5.2"],
     BACKENDS: [
         ALPAKA_ACC_CPU_B_OMP2_T_SEQ_ENABLE,
         ALPAKA_ACC_GPU_CUDA_ENABLE,

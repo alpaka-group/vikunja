@@ -143,14 +143,15 @@ def reorder_jobs(job_matrix: List[Dict[str, Tuple[str, str]]]):
         },
     )
 
-    # TODO: enable me
-    return
     force_job(
         job_matrix=job_matrix,
         searched_job={
             HOST_COMPILER: (HIPCC, sw_versions[HIPCC][-1]),
             DEVICE_COMPILER: (HIPCC, sw_versions[HIPCC][-1]),
-            ALPAKA_ACC_GPU_HIP_ENABLE: (ALPAKA_ACC_GPU_HIP_ENABLE, "5.1"),
+            ALPAKA_ACC_GPU_HIP_ENABLE: (
+                ALPAKA_ACC_GPU_HIP_ENABLE,
+                sw_versions[HIPCC][-1],
+            ),
             ALPAKA: (ALPAKA, sw_versions[ALPAKA][-2]),
         },
     )
@@ -160,7 +161,10 @@ def reorder_jobs(job_matrix: List[Dict[str, Tuple[str, str]]]):
         searched_job={
             HOST_COMPILER: (HIPCC, sw_versions[HIPCC][-1]),
             DEVICE_COMPILER: (HIPCC, sw_versions[HIPCC][-1]),
-            ALPAKA_ACC_GPU_HIP_ENABLE: (ALPAKA_ACC_GPU_HIP_ENABLE, "5.1"),
+            ALPAKA_ACC_GPU_HIP_ENABLE: (
+                ALPAKA_ACC_GPU_HIP_ENABLE,
+                sw_versions[HIPCC][-1],
+            ),
             ALPAKA: (ALPAKA, sw_versions[ALPAKA][-1]),
         },
     )
