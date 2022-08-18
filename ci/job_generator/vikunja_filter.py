@@ -9,12 +9,6 @@ from packaging import version as pk_version
 
 
 def vikunja_post_filter(row: List) -> bool:
-    # TODO: FIXME disable Clang hast CUDA host compiler
-    if row_check_name(row, DEVICE_COMPILER, "==", NVCC) and row_check_name(
-        row, HOST_COMPILER, "==", CLANG
-    ):
-        return False
-
     # the minimum boost version for alpaka 0.9.0 is 1.74.0
     if (
         is_in_row(row, ALPAKA)
@@ -34,6 +28,23 @@ def vikunja_post_filter(row: List) -> bool:
         row_check_name(row, DEVICE_COMPILER, "==", NVCC)
         and row_check_version(row, DEVICE_COMPILER, ">=", "11.3")
         and row_check_version(row, ALPAKA, "<", "0.7.0")
+    ):
+        return False
+
+    # CUDA 11.x and Clang 7 as host compiler does not support C++17
+    if (
+        row_check_name(row, DEVICE_COMPILER, "==", NVCC)
+        and row_check_name(row, HOST_COMPILER, "==", CLANG)
+        and row_check_version(row, HOST_COMPILER, "<", "8")
+    ):
+        return False
+
+    # The combination of CUDA 11.3 - 11.5, Clang as host compiler and libstdc++ 9.4 is broken
+    if (
+        row_check_name(row, DEVICE_COMPILER, "==", NVCC)
+        and row_check_name(row, HOST_COMPILER, "==", CLANG)
+        and row_check_version(row, DEVICE_COMPILER, ">=", "11.3")
+        and row_check_version(row, DEVICE_COMPILER, "<=", "11.5")
     ):
         return False
 
