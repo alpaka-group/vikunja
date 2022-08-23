@@ -26,19 +26,6 @@ cmake_args="${cmake_args} -Dalpaka_CXX_STANDARD=${VIKUNJA_CI_CXX_STANDARD}"
 cmake_args="${cmake_args} -DBOOST_ROOT=${VIKUNJA_CI_BOOST_ROOT}"
 cmake_args="${cmake_args} -DVIKUNJA_ENABLE_CXX_TEST=${VIKUNJA_CI_CXX_TEST}"
 cmake_args="${cmake_args} ${VIKUNJA_CI_ALPAKA_BACKENDS}"
-
-# if the nvcc is the device compiler, set the correct host and device compiler
-if [ $VIKUNJA_CI_DEVICE_CXX == "nvcc" ]; then
-    cmake_args="${cmake_args} -DCMAKE_CUDA_COMPILER=nvcc -DCMAKE_CUDA_HOST_COMPILER=${VIKUNJA_CI_CXX}"
-fi
-
-# if the clang is the CUDA device compiler, set the correct device compiler
-if [ ! -z ${VIKUNJA_CI_CUDA_VER+x} ]; then
-    if [[ $VIKUNJA_CI_DEVICE_CXX == clang* ]]; then
-        cmake_args="${cmake_args} -DCMAKE_CUDA_COMPILER=clang++"
-    fi
-fi
-
 cmake_args="${cmake_args} ${VIKUNJA_CI_CONST_ARGS}"
 cmake_args="${cmake_args} ${VIKUNJA_CI_EXTRA_ARGS}"
 

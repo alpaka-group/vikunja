@@ -112,14 +112,22 @@ def job_variables(job: Dict[str, Tuple[str, str]]) -> Dict[str, str]:
         if job[compiler][NAME] in (NVCC, HIPCC):
             variables[compiler_variable_name] = job[compiler][NAME]
 
-    # Set variables for host and device compiler name and version to check if the compilers are
-    # available or needs to be installed
-    variables[f"VIKUNJA_CI_{get_env_var_name(job[HOST_COMPILER][NAME])}_VER"] = job[
-        HOST_COMPILER
-    ][VERSION]
-    variables[f"VIKUNJA_CI_{get_env_var_name(job[DEVICE_COMPILER][NAME])}_VER"] = job[
-        DEVICE_COMPILER
-    ][VERSION]
+    if job[DEVICE_COMPILER][NAME] != CLANG_CUDA:
+        # Set variables for host and device compiler name and version to check if the compilers are
+        # available or needs to be installed
+        variables[f"VIKUNJA_CI_{get_env_var_name(job[HOST_COMPILER][NAME])}_VER"] = job[
+            HOST_COMPILER
+        ][VERSION]
+        variables[
+            f"VIKUNJA_CI_{get_env_var_name(job[DEVICE_COMPILER][NAME])}_VER"
+        ] = job[DEVICE_COMPILER][VERSION]
+    else:
+        variables[f"VIKUNJA_CI_{get_env_var_name(CLANG)}_VER"] = job[HOST_COMPILER][
+            VERSION
+        ]
+        variables[f"VIKUNJA_CI_{get_env_var_name(CLANG)}_VER"] = job[DEVICE_COMPILER][
+            VERSION
+        ]
 
     # required to check, if the correct CUDA SDK is available
     if (
@@ -168,6 +176,16 @@ def job_variables(job: Dict[str, Tuple[str, str]]) -> Dict[str, str]:
     variables["GIT_SUBMODULE_STRATEGY"] = "normal"
 
     cmake_extra_arg = []
+
+    if job[DEVICE_COMPILER][NAME] == CLANG_CUDA:
+        cmake_extra_arg.append(
+            f"-DCMAKE_CUDA_COMPILER=clang++-{job[DEVICE_COMPILER][VERSION]}"
+        )
+
+    if job[DEVICE_COMPILER][NAME] == NVCC:
+        cmake_extra_arg.append(
+            f'-DCMAKE_CUDA_COMPILER=nvcc -DCMAKE_CUDA_HOST_COMPILER={variables["VIKUNJA_CI_CXX"]}'
+        )
 
     if (
         ALPAKA_ACC_GPU_HIP_ENABLE in job
@@ -273,6 +291,9 @@ def create_job(
             + job[HOST_COMPILER][NAME].upper()
             + job[HOST_COMPILER][VERSION]
         )
+    # if Clang-CUDA is the device compiler, add also the CUDA SDK version to the name
+    if job[DEVICE_COMPILER][NAME] == CLANG_CUDA:
+        job_name = job_name + "-CUDA" + job[ALPAKA_ACC_GPU_CUDA_ENABLE][VERSION]
     job_name += job_prefix_coding(job)
 
     job_yaml: Dict = {}

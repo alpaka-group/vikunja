@@ -1,5 +1,9 @@
 from alpaka_job_coverage.util import is_in_row
-from alpaka_job_coverage.util import row_check_name, row_check_version
+from alpaka_job_coverage.util import (
+    row_check_name,
+    row_check_version,
+    row_check_backend_version,
+)
 
 from alpaka_job_coverage.globals import *  # pylint: disable=wildcard-import,unused-wildcard-import
 from vikunja_globals import *  # pylint: disable=wildcard-import,unused-wildcard-import
@@ -53,5 +57,18 @@ def vikunja_post_filter(row: List) -> bool:
         row, ALPAKA, "<", "0.9.0"
     ):
         return False
+
+    if row_check_name(row, DEVICE_COMPILER, "==", CLANG_CUDA):
+        # alpaka 0.6.x does not support native CMake CUDA support and vikunja also not
+        if row_check_version(row, ALPAKA, "<", "0.7.0"):
+            return False
+
+        # cmake 3.18 cannot compile simple example, if Clang is the CUDA compiler
+        if row_check_version(row, CMAKE, "<", "3.19.0"):
+            return False
+
+        # Clang 11 has problems to detect the correct CUDA SDK version
+        if row_check_version(row, DEVICE_COMPILER, "<=", "11"):
+            return False
 
     return True
