@@ -83,8 +83,7 @@ if __name__ == "__main__":
 
     # setup the parameters
     parameters: OrderedDict = OrderedDict()
-    # TODO: enable clang-cuda as device compiler
-    enable_clang_cuda = False
+    enable_clang_cuda = True
     parameters[HOST_COMPILER] = get_compiler_versions(clang_cuda=enable_clang_cuda)
     parameters[DEVICE_COMPILER] = get_compiler_versions(clang_cuda=enable_clang_cuda)
     parameters[BACKENDS] = get_backend_matrix()
