@@ -230,11 +230,13 @@ def job_variables(job: Dict[str, Tuple[str, str]]) -> Dict[str, str]:
     else:
         variables["VIKUNJA_CI_CXX_TEST"] = "OFF"
 
+    variables["VIKUNJA_CI_CATCH_VER"] = "v2.13.2"
+
     variables["VIKUNJA_CI_EXTRA_ARGS"] = " ".join(cmake_extra_arg)
     variables["VIKUNJA_CI_CONST_ARGS"] = " ".join(
         [
             "-DBUILD_TESTING=ON",
-            "-DVIKUNJA_SYSTEM_CATCH2=OFF",
+            "-DVIKUNJA_SYSTEM_CATCH2=ON",
             "-DVIKUNJA_BUILD_EXAMPLES=ON",
             "-DCMAKE_BUILD_TYPE=Release",
         ]
