@@ -15,6 +15,7 @@
 : ${VIKUNJA_CI_EXTRA_ARGS?"VIKUNJA_CI_EXTRA_ARGS must be specified"}
 : ${VIKUNJA_CI_BOOST_ROOT?"VIKUNJA_CI_EXTRA_ARGS must be specified"}
 : ${VIKUNJA_CI_CMAKE_ROOT?"VIKUNJA_CI_EXTRA_ARGS must be specified"}
+: ${VIKUNJA_CI_CATCH_ROOT?"VIKUNJA_CI_CATCH_ROOT must be specified"}
 : ${VIKUNJA_CI_CONST_ARGS?"VIKUNJA_CI_CONST_ARGS must be specified"}
 : ${VIKUNJA_CI_ALPAKA_VER?"VIKUNJA_CI_ALPAKA_VER must be specified"}
 
@@ -24,6 +25,7 @@ cmake_args=""
 cmake_args="${cmake_args} -DCMAKE_CXX_COMPILER=${VIKUNJA_CI_CXX}"
 cmake_args="${cmake_args} -Dalpaka_CXX_STANDARD=${VIKUNJA_CI_CXX_STANDARD}"
 cmake_args="${cmake_args} -DBOOST_ROOT=${VIKUNJA_CI_BOOST_ROOT}"
+cmake_args="${cmake_args} -DCatch2_DIR=${VIKUNJA_CI_CATCH_ROOT}/lib/cmake/Catch2/"
 cmake_args="${cmake_args} -DVIKUNJA_ENABLE_CXX_TEST=${VIKUNJA_CI_CXX_TEST}"
 cmake_args="${cmake_args} ${VIKUNJA_CI_ALPAKA_BACKENDS}"
 cmake_args="${cmake_args} ${VIKUNJA_CI_CONST_ARGS}"

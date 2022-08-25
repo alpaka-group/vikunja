@@ -41,6 +41,27 @@ else
 fi
 
 #####################################
+# check Catch2
+#####################################
+
+if agc-manager -e catch2@${VIKUNJA_CI_CATCH_VER} ; then
+    export VIKUNJA_CI_CATCH_ROOT=$(agc-manager -b catch2@${VIKUNJA_CI_CATCH_VER})
+else
+    before_install_catch=$(pwd)
+    export VIKUNJA_CI_CATCH_ROOT=/opt/tmpinst/catch2/${VIKUNJA_CI_CATCH_VER}
+    cd /tmp
+    git clone --branch ${VIKUNJA_CI_CATCH_VER} --depth 1 https://github.com/catchorg/Catch2.git
+    cd Catch2
+    mkdir build && cd build
+    cmake .. -DCMAKE_INSTALL_PREFIX=${VIKUNJA_CI_CATCH_ROOT}
+    cmake --build . -j
+    cmake --install .
+    cd $before_install_catch
+    rm -r /tmp/Catch2
+    unset before_install_catch
+fi
+
+#####################################
 # check host and device compiler
 #####################################
 
