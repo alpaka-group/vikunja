@@ -1,4 +1,4 @@
-# Copyright 2021 Hauke Mewes, Simeon Ehrig
+# Copyright 2019-2021 Hauke Mewes, Simeon Ehrig
 #
 # This file is part of vikunja.
 #
@@ -8,10 +8,4 @@
 
 cmake_minimum_required(VERSION 3.18)
 
-add_subdirectory("access/")
-add_subdirectory("concept/")
-add_subdirectory("mem/")
-
-if(VIKUNJA_ENABLE_CXX_TEST)
-  add_subdirectory("cxx/")
-endif()
+add_subdirectory("memObj/")

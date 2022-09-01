@@ -22,3 +22,33 @@ target_link_libraries(${_TARGET_NAME_OPERATOR}
 )
 
 add_test(NAME ${_TARGET_NAME_OPERATOR} COMMAND ${_TARGET_NAME_OPERATOR} ${_VIKUNJA_TEST_OPTIONS})
+
+set(_TARGET_NAME_ACC "test_concept_acc")
+
+alpaka_add_executable(
+  ${_TARGET_NAME_ACC}
+  src/acc.cpp
+)
+
+target_link_libraries(${_TARGET_NAME_ACC}
+  PRIVATE
+  vikunja::internalvikunja
+  vikunja::testSetup
+)
+
+add_test(NAME ${_TARGET_NAME_ACC} COMMAND ${_TARGET_NAME_ACC} ${_VIKUNJA_TEST_OPTIONS})
+
+set(_TARGET_NAME_MEM_VISIBILITY "test_concept_memVisibility")
+
+alpaka_add_executable(
+  ${_TARGET_NAME_MEM_VISIBILITY}
+  src/memVisibility.cpp
+)
+
+target_link_libraries(${_TARGET_NAME_MEM_VISIBILITY}
+  PRIVATE
+  vikunja::internalvikunja
+  vikunja::testSetup
+)
+
+add_test(NAME ${_TARGET_NAME_MEM_VISIBILITY} COMMAND ${_TARGET_NAME_MEM_VISIBILITY} ${_VIKUNJA_TEST_OPTIONS})
