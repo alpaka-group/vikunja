@@ -9,7 +9,8 @@
 cmake_minimum_required(VERSION 3.18)
 
 add_subdirectory("access/")
-add_subdirectory("operators/")
+add_subdirectory("concept/")
+
 if(VIKUNJA_ENABLE_CXX_TEST)
   add_subdirectory("cxx/")
 endif()

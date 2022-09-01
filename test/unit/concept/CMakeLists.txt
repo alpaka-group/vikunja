@@ -8,18 +8,17 @@
 
 cmake_minimum_required(VERSION 3.18)
 
-set(_TARGET_NAME "test_operators")
-
+set(_TARGET_NAME_OPERATOR "test_concept_operator")
 
 alpaka_add_executable(
-  ${_TARGET_NAME}
-  src/Operators.cpp
-  )
+  ${_TARGET_NAME_OPERATOR}
+  src/operator.cpp
+)
 
-target_link_libraries(${_TARGET_NAME}
+target_link_libraries(${_TARGET_NAME_OPERATOR}
   PRIVATE
   vikunja::internalvikunja
   vikunja::testSetup
-  )
+)
 
-add_test(NAME ${_TARGET_NAME} COMMAND ${_TARGET_NAME} ${_VIKUNJA_TEST_OPTIONS})
+add_test(NAME ${_TARGET_NAME_OPERATOR} COMMAND ${_TARGET_NAME_OPERATOR} ${_VIKUNJA_TEST_OPTIONS})

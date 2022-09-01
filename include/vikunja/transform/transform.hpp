@@ -10,7 +10,7 @@
 #pragma once
 
 #include <vikunja/access/BlockStrategy.hpp>
-#include <vikunja/operators/operators.hpp>
+#include <vikunja/concept/operator.hpp>
 #include <vikunja/transform/detail/BlockThreadTransformKernel.hpp>
 #include <vikunja/workdiv/BlockBasedWorkDiv.hpp>
 
@@ -50,7 +50,7 @@ namespace vikunja
          * @tparam TDevAcc The type of the alpaka accelerator.
          * @tparam TQueue The type of the alpaka queue.
          * @tparam TIdx The index type to use.
-         * @tparam TOperator The vikunja::operators type of the transform function.
+         * @tparam TOperator The specialization of vikunja::concept::UnaryOp type of the transform function.
          * @param devAcc The alpaka accelerator.
          * @param queue The alpaka queue.
          * @param n The number of input elements. Must be of type TIdx.
@@ -69,7 +69,7 @@ namespace vikunja
             typename TQueue,
             typename TIdx,
             typename TOperator
-            = vikunja::operators::UnaryOp<TAcc, TFunc, typename std::iterator_traits<TInputIterator>::value_type>>
+            = vikunja::concept::UnaryOp<TAcc, TFunc, typename std::iterator_traits<TInputIterator>::value_type>>
         auto deviceTransform(
             TDevAcc& devAcc,
             TQueue& queue,
@@ -129,7 +129,7 @@ namespace vikunja
          * @tparam TOutputIterator Type of the output iterator. Should be a pointer-like type.
          * @tparam TDevAcc The type of the alpaka accelerator.
          * @tparam TQueue The type of the alpaka queue.
-         * @tparam TOperator The vikunja::operators type of the transform function.
+         * @tparam TOperator The specialization of vikunja::concept::UnaryOp type of the transform function.
          * @param devAcc The alpaka accelerator.
          * @param queue The alpaka queue.
          * @param sourceBegin The begin pointer of the input buffer.
@@ -147,7 +147,7 @@ namespace vikunja
             typename TDevAcc,
             typename TQueue,
             typename TOperator
-            = vikunja::operators::UnaryOp<TAcc, TFunc, typename std::iterator_traits<TInputIterator>::value_type>>
+            = vikunja::concept::UnaryOp<TAcc, TFunc, typename std::iterator_traits<TInputIterator>::value_type>>
         auto deviceTransform(
             TDevAcc& devAcc,
             TQueue& queue,
@@ -193,7 +193,7 @@ namespace vikunja
             typename TDevAcc,
             typename TQueue,
             typename TIdx,
-            typename TOperator = vikunja::operators::BinaryOp<
+            typename TOperator = vikunja::concept::BinaryOp<
                 TAcc,
                 TFunc,
                 typename std::iterator_traits<TInputIterator>::value_type,
@@ -272,7 +272,7 @@ namespace vikunja
             typename TOutputIterator,
             typename TDevAcc,
             typename TQueue,
-            typename TOperator = vikunja::operators::BinaryOp<
+            typename TOperator = vikunja::concept::BinaryOp<
                 TAcc,
                 TFunc,
                 typename std::iterator_traits<TInputIterator>::value_type,
