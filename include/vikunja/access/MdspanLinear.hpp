@@ -104,7 +104,7 @@ struct Iterate_mdspan
         for(auto i = 0; i < input.extent(0); ++i)
         {
             auto subinput = submdspan_remove_dim(input, i);
-            auto suboutput = submdspan_remove_dim(input, i);
+            auto suboutput = submdspan_remove_dim(output, i);
             Iterate_mdspan<TSpan::rank() - 1>{}(subinput, suboutput, functor);
         }
     }

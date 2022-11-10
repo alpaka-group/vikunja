@@ -11,6 +11,8 @@
 
 #endif
 
+#include <array>
+#include <chrono>
 #include <experimental/mdspan>
 #include <iostream>
 #include <type_traits>
@@ -59,8 +61,9 @@ int main()
 int main()
 {
     using Idx = std::uint64_t;
-    Idx const num_dims = 5;
-    Idx const dim_size = 6;
+    Idx const num_dims = 3;
+    Idx const dim_size = 100;
+
 
     using Acc = alpaka::AccCpuSerial<alpaka::DimInt<num_dims>, Idx>;
     // using Acc = alpaka::AccGpuCudaRt<alpaka::DimInt<num_dims>, Idx>;
@@ -84,8 +87,10 @@ int main()
     }
 
 
-    auto deviceMem(alpaka::allocBuf<Data, Idx>(devAcc, extent));
-    auto deviceSpan = alpaka::getMdSpan(deviceMem);
+    auto deviceInputMem(alpaka::allocBuf<Data, Idx>(devAcc, extent));
+    auto deviceInputSpan = alpaka::getMdSpan(deviceInputMem);
+    auto deviceOutputMem(alpaka::allocBuf<Data, Idx>(devAcc, extent));
+    auto deviceOutputSpan = alpaka::getMdSpan(deviceOutputMem);
     auto hostMem(alpaka::allocBuf<Data, Idx>(devHost, extent));
     Data* hostNativePtr = alpaka::getPtrNative(hostMem);
     auto hostSpan = alpaka::getMdSpan(hostMem);
@@ -94,16 +99,32 @@ int main()
 
     auto doubleNum = [] ALPAKA_FN_HOST_ACC(Data const& i) { return 2 * i; };
 
+    alpaka::memcpy(queueAcc, deviceInputMem, hostMem, extent);
 
-    alpaka::memcpy(queueAcc, deviceMem, hostMem, extent);
+    int constexpr bench_runs = 10000;
 
-    vikunja::device::transform<Acc>(devAcc, queueAcc, deviceSpan, deviceSpan, doubleNum);
 
+    std::array<
+        std::tuple<
+            decltype(std::chrono::high_resolution_clock::now()),
+            decltype(std::chrono::high_resolution_clock::now())>,
+        bench_runs>
+        measure_points;
+
+    // warm up
+    vikunja::device::transform<Acc>(devAcc, queueAcc, deviceInputSpan, deviceOutputSpan, doubleNum);
+
+    for(int i = 0; i < bench_runs; ++i)
+    {
+        std::get<0>(measure_points[i]) = std::chrono::high_resolution_clock::now();
+        vikunja::device::transform<Acc>(devAcc, queueAcc, deviceInputSpan, deviceOutputSpan, doubleNum);
+        std::get<1>(measure_points[i]) = std::chrono::high_resolution_clock::now();
+    }
 
     // Copy the data back to the host for validation.
-    alpaka::memcpy(queueAcc, hostMem, deviceMem, extent);
+    alpaka::memcpy(queueAcc, hostMem, deviceOutputMem, extent);
 
-    Data resultSum = std::accumulate(hostNativePtr, hostNativePtr + extent.prod(), 0);
+    Data resultSum = std::reduce(hostNativePtr, hostNativePtr + extent.prod());
 
     Data expectedResult = (extent.prod() * (extent.prod() + 1));
 
@@ -118,6 +139,20 @@ int main()
                   << "expected result: " << expectedResult << "\n"
                   << "actual result: " << resultSum << std::endl;
     }
+
+
+    double avg_runtime = 0.0;
+    for(auto const time_pair : measure_points)
+    {
+        avg_runtime += static_cast<double>(
+            std::chrono::duration_cast<std::chrono::microseconds>(std::get<1>(time_pair) - std::get<0>(time_pair))
+                .count());
+    }
+
+    avg_runtime /= bench_runs;
+    avg_runtime /= 1000.0;
+
+    std::cout << "Execution time: " << avg_runtime << "ms" << std::endl;
 
     return 0;
 }
