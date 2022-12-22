@@ -88,12 +88,12 @@ int main()
 
 
     auto deviceInputMem(alpaka::allocBuf<Data, Idx>(devAcc, extent));
-    auto deviceInputSpan = alpaka::getMdSpan(deviceInputMem);
+    auto deviceInputSpan = alpaka::experimental::getMdSpan(deviceInputMem);
     auto deviceOutputMem(alpaka::allocBuf<Data, Idx>(devAcc, extent));
-    auto deviceOutputSpan = alpaka::getMdSpan(deviceOutputMem);
+    auto deviceOutputSpan = alpaka::experimental::getMdSpan(deviceOutputMem);
     auto hostMem(alpaka::allocBuf<Data, Idx>(devHost, extent));
     Data* hostNativePtr = alpaka::getPtrNative(hostMem);
-    auto hostSpan = alpaka::getMdSpan(hostMem);
+    auto hostSpan = alpaka::experimental::getMdSpan(hostMem);
 
     iota_span(hostSpan, 1);
 
