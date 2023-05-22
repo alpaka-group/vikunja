@@ -13,19 +13,23 @@ from packaging import version as pk_version
 
 
 def vikunja_post_filter(row: List) -> bool:
-    # the minimum boost version for alpaka 0.9.0 is 1.74.0
-    if (
-        is_in_row(row, ALPAKA)
-        and is_in_row(row, BOOST)
-        and (
-            pk_version.parse(row[param_map[ALPAKA]][VERSION])
-            > pk_version.parse("0.8.0")
-            or row[param_map[ALPAKA]][VERSION] == "develop"
-        )
-        and pk_version.parse(row[param_map[BOOST]][VERSION])
-        < pk_version.parse("1.74.0")
-    ):
-        return False
+    if is_in_row(row, ALPAKA):
+        # the minimum boost version for alpaka 0.9.0 is 1.74.0
+        if (
+            is_in_row(row, BOOST)
+            and (
+                pk_version.parse(row[param_map[ALPAKA]][VERSION])
+                > pk_version.parse("0.8.0")
+                or row[param_map[ALPAKA]][VERSION] == "develop"
+            )
+            and pk_version.parse(row[param_map[BOOST]][VERSION])
+            < pk_version.parse("1.74.0")
+        ):
+            return False
+        if row_check_version(row, ALPAKA, "==", "develop") and row_check_version(
+            row, CMAKE, "<", "3.22"
+        ):
+            return False
 
     # CUDA 11.3+ is only supported by alpaka 0.7.0 an newer
     if (
