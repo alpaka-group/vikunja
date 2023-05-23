@@ -26,10 +26,26 @@ def vikunja_post_filter(row: List) -> bool:
             < pk_version.parse("1.74.0")
         ):
             return False
-        if row_check_version(row, ALPAKA, "==", "develop") and row_check_version(
-            row, CMAKE, "<", "3.22"
-        ):
-            return False
+
+        # develop branch with commit 88860c9 supports
+        # >= CMake 3.22
+        # >= Clang 9
+        # >= GCC 9
+        if row_check_version(row, ALPAKA, "==", "develop"):
+            if row_check_version(row, CMAKE, "<", "3.22"):
+                return False
+            if row_check_name(row, HOST_COMPILER, "==", GCC) and row_check_version(
+                row, HOST_COMPILER, "<", "9"
+            ):
+                return False
+            if row_check_name(row, HOST_COMPILER, "==", CLANG) and row_check_version(
+                row, HOST_COMPILER, "<", "9"
+            ):
+                return False
+            if row_check_name(
+                row, DEVICE_COMPILER, "==", CLANG_CUDA
+            ) and row_check_version(row, DEVICE_COMPILER, "<", "9"):
+                return False
 
     # CUDA 11.3+ is only supported by alpaka 0.7.0 an newer
     if (

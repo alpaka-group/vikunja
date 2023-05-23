@@ -13,6 +13,17 @@ set -o pipefail
 
 echo "CUPLA_TRANSFORM_DIR -> ${CUPLA_TRANSFORM_DIR}"
 
+#####################################
+# find CMake
+#####################################
+
+if agc-manager -e cmake@${VIKUNJA_CI_CMAKE_VERSION} ; then
+    export VIKUNJA_CI_CMAKE_ROOT=$(agc-manager -b cmake@${VIKUNJA_CI_CMAKE_VERSION})
+else
+    echo "cmake ${VIKUNJA_CI_CMAKE_VERSION} is not available"
+    exit 1
+fi
+
 ###############################################
 # find boost
 ###############################################

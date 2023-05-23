@@ -2,6 +2,7 @@ integration_add_subdirectory:
   image: registry.hzdr.de/crp/alpaka-group-container/alpaka-ci-ubuntu20.04
   stage: compile-and-run
   variables:
+    VIKUNJA_CI_CMAKE_VERSION: "3.22"
     VIKUNJA_BOOST_VERSIONS: 1.74.0
     VIKUNJA_GCC_VERSION: 9
   script:
@@ -18,6 +19,7 @@ integration_find_package:
   image: registry.hzdr.de/crp/alpaka-group-container/alpaka-ci-ubuntu20.04
   stage: compile-and-run
   variables:
+    VIKUNJA_CI_CMAKE_VERSION: "3.22"
     VIKUNJA_BOOST_VERSIONS: 1.74.0
     VIKUNJA_GCC_VERSION: 9
   script:

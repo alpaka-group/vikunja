@@ -13,8 +13,8 @@ set -o pipefail
 
 cd $CUPLA_TRANSFORM_DIR
 mkdir build && cd build
-cmake .. -DBOOST_ROOT=${VIKUNJA_BOOST_ROOT} -DALPAKA_ACC_CPU_B_SEQ_T_SEQ_ENABLE=ON
-cmake --build .
+$VIKUNJA_CI_CMAKE_ROOT/bin/cmake .. -DBOOST_ROOT=${VIKUNJA_BOOST_ROOT} -DALPAKA_ACC_CPU_B_SEQ_T_SEQ_ENABLE=ON
+$VIKUNJA_CI_CMAKE_ROOT/bin/cmake --build .
 ./cuplaVikReduceSingleExe
 ./cuplaVikReduceStaticLinkedExe
 ./cuplaVikReduceDynamicLinkedExe
