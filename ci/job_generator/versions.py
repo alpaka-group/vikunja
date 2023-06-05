@@ -26,7 +26,9 @@ sw_versions: Dict[str, List[str]] = {
         "1.77.0",
         "1.78.0",
     ],
-    ALPAKA: ["0.6.0", "0.6.1", "0.7.0", "0.8.0", "0.9.0", "develop"],
+    # there is tagged alpaka dev version, but a pseudo dev versions allows to use the python version library
+    # an it makes easier to define filter rules
+    ALPAKA: ["0.6.0", "0.6.1", "0.7.0", "0.8.0", "0.9.0", "1.0.0-dev"],
     CXX_STANDARD: ["17", "20"],
 }
 

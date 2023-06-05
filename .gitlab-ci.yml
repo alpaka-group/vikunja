@@ -27,10 +27,10 @@ pull-request-validation:
 
 generate:
   stage: generator
-  # fixed alpine version, because alpine 3.18 does not provide Python 3.10
-  image: alpine:3.17
+  # fixed alpine version, because the available python version is depending on the alpine version
+  image: alpine:3.18
   script:
-    - apk update && apk add python3~=3.10 py3-pip
+    - apk update && apk add python3~=3.11 py3-pip
     - pip3 install -r ci/job_generator/requirements.txt
     - python3 ci/job_generator/job_generator.py ${CONTAINER_VERSION}
     - cat jobs.yml
