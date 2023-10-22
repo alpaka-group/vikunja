@@ -8,18 +8,17 @@
 
 cmake_minimum_required(VERSION 3.18)
 
-set(_TARGET_NAME "test_operators")
-
+set(_TARGET_NAME_MEMOBJ "test_memobj")
 
 alpaka_add_executable(
-  ${_TARGET_NAME}
-  src/Operators.cpp
-  )
+    ${_TARGET_NAME_MEMOBJ}
+    src/memObj.cpp
+)
 
-target_link_libraries(${_TARGET_NAME}
-  PRIVATE
-  vikunja::internalvikunja
-  vikunja::testSetup
-  )
+target_link_libraries(${_TARGET_NAME_MEMOBJ}
+    PRIVATE
+    vikunja::internalvikunja
+    vikunja::testSetup
+)
 
-add_test(NAME ${_TARGET_NAME} COMMAND ${_TARGET_NAME} ${_VIKUNJA_TEST_OPTIONS})
+add_test(NAME ${_TARGET_NAME_MEMOBJ} COMMAND ${_TARGET_NAME_MEMOBJ} ${_VIKUNJA_TEST_OPTIONS})

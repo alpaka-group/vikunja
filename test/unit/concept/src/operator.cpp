@@ -7,7 +7,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <vikunja/operators/operators.hpp>
+#include <vikunja/concept/operator.hpp>
 
 #include <alpaka/alpaka.hpp>
 
@@ -33,47 +33,47 @@ template<
     typename TAcc,
     typename F,
     typename TData,
-    typename TOperator = vikunja::operators::UnaryOp<TAcc, F, TData>,
+    typename TOperator = vikunja::concept::UnaryOp<TAcc, F, TData>,
     typename TRed = typename TOperator::TRed>
-auto unaryRunner(TAcc const& acc, F f, TData const arg) -> TRed
+ALPAKA_FN_HOST_ACC auto unaryRunner(TAcc const& acc, F f, TData const arg) -> TRed
 {
     return TOperator::run(acc, f, arg);
 }
 
 
-int uFunc1(float const a)
+ALPAKA_FN_HOST_ACC int uFunc1(float const a)
 {
     return static_cast<int>(a) + 2;
 }
-auto uFunc2(float const a)
+ALPAKA_FN_HOST_ACC auto uFunc2(float const a)
 {
     return a * 3;
 }
-float ALPAKA_FN_HOST_ACC uFunc3(int const a)
+ALPAKA_FN_HOST_ACC float uFunc3(int const a)
 {
     return 1.3f + static_cast<float>(a);
 }
 template<typename TRed, typename TData>
-TRed ALPAKA_FN_HOST_ACC uFunc4(TData const a)
+ALPAKA_FN_HOST_ACC TRed uFunc4(TData const a)
 {
     return static_cast<TRed>(a);
 }
 
 template<typename TAcc>
-int uFunc5(TAcc const& acc, int const a)
+ALPAKA_FN_HOST_ACC int uFunc5(TAcc const& acc, int const a)
 {
     return acc.iMax(1, a);
 }
 
 template<typename TAcc, typename TData, int TMax>
-TData ALPAKA_FN_HOST_ACC uFunc6(TAcc const& acc, TData const a)
+ALPAKA_FN_HOST_ACC TData uFunc6(TAcc const& acc, TData const a)
 {
     return acc.iMax(TMax, a);
 }
 
 struct UStruct1
 {
-    int operator()(int const a) const
+    ALPAKA_FN_HOST_ACC int operator()(int const a) const
     {
         return 2 * a;
     }
@@ -82,7 +82,7 @@ struct UStruct1
 template<typename TAcc, typename TData, typename TRet>
 struct UStruct2
 {
-    TRet ALPAKA_FN_HOST_ACC operator()(TAcc const& acc, TData const a) const
+    ALPAKA_FN_HOST_ACC TRet operator()(TAcc const& acc, TData const a) const
     {
         return static_cast<TRet>(acc.iMax(static_cast<int>(a * 0.3), a));
     }
@@ -91,7 +91,7 @@ struct UStruct2
 template<typename TAcc, typename TData>
 struct UMakePair
 {
-    std::pair<TData, TData> ALPAKA_FN_HOST_ACC operator()(TAcc const& acc, TData const& a) const
+    ALPAKA_FN_HOST_ACC std::pair<TData, TData> operator()(TAcc const& acc, TData const& a) const
     {
         return std::make_pair(a, a);
     }
@@ -136,15 +136,15 @@ template<
     typename F,
     typename TData1,
     typename TData2,
-    typename TOperator = vikunja::operators::BinaryOp<TAcc, F, TData1, TData2>,
+    typename TOperator = vikunja::concept::BinaryOp<TAcc, F, TData1, TData2>,
     typename TRed = typename TOperator::TRed>
-auto binaryRunner(TAcc const& acc, F f, TData1 const arg1, TData2 const arg2) -> TRed
+ALPAKA_FN_HOST_ACC auto binaryRunner(TAcc const& acc, F f, TData1 const arg1, TData2 const arg2) -> TRed
 {
     return TOperator::run(acc, f, arg1, arg2);
 }
 
 
-int bFunc1(int const a, int const b)
+ALPAKA_FN_HOST_ACC int bFunc1(int const a, int const b)
 {
     return a + b;
 }
@@ -182,7 +182,7 @@ ALPAKA_FN_HOST_ACC TRed bFunc6(TAcc const& acc, TData1 const a, TData2 const b)
 
 struct BStruct1
 {
-    int operator()(float const a, double const b) const
+    ALPAKA_FN_HOST_ACC int operator()(float const a, double const b) const
     {
         return static_cast<int>(static_cast<double>(a) * b);
     }
@@ -191,7 +191,7 @@ struct BStruct1
 template<typename TAcc, typename TData1, typename TData2, typename TRet>
 struct BStruct2
 {
-    TRet ALPAKA_FN_HOST_ACC operator()(TAcc const& acc, TData1 const a, TData2 const b) const
+    ALPAKA_FN_HOST_ACC TRet operator()(TAcc const& acc, TData1 const a, TData2 const b) const
     {
         return static_cast<TRet>(acc.iMin(static_cast<int>(a), static_cast<int>(b)));
     }
@@ -200,7 +200,7 @@ struct BStruct2
 template<typename TAcc, typename TData1, typename TData2>
 struct BMakePair
 {
-    std::pair<TData1, TData2> ALPAKA_FN_HOST_ACC operator()(TAcc const& acc, TData1 const& a, TData2 const& b) const
+    ALPAKA_FN_HOST_ACC std::pair<TData1, TData2> operator()(TAcc const& acc, TData1 const& a, TData2 const& b) const
     {
         return std::make_pair(a, b);
     }

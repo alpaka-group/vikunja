@@ -10,7 +10,7 @@
 #pragma once
 
 #include <vikunja/access/BlockStrategy.hpp>
-#include <vikunja/operators/operators.hpp>
+#include <vikunja/concept/operator.hpp>
 #include <vikunja/reduce/detail/BlockThreadReduceKernel.hpp>
 #include <vikunja/reduce/detail/SmallProblemReduceKernel.hpp>
 #include <vikunja/workdiv/BlockBasedWorkDiv.hpp>
@@ -73,8 +73,8 @@ namespace vikunja
          * @tparam TDevHost The type of the alpaka host.
          * @tparam TQueue The type of the alpaka queue.
          * @tparam TIdx The index type to use.
-         * @tparam TTransformOperator The vikunja::operators type of the transform function.
-         * @tparam TReduceOperator The vikunja::operators type of the reduce function.
+         * @tparam TTransformOperator The specialization of vikunja::concept::UnaryOp type of the transform function.
+         * @tparam TReduceOperator The specialization of vikunja::concept::BinaryOp type of the reduce function.
          * @tparam TRed The return value of the function.
          * @param devAcc The alpaka accelerator.
          * @param devHost The alpaka host.
@@ -96,9 +96,9 @@ namespace vikunja
             typename TDevHost,
             typename TQueue,
             typename TIdx,
-            typename TTransformOperator = vikunja::operators::
+            typename TTransformOperator = vikunja::concept::
                 UnaryOp<TAcc, TTransformFunc, typename std::iterator_traits<TInputIterator>::value_type>,
-            typename TReduceOperator = vikunja::operators::
+            typename TReduceOperator = vikunja::concept::
                 BinaryOp<TAcc, TReduceFunc, typename TTransformOperator::TRed, typename TTransformOperator::TRed>,
             typename TRed = typename TReduceOperator::TRed>
         auto deviceTransformReduce(
@@ -188,7 +188,7 @@ namespace vikunja
                 multiBlockKernel;
 
             using TIdentityTransformOperator
-                = vikunja::operators::UnaryOp<TAcc, detail::Identity<TRed>, typename TTransformOperator::TRed>;
+                = vikunja::concept::UnaryOp<TAcc, detail::Identity<TRed>, typename TTransformOperator::TRed>;
             detail::
                 BlockThreadReduceKernel<blockSize, MemAccessPolicy, TRed, TIdentityTransformOperator, TReduceOperator>
                     singleBlockKernel;
@@ -237,8 +237,8 @@ namespace vikunja
          * @tparam TDevAcc The type of the alpaka accelerator.
          * @tparam TDevHost The type of the alpaka host.
          * @tparam TQueue The type of the alpaka queue.
-         * @tparam TTransformOperator The vikunja::operators type of the transform function.
-         * @tparam TReduceOperator The vikunja::operators type of the reduce function.
+         * @tparam TTransformOperator The specialization of vikunja::concept::UnaryOp type of the transform function.
+         * @tparam TReduceOperator The specialization of vikunja::concept::BinaryOp type of the reduce function.
          * @tparam TRed The return value of the function.
          * @param devAcc The alpaka accelerator.
          * @param devHost The alpaka host.
@@ -259,9 +259,9 @@ namespace vikunja
             typename TDevAcc,
             typename TDevHost,
             typename TQueue,
-            typename TTransformOperator = vikunja::operators::
+            typename TTransformOperator = vikunja::concept::
                 UnaryOp<TAcc, TTransformFunc, typename std::iterator_traits<TInputIterator>::value_type>,
-            typename TReduceOperator = vikunja::operators::
+            typename TReduceOperator = vikunja::concept::
                 BinaryOp<TAcc, TReduceFunc, typename TTransformOperator::TRed, typename TTransformOperator::TRed>,
             typename TRed = typename TReduceOperator::TRed>
         auto deviceTransformReduce(
@@ -291,7 +291,7 @@ namespace vikunja
          * @tparam TDevHost
          * @tparam TQueue
          * @tparam TIdx
-         * @tparam TReduceOperator The vikunja::operators type of the reduce function.
+         * @tparam TReduceOperator The specialization of vikunja::concept::BinaryOp type of the reduce function.
          * @tparam TRed The return value of the function.
          * @param devAcc
          * @param devHost
@@ -311,7 +311,7 @@ namespace vikunja
             typename TDevHost,
             typename TQueue,
             typename TIdx,
-            typename TOperator = vikunja::operators::BinaryOp<
+            typename TOperator = vikunja::concept::BinaryOp<
                 TAcc,
                 TFunc,
                 typename std::iterator_traits<TInputIterator>::value_type,
@@ -350,7 +350,7 @@ namespace vikunja
          * @tparam TDevAcc
          * @tparam TDevHost
          * @tparam TQueue
-         * @tparam TReduceOperator The vikunja::operators type of the reduce function.
+         * @tparam TReduceOperator The specialization of vikunja::concept::BinaryOp type of the reduce function.
          * @tparam TRed The return value of the function.
          * @param devAcc
          * @param devHost
@@ -369,7 +369,7 @@ namespace vikunja
             typename TDevAcc,
             typename TDevHost,
             typename TQueue,
-            typename TOperator = vikunja::operators::BinaryOp<
+            typename TOperator = vikunja::concept::BinaryOp<
                 TAcc,
                 TFunc,
                 typename std::iterator_traits<TInputIterator>::value_type,

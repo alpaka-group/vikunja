@@ -10,6 +10,7 @@
 #pragma once
 
 #include <vikunja/access/BlockStrategy.hpp>
+#include <vikunja/concept/memVisibility.hpp>
 
 #include <alpaka/alpaka.hpp>
 #include <alpaka/example/ExampleDefaultAcc.hpp>
@@ -21,6 +22,13 @@
     {                                                                                                                 \
         INFO(msg);                                                                                                    \
         REQUIRE(cond);                                                                                                \
+    } while((void) 0, 0)
+
+#define REQUIRE_FALSE_MESSAGE(cond, msg)                                                                              \
+    do                                                                                                                \
+    {                                                                                                                 \
+        INFO(msg);                                                                                                    \
+        REQUIRE_FALSE(cond);                                                                                          \
     } while((void) 0, 0)
 
 namespace vikunja
@@ -39,6 +47,27 @@ namespace vikunja
             strs << "MemAccessPolicy: " << MemAccess::getName() << "\n";
 
             return strs.str();
+        }
+
+        template<typename TBufferType>
+        constexpr inline char const* print_buffer_type()
+        {
+            if(std::is_same_v<TBufferType, vikunja::concept::CUDAMemVisible>)
+            {
+                return "CUDAMemVisible";
+            }
+            else if(std::is_same_v<TBufferType, vikunja::concept::HIPMemVisible>)
+            {
+                return "HIPMemVisible";
+            }
+            else if(std::is_same_v<TBufferType, vikunja::concept::CPUMemVisible>)
+            {
+                return "CPUMemVisible";
+            }
+            else
+            {
+                return "unknown buffer";
+            }
         }
 
     } // namespace test
